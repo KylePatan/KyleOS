@@ -5,18 +5,21 @@ import Foundation
 /// actually owns this UI gets built. Delete this whole Dev/ group once real modules cover it.
 enum DevDestination: String, CaseIterable, Identifiable, Hashable {
     case projects
+    case documents
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .projects: return "Projects"
+        case .documents: return "Documents"
         }
     }
 
     var systemImage: String {
         switch self {
         case .projects: return "hammer"
+        case .documents: return "doc.text"
         }
     }
 }

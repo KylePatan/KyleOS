@@ -28,6 +28,8 @@ struct RootView: View {
                 PlaceholderDestinationView(destination: destination)
             case .dev(.projects):
                 ProjectsDevView()
+            case .dev(.documents):
+                DocumentsDevView()
             }
         }
     }
