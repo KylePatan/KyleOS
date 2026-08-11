@@ -7,20 +7,41 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC08B1D8915E0171514F5A14 /* ProjectService.swift */; };
+		3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */; };
+		66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */; };
 		67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660BC2802312A49BFFD14B72 /* KyleOSApp.swift */; };
 		680ED53C1E3989CD253F4950 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2245AF51F43F2E8BDD6097CC /* RootView.swift */; };
+		852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */; };
 		8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */; };
+		BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B06A23CAF9A33772891D1AA /* PersistenceController.swift */; };
 		ECCA840DA9EB0FA44B181C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */; };
 		F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		D823DDED99CDB599EFD68777 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 253407720992904777E0ACFF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 67FC2C16D6369550C9FFC1C3;
+			remoteInfo = KyleOS;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDestination.swift; sourceTree = "<group>"; };
+		1B06A23CAF9A33772891D1AA /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		660BC2802312A49BFFD14B72 /* KyleOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSApp.swift; sourceTree = "<group>"; };
+		6E36C1CCEDB3BF41E4EDA309 /* KyleOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KyleOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV1.swift; sourceTree = "<group>"; };
+		B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceTests.swift; sourceTree = "<group>"; };
+		BC08B1D8915E0171514F5A14 /* ProjectService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectService.swift; sourceTree = "<group>"; };
 		CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderDestinationView.swift; sourceTree = "<group>"; };
 		D138354B6AD5EACAD0C3EBDB /* KyleOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KyleOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSMigrationPlan.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -28,6 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				D138354B6AD5EACAD0C3EBDB /* KyleOS.app */,
+				6E36C1CCEDB3BF41E4EDA309 /* KyleOSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -37,7 +59,9 @@
 			children = (
 				308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */,
 				660BC2802312A49BFFD14B72 /* KyleOSApp.swift */,
+				D5631A907DD2B7D07AEC3EAA /* Domain */,
 				474886536D11B067E057E2A1 /* Navigation */,
+				A7E620E76C850162542CF1A2 /* Persistence */,
 			);
 			path = KyleOS;
 			sourceTree = "<group>";
@@ -52,10 +76,45 @@
 			path = Navigation;
 			sourceTree = "<group>";
 		};
+		494A579CC52370BE20438831 /* KyleOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */,
+			);
+			path = KyleOSTests;
+			sourceTree = "<group>";
+		};
+		823E66977CD511037E73B53A /* Schema */ = {
+			isa = PBXGroup;
+			children = (
+				D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */,
+				80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */,
+			);
+			path = Schema;
+			sourceTree = "<group>";
+		};
+		A7E620E76C850162542CF1A2 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				1B06A23CAF9A33772891D1AA /* PersistenceController.swift */,
+				823E66977CD511037E73B53A /* Schema */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		D5631A907DD2B7D07AEC3EAA /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				BC08B1D8915E0171514F5A14 /* ProjectService.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
 		F2AE1CBFA45459C708F55ED5 = {
 			isa = PBXGroup;
 			children = (
 				470145D068E0C700383140B1 /* KyleOS */,
+				494A579CC52370BE20438831 /* KyleOSTests */,
 				306C1E14E4185D79794F96AB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,6 +122,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		224EDD2D0D5641749872F7CF /* KyleOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3D129789F3C7DDD6C74A23F3 /* Build configuration list for PBXNativeTarget "KyleOSTests" */;
+			buildPhases = (
+				09094FE38E2C50A311332743 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				54C34D42B33A8CEE2C974E1F /* PBXTargetDependency */,
+			);
+			name = KyleOSTests;
+			packageProductDependencies = (
+			);
+			productName = KyleOSTests;
+			productReference = 6E36C1CCEDB3BF41E4EDA309 /* KyleOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		67FC2C16D6369550C9FFC1C3 /* KyleOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C07A54E7890BDB7EEA2CB88B /* Build configuration list for PBXNativeTarget "KyleOS" */;
@@ -90,9 +167,13 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					224EDD2D0D5641749872F7CF = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
 					67FC2C16D6369550C9FFC1C3 = {
 						DevelopmentTeam = "";
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -111,6 +192,7 @@
 			projectRoot = "";
 			targets = (
 				67FC2C16D6369550C9FFC1C3 /* KyleOS */,
+				224EDD2D0D5641749872F7CF /* KyleOSTests */,
 			);
 		};
 /* End PBXProject section */
@@ -127,12 +209,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		09094FE38E2C50A311332743 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6A77DF79338FBA3E2ADEE17E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */,
+				3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */,
+				66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */,
+				BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */,
 				F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */,
+				01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */,
 				680ED53C1E3989CD253F4950 /* RootView.swift in Sources */,
 				8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */,
 			);
@@ -140,7 +234,33 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		54C34D42B33A8CEE2C974E1F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 67FC2C16D6369550C9FFC1C3 /* KyleOS */;
+			targetProxy = D823DDED99CDB599EFD68777 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		2530525DCD54DAB50BDF3FF6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kylepatan.KyleOSTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KyleOS.app/Contents/MacOS/KyleOS";
+			};
+			name = Release;
+		};
 		B43091D75A7CD2B15931478C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -174,7 +294,8 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
@@ -212,7 +333,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -232,7 +352,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -245,6 +364,24 @@
 				SDKROOT = macosx;
 			};
 			name = Release;
+		};
+		ED0E0D298D71B15DC45BDB77 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kylepatan.KyleOSTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KyleOS.app/Contents/MacOS/KyleOS";
+			};
+			name = Debug;
 		};
 		EE0B55A1B3E6B27A735BA73D /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -279,7 +416,8 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
@@ -307,6 +445,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3D129789F3C7DDD6C74A23F3 /* Build configuration list for PBXNativeTarget "KyleOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ED0E0D298D71B15DC45BDB77 /* Debug */,
+				2530525DCD54DAB50BDF3FF6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		5FA547CD462DF5DB8F79A6F7 /* Build configuration list for PBXProject "KyleOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

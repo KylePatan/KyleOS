@@ -41,3 +41,6 @@ Backups/
 # Logs
 *.log
 Logs/
+
+# Test coverage artifacts
+*.profraw
