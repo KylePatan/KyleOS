@@ -60,6 +60,79 @@ final class SchemaMigrationTests: XCTestCase {
             let documents = try DocumentService.documents(for: project, in: context)
             XCTAssertEqual(documents.count, 1)
             XCTAssertEqual(documents.first?.id, document.id)
+
+            // This store also crosses V2->V3 in the same migration run (PersistenceController.schema
+            // is V3) — WorkItem, added in V3, must be usable too.
+            let workItem = try WorkItemService.createWorkItem(
+                title: "Outline pass 1",
+                workspace: .writing,
+                workTypeName: "Outline",
+                in: project,
+                context: context
+            )
+            try context.save()
+            let workItems = try WorkItemService.workItems(for: project, in: context)
+            XCTAssertEqual(workItems.count, 1)
+            XCTAssertEqual(workItems.first?.id, workItem.id)
+        }
+    }
+
+    func testStoreWrittenUnderV2OpensCleanlyAsV3WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV2Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        let documentID: UUID
+        // Write a store using ONLY the V2 schema shape — WorkItem does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV2.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV2.Project(title: "Pre-V3 Project")
+            projectID = project.id
+            context.insert(project)
+            let document = KyleOSSchemaV2.Document(title: "Outline", documentType: .actOutline, project: project)
+            documentID = document.id
+            context.insert(document)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            XCTAssertEqual(projects.first?.id, projectID)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+
+            let documents = try DocumentService.documents(for: project, in: context)
+            XCTAssertEqual(documents.count, 1)
+            XCTAssertEqual(documents.first?.id, documentID)
+
+            let workItem = try WorkItemService.createWorkItem(
+                title: "Outline pass 1",
+                workspace: .writing,
+                workTypeName: "Outline",
+                in: project,
+                context: context
+            )
+            try context.save()
+            let workItems = try WorkItemService.workItems(for: project, in: context)
+            XCTAssertEqual(workItems.count, 1)
+            XCTAssertEqual(workItems.first?.id, workItem.id)
         }
     }
 }
