@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Build output
+build/
+DerivedData/
+.build/
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+
+# VS Code local settings (keep repo-shared settings only if deliberately added later)
+.vscode/
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+
+# Google OAuth / credentials
+*client_secret*.json
+*credentials*.json
+
+# Local Kyle OS data / test DBs
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+LocalData/
+UserData/
+Backups/
+
+# Logs
+*.log
+Logs/
