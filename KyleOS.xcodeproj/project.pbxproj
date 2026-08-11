@@ -8,14 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC08B1D8915E0171514F5A14 /* ProjectService.swift */; };
+		020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */; };
 		3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */; };
+		4874182D08BB3DF20BEA4063 /* WorkTypeDefaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */; };
 		66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */; };
 		67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660BC2802312A49BFFD14B72 /* KyleOSApp.swift */; };
 		680ED53C1E3989CD253F4950 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2245AF51F43F2E8BDD6097CC /* RootView.swift */; };
 		852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */; };
 		8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */; };
+		9B03B114A4232F96339A7151 /* WorkTypeDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */; };
 		BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B06A23CAF9A33772891D1AA /* PersistenceController.swift */; };
 		ECCA840DA9EB0FA44B181C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */; };
+		EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */; };
 		F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,16 +34,20 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPersistenceTests.swift; sourceTree = "<group>"; };
 		05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDestination.swift; sourceTree = "<group>"; };
+		0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultService.swift; sourceTree = "<group>"; };
 		1B06A23CAF9A33772891D1AA /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultTests.swift; sourceTree = "<group>"; };
 		660BC2802312A49BFFD14B72 /* KyleOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSApp.swift; sourceTree = "<group>"; };
 		6E36C1CCEDB3BF41E4EDA309 /* KyleOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KyleOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV1.swift; sourceTree = "<group>"; };
 		B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceTests.swift; sourceTree = "<group>"; };
 		BC08B1D8915E0171514F5A14 /* ProjectService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectService.swift; sourceTree = "<group>"; };
 		CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderDestinationView.swift; sourceTree = "<group>"; };
+		CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
 		D138354B6AD5EACAD0C3EBDB /* KyleOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KyleOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSMigrationPlan.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -80,6 +88,8 @@
 			isa = PBXGroup;
 			children = (
 				B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */,
+				044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */,
+				5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */,
 			);
 			path = KyleOSTests;
 			sourceTree = "<group>";
@@ -106,6 +116,8 @@
 			isa = PBXGroup;
 			children = (
 				BC08B1D8915E0171514F5A14 /* ProjectService.swift */,
+				CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */,
+				0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -214,6 +226,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */,
+				020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */,
+				9B03B114A4232F96339A7151 /* WorkTypeDefaultTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -228,7 +242,9 @@
 				F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */,
 				01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */,
 				680ED53C1E3989CD253F4950 /* RootView.swift in Sources */,
+				EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */,
 				8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */,
+				4874182D08BB3DF20BEA4063 /* WorkTypeDefaultService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
