@@ -2,22 +2,38 @@ import SwiftUI
 
 /// Root sidebar/detail shell. Home is the default startup screen per Master PRD §3.
 struct RootView: View {
-    @State private var selection: SidebarDestination? = .home
+    @State private var selection: SidebarSelection? = .destination(.home)
 
     var body: some View {
         NavigationSplitView {
-            List(SidebarDestination.allCases, selection: $selection) { destination in
-                Label(destination.title, systemImage: destination.systemImage)
-                    .tag(destination)
+            List(selection: $selection) {
+                Section("Kyle OS") {
+                    ForEach(SidebarDestination.allCases) { destination in
+                        Label(destination.title, systemImage: destination.systemImage)
+                            .tag(SidebarSelection.destination(destination))
+                    }
+                }
+                Section("Developer") {
+                    ForEach(DevDestination.allCases) { dev in
+                        Label(dev.title, systemImage: dev.systemImage)
+                            .tag(SidebarSelection.dev(dev))
+                    }
+                }
             }
             .navigationTitle("Kyle OS")
             .frame(minWidth: 180)
         } detail: {
-            PlaceholderDestinationView(destination: selection ?? .home)
+            switch selection ?? .destination(.home) {
+            case .destination(let destination):
+                PlaceholderDestinationView(destination: destination)
+            case .dev(.projects):
+                ProjectsDevView()
+            }
         }
     }
 }
 
 #Preview {
     RootView()
+        .modelContainer(PersistenceController.makeInMemoryContainer())
 }
