@@ -4,7 +4,7 @@ import SwiftData
 /// Owns the SwiftData stack (schema + migration plan + container creation) as its own
 /// architectural boundary, kept out of views and domain logic per CLAUDE.md §4.
 enum PersistenceController {
-    static let schema = Schema(versionedSchema: KyleOSSchemaV4.self)
+    static let schema = Schema(versionedSchema: KyleOSSchemaV5.self)
 
     /// The app's real, on-disk container. `fatalError` on failure matches SwiftData's own
     /// default template behavior — Foundation does not yet have a recovery path for a store
