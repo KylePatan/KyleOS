@@ -135,4 +135,68 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(workItems.first?.id, workItem.id)
         }
     }
+
+    func testStoreWrittenUnderV3OpensCleanlyAsV4WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV3Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        let workItemID: UUID
+        // Write a store using ONLY the V3 schema shape — Deadline and CalendarEvent do not
+        // exist yet, and neither Project nor WorkItem has a `deadline` relationship.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV3.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV3.Project(title: "Pre-V4 Project")
+            projectID = project.id
+            context.insert(project)
+            let workItem = KyleOSSchemaV3.WorkItem(
+                title: "Outline", workspace: .writing, workTypeName: "Outline", project: project
+            )
+            workItemID = workItem.id
+            context.insert(workItem)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            XCTAssertEqual(projects.first?.id, projectID)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            XCTAssertNil(project.deadline, "New relationship should default to nil, not crash or fabricate data")
+
+            let workItems = try WorkItemService.workItems(for: project, in: context)
+            XCTAssertEqual(workItems.count, 1)
+            XCTAssertEqual(workItems.first?.id, workItemID)
+
+            // The new entities must actually be usable post-migration, not just present.
+            let deadline = DeadlineService.setDeadline(
+                for: project, label: "Submission Deadline", dueAt: .now, context: context
+            )
+            let event = CalendarEventService.createEvent(
+                type: .hardDeadline, startAt: .now, endAt: .now, project: project, deadline: deadline, context: context
+            )
+            try context.save()
+
+            XCTAssertEqual(project.deadline?.id, deadline.id)
+            let events = try CalendarEventService.events(from: .distantPast, to: .distantFuture, in: context)
+            XCTAssertEqual(events.map(\.id), [event.id])
+        }
+    }
 }

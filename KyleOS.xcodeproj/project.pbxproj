@@ -13,9 +13,11 @@
 		1865E473DFE6B7569208F40F /* DocumentPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */; };
 		193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */; };
 		28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */; };
+		29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */; };
 		2C4C20D033B8188804289DC1 /* DevDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4ED11A26B0DF9FD2EEEB6C /* DevDestination.swift */; };
 		3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */; };
 		3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */; };
+		415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F94DC097B024E09365AC92 /* DeadlineService.swift */; };
 		4874182D08BB3DF20BEA4063 /* WorkTypeDefaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */; };
 		5D9E935642D80AD91D348AEB /* WorkItemPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */; };
 		66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */; };
@@ -23,13 +25,16 @@
 		680ED53C1E3989CD253F4950 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2245AF51F43F2E8BDD6097CC /* RootView.swift */; };
 		852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */; };
 		8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */; };
+		98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */; };
 		9B03B114A4232F96339A7151 /* WorkTypeDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */; };
 		A5B10545D2035CB9E2499AF5 /* SidebarSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07B579165EA51ACC58D342 /* SidebarSelection.swift */; };
 		B97F7A629A30E355726229FE /* DocumentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBE110981FB0F1F3ED6CDECD /* DocumentService.swift */; };
 		BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B06A23CAF9A33772891D1AA /* PersistenceController.swift */; };
 		BD2BB791E75391AFCD5A2349 /* ProjectsDevView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DBB03886DE8A4DF8268447 /* ProjectsDevView.swift */; };
+		BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */; };
 		C0495A8136146413B39B9E82 /* WorkItemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0729CE85464C6F1BDF375A30 /* WorkItemService.swift */; };
 		C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */; };
+		C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */; };
 		ECCA840DA9EB0FA44B181C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */; };
 		EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */; };
 		F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */; };
@@ -53,6 +58,7 @@
 		0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultService.swift; sourceTree = "<group>"; };
 		1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPersistenceTests.swift; sourceTree = "<group>"; };
 		1B06A23CAF9A33772891D1AA /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV4.swift; sourceTree = "<group>"; };
 		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemPersistenceTests.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -63,12 +69,16 @@
 		660BC2802312A49BFFD14B72 /* KyleOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSApp.swift; sourceTree = "<group>"; };
 		6E36C1CCEDB3BF41E4EDA309 /* KyleOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KyleOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV1.swift; sourceTree = "<group>"; };
+		83F94DC097B024E09365AC92 /* DeadlineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineService.swift; sourceTree = "<group>"; };
 		8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutosaveControllerTests.swift; sourceTree = "<group>"; };
 		8D4ED11A26B0DF9FD2EEEB6C /* DevDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevDestination.swift; sourceTree = "<group>"; };
+		9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventPersistenceTests.swift; sourceTree = "<group>"; };
+		A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventService.swift; sourceTree = "<group>"; };
 		B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceTests.swift; sourceTree = "<group>"; };
 		BC08B1D8915E0171514F5A14 /* ProjectService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectService.swift; sourceTree = "<group>"; };
 		C55AAF6B60E824D48A2EA9D4 /* DocumentsDevView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentsDevView.swift; sourceTree = "<group>"; };
 		C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationTests.swift; sourceTree = "<group>"; };
+		C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlinePersistenceTests.swift; sourceTree = "<group>"; };
 		CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderDestinationView.swift; sourceTree = "<group>"; };
 		CBE110981FB0F1F3ED6CDECD /* DocumentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentService.swift; sourceTree = "<group>"; };
 		CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
@@ -116,6 +126,8 @@
 			isa = PBXGroup;
 			children = (
 				8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */,
+				9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */,
+				C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */,
 				1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */,
 				B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */,
 				C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */,
@@ -133,6 +145,7 @@
 				80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */,
 				F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */,
 				4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */,
+				1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -160,6 +173,8 @@
 		D5631A907DD2B7D07AEC3EAA /* Domain */ = {
 			isa = PBXGroup;
 			children = (
+				A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */,
+				83F94DC097B024E09365AC92 /* DeadlineService.swift */,
 				CBE110981FB0F1F3ED6CDECD /* DocumentService.swift */,
 				BC08B1D8915E0171514F5A14 /* ProjectService.swift */,
 				CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */,
@@ -273,6 +288,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */,
+				C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */,
+				BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */,
 				1865E473DFE6B7569208F40F /* DocumentPersistenceTests.swift in Sources */,
 				852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */,
 				193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */,
@@ -287,6 +304,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */,
+				29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */,
+				415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */,
 				2C4C20D033B8188804289DC1 /* DevDestination.swift in Sources */,
 				B97F7A629A30E355726229FE /* DocumentService.swift in Sources */,
 				0CC9DBEDD583A50ECB4D2F71 /* DocumentsDevView.swift in Sources */,
@@ -295,6 +314,7 @@
 				66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */,
 				F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */,
 				3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */,
+				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,
 				BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */,
 				F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */,
 				01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */,
