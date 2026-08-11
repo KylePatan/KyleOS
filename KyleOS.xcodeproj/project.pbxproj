@@ -8,14 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660BC2802312A49BFFD14B72 /* KyleOSApp.swift */; };
-		E1A1EEC9588AD840863013B6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68CBBCDDF25CC8D11E7733CE /* ContentView.swift */; };
+		680ED53C1E3989CD253F4950 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2245AF51F43F2E8BDD6097CC /* RootView.swift */; };
+		8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */; };
 		ECCA840DA9EB0FA44B181C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */; };
+		F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDestination.swift; sourceTree = "<group>"; };
+		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		660BC2802312A49BFFD14B72 /* KyleOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSApp.swift; sourceTree = "<group>"; };
-		68CBBCDDF25CC8D11E7733CE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderDestinationView.swift; sourceTree = "<group>"; };
 		D138354B6AD5EACAD0C3EBDB /* KyleOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KyleOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,10 +36,20 @@
 			isa = PBXGroup;
 			children = (
 				308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */,
-				68CBBCDDF25CC8D11E7733CE /* ContentView.swift */,
 				660BC2802312A49BFFD14B72 /* KyleOSApp.swift */,
+				474886536D11B067E057E2A1 /* Navigation */,
 			);
 			path = KyleOS;
+			sourceTree = "<group>";
+		};
+		474886536D11B067E057E2A1 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */,
+				2245AF51F43F2E8BDD6097CC /* RootView.swift */,
+				05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */,
+			);
+			path = Navigation;
 			sourceTree = "<group>";
 		};
 		F2AE1CBFA45459C708F55ED5 = {
@@ -117,8 +131,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1A1EEC9588AD840863013B6 /* ContentView.swift in Sources */,
 				67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */,
+				F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */,
+				680ED53C1E3989CD253F4950 /* RootView.swift in Sources */,
+				8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
