@@ -76,6 +76,6 @@ final class ActiveTimerStateServiceTests: XCTestCase {
         context.delete(workItem)
         try context.save()
 
-        XCTAssertEqual(try context.fetch(FetchDescriptor<KyleOSSchemaV6.ActiveTimerState>()).count, 0)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<KyleOSSchemaV7.ActiveTimerState>()).count, 0)
     }
 }

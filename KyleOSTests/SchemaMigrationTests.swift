@@ -330,4 +330,53 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(try ActiveTimerStateService.interruptedSessions(in: context).count, 1)
         }
     }
+
+    func testStoreWrittenUnderV6OpensCleanlyAsV7WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV6Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        // Write a store using ONLY the V6 schema shape — FileReference does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV6.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV6.Project(title: "Pre-V7 Project")
+            projectID = project.id
+            context.insert(project)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            XCTAssertEqual(projects.first?.id, projectID)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+
+            // The new entity must actually be usable post-migration, not just present.
+            let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).mov")
+            try "fake media bytes".write(to: tempFile, atomically: true, encoding: .utf8)
+            defer { try? FileManager.default.removeItem(at: tempFile) }
+
+            let reference = try FileReferenceService.create(displayName: "Clip", fileURL: tempFile, project: project, context: context)
+            try context.save()
+
+            XCTAssertEqual(try FileReferenceService.references(for: project, in: context).map(\.id), [reference.id])
+        }
+    }
 }

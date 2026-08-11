@@ -69,7 +69,7 @@ final class DeadlinePersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV6.Deadline>())
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV7.Deadline>())
         XCTAssertEqual(remaining.count, 0, "Deleting a Project must cascade-delete its Deadline")
     }
 

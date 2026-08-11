@@ -11,8 +11,8 @@ import SwiftData
 /// One controller instance represents one in-progress session. The `now` closure is injectable
 /// so tests can drive time deterministically instead of sleeping.
 final class FocusTimerController {
-    typealias WorkItem = KyleOSSchemaV6.WorkItem
-    typealias WorkSession = KyleOSSchemaV6.WorkSession
+    typealias WorkItem = KyleOSSchemaV7.WorkItem
+    typealias WorkSession = KyleOSSchemaV7.WorkSession
 
     enum State: Equatable {
         case idle
