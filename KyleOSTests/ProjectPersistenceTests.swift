@@ -96,4 +96,29 @@ final class ProjectPersistenceTests: XCTestCase {
             XCTAssertEqual(active.first?.title, "Survives Restart")
         }
     }
+
+    /// A dedicated end-to-end test for the acceptance criterion "Related objects remain linked
+    /// after renaming" — distinct from testRenamePreservesStableID, which only checks the
+    /// Project's own ID. This proves every kind of child object stays correctly attached too.
+    func testRelatedObjectsRemainLinkedAfterRenamingTheProject() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Working Title", in: context)
+        let document = DocumentService.createDocument(title: "Outline", type: .actOutline, in: project, context: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline pass 1", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        let deadline = DeadlineService.setDeadline(for: project, label: "Submission", dueAt: .now, context: context)
+        try context.save()
+
+        ProjectService.rename(project, to: "Final Title")
+        try context.save()
+
+        XCTAssertEqual(try DocumentService.documents(for: project, in: context).map(\.id), [document.id])
+        XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).map(\.id), [workItem.id])
+        XCTAssertEqual(project.deadline?.id, deadline.id)
+        XCTAssertEqual(document.project?.id, project.id)
+        XCTAssertEqual(workItem.project?.id, project.id)
+    }
 }

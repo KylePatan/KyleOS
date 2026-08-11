@@ -21,6 +21,28 @@ final class CalendarEventPersistenceTests: XCTestCase {
         XCTAssertEqual(fetched.first?.availability, .busy)
     }
 
+    /// Acceptance criterion "Calendar Events persist with Busy/Available state" — the prior test
+    /// only proves the default (.busy); this proves the other V1 availability type (PRD §11.5)
+    /// is genuinely settable and persists, not just present as an unused enum case.
+    func testAvailabilityCanBeSetToAvailableAndPersists() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let start = Date()
+        let event = CalendarEventService.createEvent(
+            type: .personal, startAt: start, endAt: start.addingTimeInterval(3600), availability: .available, context: context
+        )
+        try context.save()
+        XCTAssertEqual(event.availability, .available)
+
+        CalendarEventService.setAvailability(event, to: .busy)
+        try context.save()
+        XCTAssertEqual(event.availability, .busy)
+
+        let fetched = try context.fetch(FetchDescriptor<KyleOSSchemaV7.CalendarEvent>())
+        XCTAssertEqual(fetched.first?.availability, .busy)
+    }
+
     func testDayJobDefaultsMatchSettings() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
