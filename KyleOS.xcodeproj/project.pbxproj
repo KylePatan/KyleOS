@@ -26,6 +26,7 @@
 		3F24A4975186AE59CB1B33CC /* TimerRecoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */; };
 		415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F94DC097B024E09365AC92 /* DeadlineService.swift */; };
 		41AF7B59D6DDB36B4A047DD3 /* WorkSessionPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3481CB5346116A1D3BAD6F3 /* WorkSessionPersistenceTests.swift */; };
+		42B0EE108DE419C0422D2647 /* BackupServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 108DAD9FC4FE4F4E840A624E /* BackupServiceTests.swift */; };
 		4874182D08BB3DF20BEA4063 /* WorkTypeDefaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */; };
 		56C54A78A73CFBB8F6C8F4AE /* FocusTimerControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */; };
 		5D9E935642D80AD91D348AEB /* WorkItemPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */; };
@@ -51,6 +52,7 @@
 		C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */; };
 		D3E04B6C451A896E257D3E33 /* KyleOSSchemaV7.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */; };
 		E832ACA1B33B82DDE5D13C33 /* PlannedSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9A5C83517F88DE4D86E509 /* PlannedSessionService.swift */; };
+		EC3FE050D3D76369D0611A36 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E659CA3986E4A2AF2FBDF9 /* BackupService.swift */; };
 		ECCA840DA9EB0FA44B181C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */; };
 		EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */; };
 		F1FB21DD03B2DEB7FDD60265 /* FileReferencePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76011B9ACA3397331B1A89A2 /* FileReferencePersistenceTests.swift */; };
@@ -75,6 +77,7 @@
 		06DE6D055396E31BDEFFBE3F /* FileReferenceResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferenceResolver.swift; sourceTree = "<group>"; };
 		0729CE85464C6F1BDF375A30 /* WorkItemService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemService.swift; sourceTree = "<group>"; };
 		0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultService.swift; sourceTree = "<group>"; };
+		108DAD9FC4FE4F4E840A624E /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
 		1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPersistenceTests.swift; sourceTree = "<group>"; };
 		1B06A23CAF9A33772891D1AA /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV4.swift; sourceTree = "<group>"; };
@@ -91,6 +94,7 @@
 		6E36C1CCEDB3BF41E4EDA309 /* KyleOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KyleOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		76011B9ACA3397331B1A89A2 /* FileReferencePersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferencePersistenceTests.swift; sourceTree = "<group>"; };
 		80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV1.swift; sourceTree = "<group>"; };
+		82E659CA3986E4A2AF2FBDF9 /* BackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupService.swift; sourceTree = "<group>"; };
 		83F94DC097B024E09365AC92 /* DeadlineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineService.swift; sourceTree = "<group>"; };
 		84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedSessionPersistenceTests.swift; sourceTree = "<group>"; };
 		86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerStateServiceTests.swift; sourceTree = "<group>"; };
@@ -139,6 +143,7 @@
 			children = (
 				308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */,
 				660BC2802312A49BFFD14B72 /* KyleOSApp.swift */,
+				640BABB0947FE9B124A8C7C6 /* Backup */,
 				9E57D258F33CD5312EF25840 /* Dev */,
 				D5631A907DD2B7D07AEC3EAA /* Domain */,
 				CB7836209AAEC32AF2E04F48 /* Files */,
@@ -165,6 +170,7 @@
 			children = (
 				86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */,
 				8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */,
+				108DAD9FC4FE4F4E840A624E /* BackupServiceTests.swift */,
 				9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */,
 				C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */,
 				1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */,
@@ -181,6 +187,14 @@
 				5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */,
 			);
 			path = KyleOSTests;
+			sourceTree = "<group>";
+		};
+		640BABB0947FE9B124A8C7C6 /* Backup */ = {
+			isa = PBXGroup;
+			children = (
+				82E659CA3986E4A2AF2FBDF9 /* BackupService.swift */,
+			);
+			path = Backup;
 			sourceTree = "<group>";
 		};
 		823E66977CD511037E73B53A /* Schema */ = {
@@ -359,6 +373,7 @@
 			files = (
 				13BA1AFF32FC2D756B9A4B79 /* ActiveTimerStateServiceTests.swift in Sources */,
 				28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */,
+				42B0EE108DE419C0422D2647 /* BackupServiceTests.swift in Sources */,
 				C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */,
 				BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */,
 				1865E473DFE6B7569208F40F /* DocumentPersistenceTests.swift in Sources */,
@@ -382,6 +397,7 @@
 			files = (
 				FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */,
 				C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */,
+				EC3FE050D3D76369D0611A36 /* BackupService.swift in Sources */,
 				29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */,
 				415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */,
 				2C4C20D033B8188804289DC1 /* DevDestination.swift in Sources */,
