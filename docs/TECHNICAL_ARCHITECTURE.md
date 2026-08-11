@@ -83,6 +83,8 @@ The primary development machine currently runs **macOS 15.7.7**. For the first p
 
 Using a macOS 15 baseline keeps the first build focused on the user's actual environment and reduces compatibility work while the product is still evolving. If Kyle OS is later distributed to collaborators or the public, the minimum supported macOS version should be reassessed before release.
 
+**Amendment (2026-08-11):** The primary development Mac is Intel-based (MacBookPro16,3, 2020), and Xcode 16+ requires Apple Silicon to run. The last Xcode release that runs on Intel is **Xcode 15.4**, which bundles the macOS 14 (Sonoma) SDK, not the macOS 15 SDK. Per the material-blocker/explicit-approval clause above, the user approved lowering the working minimum deployment target to **macOS 14.0** until development moves to Apple Silicon and Xcode 16+. The app still runs fine on the dev machine's actual macOS 15.7.7. Revisit the macOS 15.0 target once Xcode 16+ is available.
+
 ---
 
 # 16. Persistence, Files, Backups, and Recovery
