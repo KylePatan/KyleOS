@@ -59,4 +59,23 @@ enum TimerRecoveryService {
         )
         return controller
     }
+
+    /// "Resume" variant for the app's single shared FocusTimerController (owned by KyleOSApp,
+    /// injected via `.environment` so the timer is visible/controllable from any screen) —
+    /// rehydrates that existing instance in place instead of creating a new one that nothing
+    /// would observe. Returns false if the linked Work Item no longer exists.
+    @discardableResult
+    static func resume(_ state: ActiveTimerState, into controller: FocusTimerController) -> Bool {
+        guard let workItem = state.workItem else { return false }
+        controller.rehydrate(
+            workItem: workItem,
+            sessionStartedAt: state.sessionStartedAt,
+            targetDurationMinutes: state.targetDurationMinutes,
+            progressBefore: state.progressBefore,
+            activeDurationSeconds: state.activeDurationSecondsAtCheckpoint,
+            pausedDurationSeconds: state.pausedDurationSecondsAtCheckpoint,
+            checkpoint: state
+        )
+        return true
+    }
 }

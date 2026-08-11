@@ -170,4 +170,29 @@ final class FocusTimerControllerTests: XCTestCase {
         XCTAssertFalse(timer.resume(context: context))
         XCTAssertNil(timer.finish(progressAfter: 50, context: context))
     }
+
+    /// Backs the Home Active Timer's live-ticking display (ActiveTimerBanner) — proves the
+    /// computed property reflects time passing DURING a running segment, not just after a
+    /// pause/finish folds it in, and that it stays flat while idle/paused.
+    func testCurrentActiveDurationSecondsReflectsLiveElapsedTimeWhileRunning() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let workItem = try makeWorkItem(in: context)
+        let clock = FakeClock()
+        let timer = FocusTimerController(now: clock.now)
+
+        XCTAssertEqual(timer.currentActiveDurationSeconds, 0, "Idle must read as zero")
+
+        timer.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: 0, context: context)
+        clock.advance(90)
+        XCTAssertEqual(timer.currentActiveDurationSeconds, 90, "Must include the in-progress running segment")
+
+        timer.pause(context: context)
+        clock.advance(500)
+        XCTAssertEqual(timer.currentActiveDurationSeconds, 90, "Must not keep climbing while paused")
+
+        timer.resume(context: context)
+        clock.advance(30)
+        XCTAssertEqual(timer.currentActiveDurationSeconds, 120, "Must resume climbing from where it left off")
+    }
 }

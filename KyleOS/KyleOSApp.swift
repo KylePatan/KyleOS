@@ -4,6 +4,10 @@ import SwiftData
 @main
 struct KyleOSApp: App {
     let container: ModelContainer
+    /// One shared instance for the app's lifetime, injected into the environment below — PRD
+    /// §4.8: "the timer continues while navigating elsewhere in Kyle OS." Any screen, not just
+    /// Home, can observe/control it.
+    @State private var timerController = FocusTimerController()
 
     init() {
         let container = PersistenceController.makeContainer()
@@ -24,6 +28,7 @@ struct KyleOSApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(timerController)
         }
         .modelContainer(container)
     }

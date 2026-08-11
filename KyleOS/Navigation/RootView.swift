@@ -24,6 +24,8 @@ struct RootView: View {
             .frame(minWidth: 180)
         } detail: {
             switch selection ?? .destination(.home) {
+            case .destination(.home):
+                HomeView()
             case .destination(let destination):
                 PlaceholderDestinationView(destination: destination)
             case .dev(.projects):
@@ -38,4 +40,5 @@ struct RootView: View {
 #Preview {
     RootView()
         .modelContainer(PersistenceController.makeInMemoryContainer())
+        .environment(FocusTimerController())
 }

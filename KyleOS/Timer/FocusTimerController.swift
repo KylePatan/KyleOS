@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import Observation
 
 /// The shared Focus Timer engine (PRD §5.2-§5.4): Start/Pause/Resume/Stop/Finish Session,
 /// tracking active time separately from paused time so paused segments never count as active
@@ -8,8 +9,15 @@ import SwiftData
 /// actual writes to ActiveTimerStateService (checkpointing) and WorkSessionService/
 /// WorkItemService (finishing).
 ///
-/// One controller instance represents one in-progress session. The `now` closure is injectable
-/// so tests can drive time deterministically instead of sleeping.
+/// One shared instance lives for the app's lifetime (owned by KyleOSApp, injected via
+/// `.environment`) so PRD §4.8's "the timer continues while navigating elsewhere" holds — Home
+/// isn't the only screen that can see it, any screen can. `@Observable` so SwiftUI re-renders on
+/// state changes; deliberately has NO internal RunLoop/Timer for live ticking — that would
+/// complicate the deterministic testing this class was built around. Instead
+/// `currentActiveDurationSeconds` is a plain computed property; a view drives its own refresh
+/// (e.g. TimelineView) and reads it fresh each tick. The `now` closure is injectable so tests
+/// can drive time deterministically instead of sleeping.
+@Observable
 final class FocusTimerController {
     typealias WorkItem = KyleOSSchemaV7.WorkItem
     typealias WorkSession = KyleOSSchemaV7.WorkSession
@@ -43,6 +51,15 @@ final class FocusTimerController {
     var hasReachedGoal: Bool {
         guard let targetDurationMinutes else { return false }
         return activeDurationSeconds >= targetDurationMinutes * 60
+    }
+
+    /// Elapsed active seconds INCLUDING whatever segment is currently in progress — unlike
+    /// `activeDurationSeconds`, which only reflects completed segments. A view that wants a
+    /// live-ticking display reads this on its own periodic refresh (e.g. TimelineView); this
+    /// property itself does no scheduling.
+    var currentActiveDurationSeconds: Int {
+        guard state == .running, let segmentStart = currentSegmentStartedAt else { return activeDurationSeconds }
+        return activeDurationSeconds + Int(now().timeIntervalSince(segmentStart))
     }
 
     @discardableResult

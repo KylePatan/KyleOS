@@ -88,4 +88,29 @@ final class TimerRecoveryServiceTests: XCTestCase {
         let finished = resumed?.finish(progressAfter: 30, context: context)
         XCTAssertEqual(finished?.activeDurationSeconds, 500)
     }
+
+    /// The variant Home actually uses — the app's one shared FocusTimerController instance
+    /// (injected via `.environment`), rehydrated in place rather than a throwaway new instance
+    /// nothing would observe.
+    func testResumeIntoRehydratesTheSharedController() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let workItem = try makeWorkItem(in: context)
+
+        let state = ActiveTimerStateService.start(
+            for: workItem, sessionStartedAt: .now, targetDurationMinutes: 45, progressBefore: 15, context: context
+        )
+        ActiveTimerStateService.checkpoint(state, activeDurationSeconds: 500, pausedDurationSeconds: 30, isRunning: true)
+        try context.save()
+
+        let sharedController = FocusTimerController()
+        XCTAssertEqual(sharedController.state, .idle, "Precondition: shared controller starts idle")
+
+        let succeeded = TimerRecoveryService.resume(state, into: sharedController)
+
+        XCTAssertTrue(succeeded)
+        XCTAssertEqual(sharedController.state, .paused)
+        XCTAssertEqual(sharedController.activeDurationSeconds, 500)
+        XCTAssertEqual(sharedController.workItem?.id, workItem.id)
+    }
 }
