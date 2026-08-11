@@ -271,4 +271,63 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(try WorkSessionService.sessions(for: workItem, in: context).map(\.id), [workSession.id])
         }
     }
+
+    func testStoreWrittenUnderV5OpensCleanlyAsV6WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV5Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        let workItemID: UUID
+        // Write a store using ONLY the V5 schema shape — ActiveTimerState does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV5.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV5.Project(title: "Pre-V6 Project")
+            projectID = project.id
+            context.insert(project)
+            let workItem = KyleOSSchemaV5.WorkItem(
+                title: "Outline", workspace: .writing, workTypeName: "Outline", project: project
+            )
+            workItemID = workItem.id
+            context.insert(workItem)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            XCTAssertEqual(projects.first?.id, projectID)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+
+            let workItems = try WorkItemService.workItems(for: project, in: context)
+            XCTAssertEqual(workItems.count, 1)
+            XCTAssertEqual(workItems.first?.id, workItemID)
+            guard let workItem = workItems.first else {
+                return XCTFail("Expected the pre-migration work item to survive")
+            }
+
+            // The new entity must actually be usable post-migration, not just present.
+            let timer = FocusTimerController()
+            XCTAssertTrue(timer.start(workItem: workItem, targetDurationMinutes: 30, progressBefore: 0, context: context))
+            try context.save()
+
+            XCTAssertEqual(try ActiveTimerStateService.interruptedSessions(in: context).count, 1)
+        }
+    }
 }

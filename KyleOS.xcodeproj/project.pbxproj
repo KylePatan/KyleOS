@@ -9,7 +9,10 @@
 /* Begin PBXBuildFile section */
 		01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC08B1D8915E0171514F5A14 /* ProjectService.swift */; };
 		020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */; };
+		0832C630D3538FB41F166A6E /* FocusTimerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7EA9D04BAF8F260ABCB478 /* FocusTimerController.swift */; };
 		0CC9DBEDD583A50ECB4D2F71 /* DocumentsDevView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55AAF6B60E824D48A2EA9D4 /* DocumentsDevView.swift */; };
+		13BA1AFF32FC2D756B9A4B79 /* ActiveTimerStateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */; };
+		156B71C7DA166DB15A6924FE /* FocusTimerSessionLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3522C8B1A80D72FCC6071D2 /* FocusTimerSessionLength.swift */; };
 		1865E473DFE6B7569208F40F /* DocumentPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */; };
 		193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */; };
 		28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */; };
@@ -18,9 +21,11 @@
 		2C4C20D033B8188804289DC1 /* DevDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4ED11A26B0DF9FD2EEEB6C /* DevDestination.swift */; };
 		3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */; };
 		3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */; };
+		3F24A4975186AE59CB1B33CC /* TimerRecoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */; };
 		415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F94DC097B024E09365AC92 /* DeadlineService.swift */; };
 		41AF7B59D6DDB36B4A047DD3 /* WorkSessionPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3481CB5346116A1D3BAD6F3 /* WorkSessionPersistenceTests.swift */; };
 		4874182D08BB3DF20BEA4063 /* WorkTypeDefaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */; };
+		56C54A78A73CFBB8F6C8F4AE /* FocusTimerControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */; };
 		5D9E935642D80AD91D348AEB /* WorkItemPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */; };
 		66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */; };
 		67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660BC2802312A49BFFD14B72 /* KyleOSApp.swift */; };
@@ -28,10 +33,12 @@
 		6E82854BA860A44FC52ADF4B /* PlannedSessionPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */; };
 		852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */; };
 		8AA271F45558077C103A36ED /* WorkSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */; };
+		8AC7B4F94D5A982E5A7F2A05 /* KyleOSSchemaV6.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0995BC51ECCA3979C67CA0 /* KyleOSSchemaV6.swift */; };
 		8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */; };
 		98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */; };
 		9B03B114A4232F96339A7151 /* WorkTypeDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */; };
 		A5B10545D2035CB9E2499AF5 /* SidebarSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07B579165EA51ACC58D342 /* SidebarSelection.swift */; };
+		ADE256727B597B171F59EB5E /* TimerRecoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */; };
 		B97F7A629A30E355726229FE /* DocumentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBE110981FB0F1F3ED6CDECD /* DocumentService.swift */; };
 		BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B06A23CAF9A33772891D1AA /* PersistenceController.swift */; };
 		BD2BB791E75391AFCD5A2349 /* ProjectsDevView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DBB03886DE8A4DF8268447 /* ProjectsDevView.swift */; };
@@ -44,6 +51,7 @@
 		EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */; };
 		F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */; };
 		F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */; };
+		FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4013FEDF4F30E962B4F6F8 /* ActiveTimerStateService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +73,7 @@
 		1B06A23CAF9A33772891D1AA /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV4.swift; sourceTree = "<group>"; };
 		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRecoveryService.swift; sourceTree = "<group>"; };
 		28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemPersistenceTests.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutosaveController.swift; sourceTree = "<group>"; };
@@ -76,10 +85,13 @@
 		80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV1.swift; sourceTree = "<group>"; };
 		83F94DC097B024E09365AC92 /* DeadlineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineService.swift; sourceTree = "<group>"; };
 		84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedSessionPersistenceTests.swift; sourceTree = "<group>"; };
+		86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerStateServiceTests.swift; sourceTree = "<group>"; };
 		8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutosaveControllerTests.swift; sourceTree = "<group>"; };
 		8D4ED11A26B0DF9FD2EEEB6C /* DevDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevDestination.swift; sourceTree = "<group>"; };
+		8E0995BC51ECCA3979C67CA0 /* KyleOSSchemaV6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV6.swift; sourceTree = "<group>"; };
 		9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventPersistenceTests.swift; sourceTree = "<group>"; };
 		9D9A5C83517F88DE4D86E509 /* PlannedSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedSessionService.swift; sourceTree = "<group>"; };
+		9F7EA9D04BAF8F260ABCB478 /* FocusTimerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerController.swift; sourceTree = "<group>"; };
 		A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventService.swift; sourceTree = "<group>"; };
 		B3481CB5346116A1D3BAD6F3 /* WorkSessionPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionPersistenceTests.swift; sourceTree = "<group>"; };
 		B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceTests.swift; sourceTree = "<group>"; };
@@ -92,10 +104,14 @@
 		CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
 		D138354B6AD5EACAD0C3EBDB /* KyleOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KyleOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSMigrationPlan.swift; sourceTree = "<group>"; };
+		D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRecoveryServiceTests.swift; sourceTree = "<group>"; };
 		D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV5.swift; sourceTree = "<group>"; };
 		D9DBB03886DE8A4DF8268447 /* ProjectsDevView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsDevView.swift; sourceTree = "<group>"; };
+		E3522C8B1A80D72FCC6071D2 /* FocusTimerSessionLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerSessionLength.swift; sourceTree = "<group>"; };
+		F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerControllerTests.swift; sourceTree = "<group>"; };
 		F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionService.swift; sourceTree = "<group>"; };
 		F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV2.swift; sourceTree = "<group>"; };
+		FF4013FEDF4F30E962B4F6F8 /* ActiveTimerStateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerStateService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -117,6 +133,7 @@
 				D5631A907DD2B7D07AEC3EAA /* Domain */,
 				474886536D11B067E057E2A1 /* Navigation */,
 				A7E620E76C850162542CF1A2 /* Persistence */,
+				B125041E446B6B3A03E34DDF /* Timer */,
 			);
 			path = KyleOS;
 			sourceTree = "<group>";
@@ -135,14 +152,17 @@
 		494A579CC52370BE20438831 /* KyleOSTests */ = {
 			isa = PBXGroup;
 			children = (
+				86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */,
 				8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */,
 				9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */,
 				C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */,
 				1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */,
+				F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */,
 				84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */,
 				B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */,
 				C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */,
 				044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */,
+				D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */,
 				28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */,
 				B3481CB5346116A1D3BAD6F3 /* WorkSessionPersistenceTests.swift */,
 				5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */,
@@ -159,6 +179,7 @@
 				4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */,
 				1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */,
 				D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */,
+				8E0995BC51ECCA3979C67CA0 /* KyleOSSchemaV6.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -181,6 +202,17 @@
 				823E66977CD511037E73B53A /* Schema */,
 			);
 			path = Persistence;
+			sourceTree = "<group>";
+		};
+		B125041E446B6B3A03E34DDF /* Timer */ = {
+			isa = PBXGroup;
+			children = (
+				FF4013FEDF4F30E962B4F6F8 /* ActiveTimerStateService.swift */,
+				9F7EA9D04BAF8F260ABCB478 /* FocusTimerController.swift */,
+				E3522C8B1A80D72FCC6071D2 /* FocusTimerSessionLength.swift */,
+				252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */,
+			);
+			path = Timer;
 			sourceTree = "<group>";
 		};
 		D5631A907DD2B7D07AEC3EAA /* Domain */ = {
@@ -302,14 +334,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				13BA1AFF32FC2D756B9A4B79 /* ActiveTimerStateServiceTests.swift in Sources */,
 				28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */,
 				C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */,
 				BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */,
 				1865E473DFE6B7569208F40F /* DocumentPersistenceTests.swift in Sources */,
+				56C54A78A73CFBB8F6C8F4AE /* FocusTimerControllerTests.swift in Sources */,
 				6E82854BA860A44FC52ADF4B /* PlannedSessionPersistenceTests.swift in Sources */,
 				852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */,
 				193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */,
 				020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */,
+				3F24A4975186AE59CB1B33CC /* TimerRecoveryServiceTests.swift in Sources */,
 				5D9E935642D80AD91D348AEB /* WorkItemPersistenceTests.swift in Sources */,
 				41AF7B59D6DDB36B4A047DD3 /* WorkSessionPersistenceTests.swift in Sources */,
 				9B03B114A4232F96339A7151 /* WorkTypeDefaultTests.swift in Sources */,
@@ -320,12 +355,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */,
 				C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */,
 				29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */,
 				415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */,
 				2C4C20D033B8188804289DC1 /* DevDestination.swift in Sources */,
 				B97F7A629A30E355726229FE /* DocumentService.swift in Sources */,
 				0CC9DBEDD583A50ECB4D2F71 /* DocumentsDevView.swift in Sources */,
+				0832C630D3538FB41F166A6E /* FocusTimerController.swift in Sources */,
+				156B71C7DA166DB15A6924FE /* FocusTimerSessionLength.swift in Sources */,
 				67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */,
 				3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */,
 				66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */,
@@ -333,6 +371,7 @@
 				3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */,
 				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,
 				2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */,
+				8AC7B4F94D5A982E5A7F2A05 /* KyleOSSchemaV6.swift in Sources */,
 				BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */,
 				F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */,
 				E832ACA1B33B82DDE5D13C33 /* PlannedSessionService.swift in Sources */,
@@ -342,6 +381,7 @@
 				EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */,
 				8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */,
 				A5B10545D2035CB9E2499AF5 /* SidebarSelection.swift in Sources */,
+				ADE256727B597B171F59EB5E /* TimerRecoveryService.swift in Sources */,
 				C0495A8136146413B39B9E82 /* WorkItemService.swift in Sources */,
 				8AA271F45558077C103A36ED /* WorkSessionService.swift in Sources */,
 				4874182D08BB3DF20BEA4063 /* WorkTypeDefaultService.swift in Sources */,
