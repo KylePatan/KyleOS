@@ -24,7 +24,9 @@
 		29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */; };
 		2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */; };
 		2C4C20D033B8188804289DC1 /* DevDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4ED11A26B0DF9FD2EEEB6C /* DevDestination.swift */; };
+		2F99D8B063AA1EF887DCB910 /* CreativeCapacityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBDA6AF784F5931DE830C5C /* CreativeCapacityService.swift */; };
 		353166ABFBF7406F5F3F015A /* FinishSessionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F070CFB1807E813ABCC7B7DE /* FinishSessionPrompt.swift */; };
+		3DD45C7F77162800F3F64B22 /* CreativeCapacityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3089150D20B0D789E6A972E /* CreativeCapacityServiceTests.swift */; };
 		3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */; };
 		3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */; };
 		3F24A4975186AE59CB1B33CC /* TimerRecoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */; };
@@ -39,6 +41,7 @@
 		67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660BC2802312A49BFFD14B72 /* KyleOSApp.swift */; };
 		680ED53C1E3989CD253F4950 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2245AF51F43F2E8BDD6097CC /* RootView.swift */; };
 		6E82854BA860A44FC52ADF4B /* PlannedSessionPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */; };
+		80EAE83E7EE0097A2D6CF202 /* CreativeCapacityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D7849258563EBED16DAA991 /* CreativeCapacityWidget.swift */; };
 		852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */; };
 		8AA271F45558077C103A36ED /* WorkSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */; };
 		8AC7B4F94D5A982E5A7F2A05 /* KyleOSSchemaV6.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0995BC51ECCA3979C67CA0 /* KyleOSSchemaV6.swift */; };
@@ -91,6 +94,7 @@
 		1B06A23CAF9A33772891D1AA /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV4.swift; sourceTree = "<group>"; };
 		1CDF3891632379E2253D5659 /* FileReferenceResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferenceResolverTests.swift; sourceTree = "<group>"; };
+		1D7849258563EBED16DAA991 /* CreativeCapacityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreativeCapacityWidget.swift; sourceTree = "<group>"; };
 		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayItemCard.swift; sourceTree = "<group>"; };
 		252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRecoveryService.swift; sourceTree = "<group>"; };
@@ -125,6 +129,7 @@
 		B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceTests.swift; sourceTree = "<group>"; };
 		BB76812141269FB271CEAC48 /* FileReferenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferenceService.swift; sourceTree = "<group>"; };
 		BC08B1D8915E0171514F5A14 /* ProjectService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectService.swift; sourceTree = "<group>"; };
+		C3089150D20B0D789E6A972E /* CreativeCapacityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreativeCapacityServiceTests.swift; sourceTree = "<group>"; };
 		C55AAF6B60E824D48A2EA9D4 /* DocumentsDevView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentsDevView.swift; sourceTree = "<group>"; };
 		C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationTests.swift; sourceTree = "<group>"; };
 		C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlinePersistenceTests.swift; sourceTree = "<group>"; };
@@ -139,6 +144,7 @@
 		DB94F8A6EA8F258C2656AF18 /* AllTasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTasksView.swift; sourceTree = "<group>"; };
 		DF53CB376ECB46AE2DF923C8 /* TimeFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatting.swift; sourceTree = "<group>"; };
 		E3522C8B1A80D72FCC6071D2 /* FocusTimerSessionLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerSessionLength.swift; sourceTree = "<group>"; };
+		EEBDA6AF784F5931DE830C5C /* CreativeCapacityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreativeCapacityService.swift; sourceTree = "<group>"; };
 		F070CFB1807E813ABCC7B7DE /* FinishSessionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishSessionPrompt.swift; sourceTree = "<group>"; };
 		F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerControllerTests.swift; sourceTree = "<group>"; };
 		F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionService.swift; sourceTree = "<group>"; };
@@ -191,6 +197,7 @@
 				8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */,
 				108DAD9FC4FE4F4E840A624E /* BackupServiceTests.swift */,
 				9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */,
+				C3089150D20B0D789E6A972E /* CreativeCapacityServiceTests.swift */,
 				C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */,
 				1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */,
 				76011B9ACA3397331B1A89A2 /* FileReferencePersistenceTests.swift */,
@@ -276,6 +283,7 @@
 			isa = PBXGroup;
 			children = (
 				A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */,
+				EEBDA6AF784F5931DE830C5C /* CreativeCapacityService.swift */,
 				83F94DC097B024E09365AC92 /* DeadlineService.swift */,
 				CBE110981FB0F1F3ED6CDECD /* DocumentService.swift */,
 				89B76BD0DA4E4676163DF711 /* HomeService.swift */,
@@ -303,6 +311,7 @@
 			children = (
 				2A701BEF36396910E6ADA359 /* ActiveTimerBanner.swift */,
 				DB94F8A6EA8F258C2656AF18 /* AllTasksView.swift */,
+				1D7849258563EBED16DAA991 /* CreativeCapacityWidget.swift */,
 				F070CFB1807E813ABCC7B7DE /* FinishSessionPrompt.swift */,
 				5E8D57D0B5B87CC2EEB0705D /* HomeView.swift */,
 				5D8B75DB46A34A6FBEE83DB6 /* InterruptedSessionPrompt.swift */,
@@ -410,6 +419,7 @@
 				28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */,
 				42B0EE108DE419C0422D2647 /* BackupServiceTests.swift in Sources */,
 				C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */,
+				3DD45C7F77162800F3F64B22 /* CreativeCapacityServiceTests.swift in Sources */,
 				BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */,
 				1865E473DFE6B7569208F40F /* DocumentPersistenceTests.swift in Sources */,
 				F1FB21DD03B2DEB7FDD60265 /* FileReferencePersistenceTests.swift in Sources */,
@@ -437,6 +447,8 @@
 				C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */,
 				EC3FE050D3D76369D0611A36 /* BackupService.swift in Sources */,
 				29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */,
+				2F99D8B063AA1EF887DCB910 /* CreativeCapacityService.swift in Sources */,
+				80EAE83E7EE0097A2D6CF202 /* CreativeCapacityWidget.swift in Sources */,
 				415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */,
 				2C4C20D033B8188804289DC1 /* DevDestination.swift in Sources */,
 				B97F7A629A30E355726229FE /* DocumentService.swift in Sources */,

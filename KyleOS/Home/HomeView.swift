@@ -1,10 +1,11 @@
 import SwiftUI
 import SwiftData
 
-/// The real V0.1 Home Today/Priority View + All Tasks + Active Timer display (PRD §4.1/§4.2/
-/// §4.5/§4.8). Still deliberately NOT the finished dashboard — no Quick Add or month calendar
-/// yet (separate increments). "Do not build the finished Home dashboard" (CURRENT_PHASE.md)
-/// means don't build all of §4 at once, not that no real piece of it may exist during V0.1.
+/// The real V0.1 Home Today/Priority View + All Tasks + Creative Capacity + Active Timer display
+/// (PRD §4.1/§4.2/§4.4/§4.5/§4.8). Still deliberately NOT the finished dashboard — no Quick Add
+/// or month calendar yet (separate increments). "Do not build the finished Home dashboard"
+/// (CURRENT_PHASE.md) means don't build all of §4 at once, not that no real piece of it may
+/// exist during V0.1.
 struct HomeView: View {
     private enum Tab: String, CaseIterable, Identifiable {
         case today = "Today"
@@ -67,6 +68,8 @@ struct HomeView: View {
     private var todayContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                CreativeCapacityWidget()
+
                 if todayItems.isEmpty {
                     // PRD §4.9: an empty/blocked day isn't failure — say so plainly.
                     Text("Nothing scheduled. Enjoy the break, or start something from Projects.")

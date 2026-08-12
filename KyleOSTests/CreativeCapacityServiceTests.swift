@@ -1,0 +1,125 @@
+import XCTest
+import SwiftData
+@testable import KyleOS
+
+final class CreativeCapacityServiceTests: XCTestCase {
+
+    func testBaselineWithNoGigOrScheduledSessionsMatchesSettings() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [])
+
+        XCTAssertEqual(summary.baselineHours, 2.5, "Matches AppSettings' default weekday Creative Capacity")
+        XCTAssertEqual(summary.scheduledHours, 0)
+        XCTAssertEqual(summary.remainingHours, 2.5)
+    }
+
+    func testStandUpGigTodayAddsTheBonusHours() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+
+        let gigEvent = CalendarEventService.createEvent(
+            type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [gigEvent], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 3.5, "2.5h baseline + 1h stand-up night bonus")
+    }
+
+    func testGigOnADifferentDayDoesNotAddTheBonus() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+        let tomorrow = Date(timeIntervalSinceNow: 86400)
+
+        let gigEvent = CalendarEventService.createEvent(
+            type: .standUpGig, startAt: tomorrow, endAt: tomorrow.addingTimeInterval(3600), context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [gigEvent], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 2.5)
+    }
+
+    func testScheduledPlannedSessionsTodayReduceRemaining() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        let now = Date()
+
+        let session = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 45, context: context)
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [session], now: now)
+
+        XCTAssertEqual(summary.scheduledHours, 0.75, accuracy: 0.001)
+        XCTAssertEqual(summary.remainingHours, 2.5 - 0.75, accuracy: 0.001)
+    }
+
+    func testOnlyScheduledStatusSessionsCountNotMissedOrCancelled() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        let now = Date()
+
+        let missed = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 45, context: context)
+        PlannedSessionService.markMissed(missed)
+        let cancelled = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 30, context: context)
+        PlannedSessionService.markCancelled(cancelled)
+        let stillScheduled = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 15, context: context)
+
+        let summary = CreativeCapacityService.todaysCapacity(
+            settings: settings, events: [], plannedSessions: [missed, cancelled, stillScheduled], now: now
+        )
+
+        XCTAssertEqual(summary.scheduledHours, 0.25, accuracy: 0.001, "Only the still-Scheduled 15m session should count")
+    }
+
+    func testSessionsScheduledOnOtherDaysDontCount() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        let now = Date()
+        let tomorrow = Date(timeIntervalSinceNow: 86400)
+
+        let session = PlannedSessionService.schedule(for: workItem, at: tomorrow, durationMinutes: 45, context: context)
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [session], now: now)
+
+        XCTAssertEqual(summary.scheduledHours, 0)
+    }
+
+    func testRemainingNeverGoesNegative() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        let now = Date()
+
+        let overbooked = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 600, context: context)
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [overbooked], now: now)
+
+        XCTAssertEqual(summary.remainingHours, 0)
+    }
+}
