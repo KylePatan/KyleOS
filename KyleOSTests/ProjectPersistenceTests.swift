@@ -157,4 +157,32 @@ final class ProjectPersistenceTests: XCTestCase {
         XCTAssertEqual(project.status, .finished)
         XCTAssertEqual(project.displayStatus, .finished)
     }
+
+    func testNewProjectHasNoLastOpenedDocument() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, in: context)
+        try context.save()
+
+        XCTAssertNil(project.lastOpenedDocument)
+    }
+
+    func testRecordLastOpenedDocumentUpdatesAndPersists() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, in: context)
+        let chapterOne = DocumentService.createDocument(title: "Chapter One", type: .prose, in: project, context: context)
+        let chapterTwo = DocumentService.createDocument(title: "Chapter Two", type: .prose, in: project, context: context)
+        try context.save()
+
+        ProjectService.recordLastOpenedDocument(chapterOne, in: project)
+        try context.save()
+        XCTAssertEqual(project.lastOpenedDocument?.id, chapterOne.id)
+
+        ProjectService.recordLastOpenedDocument(chapterTwo, in: project)
+        try context.save()
+        XCTAssertEqual(project.lastOpenedDocument?.id, chapterTwo.id, "Opening a different document should update the reference")
+    }
 }

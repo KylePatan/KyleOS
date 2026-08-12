@@ -567,4 +567,60 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(SceneService.numberedScenes(for: document).map(\.number), [1])
         }
     }
+
+    func testStoreWrittenUnderV10OpensCleanlyAsV11WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV10Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        let documentID: UUID
+        // Write a store using ONLY the V10 schema shape — Project has no lastOpenedDocument.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV10.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV10.Project(title: "Pre-V11 Project", projectType: .shortStory)
+            projectID = project.id
+            context.insert(project)
+            let document = KyleOSSchemaV10.Document(title: "Chapter One", documentType: .prose, project: project)
+            documentID = document.id
+            context.insert(document)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            XCTAssertNil(project.lastOpenedDocument, "New optional field should default to nil, not crash or fabricate data")
+
+            let documents = try DocumentService.documents(for: project, in: context)
+            XCTAssertEqual(documents.count, 1)
+            XCTAssertEqual(documents.first?.id, documentID)
+            guard let document = documents.first else {
+                return XCTFail("Expected the pre-migration document to survive")
+            }
+
+            // The new field must actually be usable post-migration, not just present.
+            ProjectService.recordLastOpenedDocument(document, in: project)
+            try context.save()
+
+            XCTAssertEqual(project.lastOpenedDocument?.id, documentID)
+        }
+    }
 }

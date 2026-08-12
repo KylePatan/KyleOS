@@ -44,7 +44,7 @@ final class HomeServiceTests: XCTestCase {
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
 
-        var items: [KyleOSSchemaV10.WorkItem] = []
+        var items: [KyleOSSchemaV11.WorkItem] = []
         for i in 0..<15 {
             items.append(try WorkItemService.createWorkItem(
                 title: "Item \(i)", workspace: .writing, workTypeName: "Outline", in: project, context: context

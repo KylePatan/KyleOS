@@ -13,12 +13,33 @@ struct WritingProjectDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
+            if let lastOpened = project.lastOpenedDocument {
+                continueWritingSection(for: lastOpened)
+            }
             Divider()
             documentsSection
             Spacer()
         }
         .padding()
         .navigationTitle(project.title)
+    }
+
+    /// PRD §6.17: "The goal is to return to the same creative desk."
+    private func continueWritingSection(for document: ProjectService.Document) -> some View {
+        NavigationLink(value: DocumentRoute(id: document.persistentModelID)) {
+            HStack {
+                Image(systemName: "arrow.uturn.forward.circle")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Continue Writing").font(.subheadline.bold())
+                    Text(document.title).font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(8)
+            .background(Color.blue.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
     }
 
     private var header: some View {

@@ -45,6 +45,12 @@ struct ActOutlineView: View {
         }
         .padding(.vertical)
         .navigationTitle(document.title)
+        .onAppear {
+            if let project = document.project {
+                ProjectService.recordLastOpenedDocument(document, in: project)
+                try? context.save()
+            }
+        }
     }
 
     private func addAct() {

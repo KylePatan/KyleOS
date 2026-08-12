@@ -75,6 +75,10 @@ struct ProseEditorView: View {
         }
         .onAppear {
             editorText = document.content
+            if let project = document.project {
+                ProjectService.recordLastOpenedDocument(document, in: project)
+                try? context.save()
+            }
         }
         .onDisappear {
             autosave.saveImmediately {

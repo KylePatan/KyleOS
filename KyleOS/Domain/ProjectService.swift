@@ -4,9 +4,10 @@ import SwiftData
 /// Reusable domain actions for Projects — Create/Rename/Archive/Restore — kept out of views
 /// per CLAUDE.md §4 so later modules (Writing, Sketches, ...) call the same logic UI ever does.
 enum ProjectService {
-    typealias Project = KyleOSSchemaV10.Project
-    typealias WritingProjectType = KyleOSSchemaV10.WritingProjectType
-    typealias ProjectStatus = KyleOSSchemaV10.ProjectStatus
+    typealias Project = KyleOSSchemaV11.Project
+    typealias WritingProjectType = KyleOSSchemaV11.WritingProjectType
+    typealias ProjectStatus = KyleOSSchemaV11.ProjectStatus
+    typealias Document = KyleOSSchemaV11.Document
 
     @discardableResult
     static func createProject(
@@ -28,6 +29,12 @@ enum ProjectService {
     static func setStatus(_ project: Project, to status: ProjectStatus) {
         project.status = status
         project.updatedAt = .now
+    }
+
+    /// PRD §6.17: "Reopening a writing project should restore... last open document." Called
+    /// whenever a Document within this project is opened for editing.
+    static func recordLastOpenedDocument(_ document: Document, in project: Project) {
+        project.lastOpenedDocument = document
     }
 
     static func archive(_ project: Project) {

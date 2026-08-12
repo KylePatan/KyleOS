@@ -7,11 +7,11 @@ import SwiftData
 /// Never resolve a future model change by deleting the user's store (CLAUDE.md §5).
 enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self]
+        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self]
     }
 
     static var stages: [MigrationStage] {
-        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10]
+        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11]
     }
 
     /// V2 only adds a new entity (Document) and a relationship pointing at it — no existing
@@ -82,5 +82,13 @@ enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static let migrateV9toV10 = MigrationStage.lightweight(
         fromVersion: KyleOSSchemaV9.self,
         toVersion: KyleOSSchemaV10.self
+    )
+
+    /// V11 adds Project.lastOpenedDocument — a new field, but genuinely Optional from the start
+    /// (not a `= literal` default on a non-optional type), the same safe shape as V8's
+    /// `projectType` (which worked) rather than V8's `status`/`currentDraftLabel` (which didn't).
+    static let migrateV10toV11 = MigrationStage.lightweight(
+        fromVersion: KyleOSSchemaV10.self,
+        toVersion: KyleOSSchemaV11.self
     )
 }
