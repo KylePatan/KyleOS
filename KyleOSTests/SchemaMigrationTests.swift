@@ -379,4 +379,71 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(try FileReferenceService.references(for: project, in: context).map(\.id), [reference.id])
         }
     }
+
+    func testStoreWrittenUnderV7OpensCleanlyAsV8WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV7Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        let documentID: UUID
+        // Write a store using ONLY the V7 schema shape — Project has no projectType/status,
+        // Document has no currentDraftLabel/drafts, and Draft does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV7.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV7.Project(title: "Pre-V8 Project")
+            projectID = project.id
+            context.insert(project)
+            let document = KyleOSSchemaV7.Document(title: "Draft", documentType: .prose, project: project, content: "Once upon a time...")
+            documentID = document.id
+            context.insert(document)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            XCTAssertEqual(projects.first?.id, projectID)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            XCTAssertNil(project.projectType, "New optional field should default to nil, not crash or fabricate data")
+            XCTAssertNil(project.status, "Lightweight migration leaves pre-existing rows nil (see KyleOSSchemaV8's doc comment) rather than crashing")
+            XCTAssertEqual(project.displayStatus, .active, "nil reads as Active, the sensible default for pre-existing work")
+
+            let documents = try DocumentService.documents(for: project, in: context)
+            XCTAssertEqual(documents.count, 1)
+            XCTAssertEqual(documents.first?.id, documentID)
+            guard let document = documents.first else {
+                return XCTFail("Expected the pre-migration document to survive")
+            }
+            XCTAssertEqual(document.content, "Once upon a time...", "Existing content must survive untouched")
+            XCTAssertNil(document.currentDraftLabel, "Same lightweight-migration reasoning as Project.status")
+            XCTAssertEqual(document.displayDraftLabel, "First Draft")
+            XCTAssertTrue(document.drafts.isEmpty)
+
+            // The new entity must actually be usable post-migration, not just present.
+            let frozen = DraftService.startNewDraft(for: document, context: context)
+            try context.save()
+
+            XCTAssertEqual(DraftService.drafts(for: document).map(\.id), [frozen.id])
+            XCTAssertEqual(frozen.content, "Once upon a time...")
+            XCTAssertEqual(frozen.label, "First Draft")
+            XCTAssertEqual(document.currentDraftLabel, "Second Draft", "Any write self-heals the field to a concrete value going forward")
+        }
+    }
 }

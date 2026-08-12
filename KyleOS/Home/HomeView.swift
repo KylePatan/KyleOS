@@ -21,7 +21,7 @@ struct HomeView: View {
     @Query private var allWorkItems: [HomeService.WorkItem]
 
     @State private var selectedTab: Tab = .today
-    @State private var interruptedSession: KyleOSSchemaV7.ActiveTimerState?
+    @State private var interruptedSession: KyleOSSchemaV8.ActiveTimerState?
     @State private var hasCheckedForRecovery = false
 
     private var todayItems: [HomeService.WorkItem] {

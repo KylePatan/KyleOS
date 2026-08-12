@@ -121,4 +121,40 @@ final class ProjectPersistenceTests: XCTestCase {
         XCTAssertEqual(document.project?.id, project.id)
         XCTAssertEqual(workItem.project?.id, project.id)
     }
+
+    func testCreatingAWritingProjectStoresTypeAndDefaultsToActiveStatus() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", projectType: .tvPilot, in: context)
+        try context.save()
+
+        XCTAssertEqual(project.projectType, .tvPilot)
+        XCTAssertEqual(project.displayStatus, .active)
+    }
+
+    func testCreatingAGenericProjectLeavesTypeNil() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        try context.save()
+
+        XCTAssertNil(project.projectType, "Non-Writing projects (e.g. Foundation's Dev/ screen) shouldn't get a Writing project type")
+    }
+
+    func testSetStatusUpdatesDisplayStatusAndPersists() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", status: .idea, in: context)
+        try context.save()
+        XCTAssertEqual(project.displayStatus, .idea)
+
+        ProjectService.setStatus(project, to: .finished)
+        try context.save()
+
+        XCTAssertEqual(project.status, .finished)
+        XCTAssertEqual(project.displayStatus, .finished)
+    }
 }

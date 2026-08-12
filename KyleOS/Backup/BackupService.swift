@@ -15,12 +15,15 @@ enum BackupService {
         case sourceStoreNotFound
     }
 
+    /// Matches `PersistenceController.storeDirectory` — the real store's `KyleOS/` namespaced
+    /// location, not SwiftData's bare shared default (see that type's doc comment for why the
+    /// namespacing matters).
     static var defaultStoreDirectory: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        PersistenceController.storeDirectory
     }
 
     static var defaultBackupsDirectory: URL {
-        defaultStoreDirectory.appendingPathComponent("KyleOS/Backups", isDirectory: true)
+        defaultStoreDirectory.appendingPathComponent("Backups", isDirectory: true)
     }
 
     /// SwiftData's default (unnamed) ModelConfiguration always uses this base filename, plus

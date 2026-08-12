@@ -26,6 +26,8 @@ struct RootView: View {
             switch selection ?? .destination(.home) {
             case .destination(.home):
                 HomeView()
+            case .destination(.writing):
+                WritingHomeView()
             case .destination(let destination):
                 PlaceholderDestinationView(destination: destination)
             case .dev(.projects):

@@ -7,11 +7,11 @@ import SwiftData
 /// Never resolve a future model change by deleting the user's store (CLAUDE.md §5).
 enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self]
+        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self]
     }
 
     static var stages: [MigrationStage] {
-        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7]
+        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8]
     }
 
     /// V2 only adds a new entity (Document) and a relationship pointing at it — no existing
@@ -55,5 +55,18 @@ enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static let migrateV6toV7 = MigrationStage.lightweight(
         fromVersion: KyleOSSchemaV6.self,
         toVersion: KyleOSSchemaV7.self
+    )
+
+    /// V8 adds Draft (with a new relationship from Document) plus two new Project fields
+    /// (`projectType`, `status`) and one new Document field (`currentDraftLabel`). Unlike prior
+    /// stages, these three are genuinely new *optional* scalar attributes on already-populated
+    /// models, not new models/relationships — a stored property's `= literal` default does NOT
+    /// reliably survive lightweight migration for that shape under this SwiftData version
+    /// (confirmed by a live crash: "Passed nil for a non-optional keypath"), so all three are
+    /// Optional at the model level with a `displayX` computed fallback, not defaulted directly.
+    /// See KyleOSSchemaV8's doc comments on `Project.status`/`Document.currentDraftLabel`.
+    static let migrateV7toV8 = MigrationStage.lightweight(
+        fromVersion: KyleOSSchemaV7.self,
+        toVersion: KyleOSSchemaV8.self
     )
 }
