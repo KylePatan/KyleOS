@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import AppKit
+import UniformTypeIdentifiers
 
 /// PRD §6.6's "Prose mode for short stories and general prose" — the only in-app writing mode
 /// built this increment. Script/outline/flexible long-form modes are later increments; script
@@ -58,6 +60,13 @@ struct ProseEditorView: View {
                 }
                 .disabled(document.drafts.isEmpty)
             }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    exportPDF()
+                } label: {
+                    Label("Export PDF", systemImage: "square.and.arrow.up")
+                }
+            }
         }
         .sheet(isPresented: $isShowingDraftHistory) {
             DraftHistorySheet(document: document) { restored in
@@ -73,6 +82,20 @@ struct ProseEditorView: View {
                 try? context.save()
             }
         }
+    }
+
+    /// PRD §6.20: "Writing should support clean PDF export." Autosaves first so the export
+    /// always reflects the latest text, even mid-debounce.
+    private func exportPDF() {
+        autosave.saveImmediately {
+            DocumentService.updateContent(document, content: editorText)
+            try? context.save()
+        }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.pdf]
+        panel.nameFieldStringValue = document.title
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        try? ExportService.exportPDF(title: document.title, body: editorText, to: url)
     }
 
     private var statusBar: some View {

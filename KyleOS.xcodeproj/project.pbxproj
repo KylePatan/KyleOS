@@ -10,6 +10,7 @@
 		01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC08B1D8915E0171514F5A14 /* ProjectService.swift */; };
 		020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */; };
 		032F27B6F17FC59CC368A23E /* HomeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B76BD0DA4E4676163DF711 /* HomeService.swift */; };
+		03D44179E2B16A921189478E /* ExportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39082292F413B0865540E801 /* ExportServiceTests.swift */; };
 		0832C630D3538FB41F166A6E /* FocusTimerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7EA9D04BAF8F260ABCB478 /* FocusTimerController.swift */; };
 		0CC9DBEDD583A50ECB4D2F71 /* DocumentsDevView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55AAF6B60E824D48A2EA9D4 /* DocumentsDevView.swift */; };
 		12A2398EC9AF8FEED6F29653 /* TodayItemCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */; };
@@ -21,6 +22,7 @@
 		20BFEEC1289658640EFCC20C /* NewWritingProjectSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849994C0589224C7D03A863E /* NewWritingProjectSheet.swift */; };
 		2191A8BC94600CCDB692576C /* InterruptedSessionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8B75DB46A34A6FBEE83DB6 /* InterruptedSessionPrompt.swift */; };
 		22B73189D6C93F99B7E0DF4C /* FileReferenceResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DE6D055396E31BDEFFBE3F /* FileReferenceResolver.swift */; };
+		243CF232F0A678D058CEE3B4 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B05BC00F9041DA41AA5E74 /* ExportService.swift */; };
 		28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */; };
 		29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */; };
 		2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */; };
@@ -125,6 +127,7 @@
 		2A701BEF36396910E6ADA359 /* ActiveTimerBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerBanner.swift; sourceTree = "<group>"; };
 		2E4C4089E7FC5E791FCD907E /* KyleOSSchemaV10.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV10.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		39082292F413B0865540E801 /* ExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportServiceTests.swift; sourceTree = "<group>"; };
 		3B329BF7E07F1430773368F9 /* MonthCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthCalendarService.swift; sourceTree = "<group>"; };
 		45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutosaveController.swift; sourceTree = "<group>"; };
 		48B9D005FDD6D676804D7607 /* ActServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActServiceTests.swift; sourceTree = "<group>"; };
@@ -160,6 +163,7 @@
 		A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV7.swift; sourceTree = "<group>"; };
 		A5897E3E141CBB89EEF7E317 /* WritingHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingHomeView.swift; sourceTree = "<group>"; };
 		A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventService.swift; sourceTree = "<group>"; };
+		A9B05BC00F9041DA41AA5E74 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
 		B3481CB5346116A1D3BAD6F3 /* WorkSessionPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionPersistenceTests.swift; sourceTree = "<group>"; };
 		B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneServiceTests.swift; sourceTree = "<group>"; };
 		B57EF212EF2CA4D50F3310F5 /* SceneService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneService.swift; sourceTree = "<group>"; };
@@ -224,6 +228,7 @@
 				640BABB0947FE9B124A8C7C6 /* Backup */,
 				9E57D258F33CD5312EF25840 /* Dev */,
 				D5631A907DD2B7D07AEC3EAA /* Domain */,
+				C8FF822C3DF8F06D6CDC952A /* Export */,
 				CB7836209AAEC32AF2E04F48 /* Files */,
 				F97409F31277AD6FBFBC126A /* Home */,
 				474886536D11B067E057E2A1 /* Navigation */,
@@ -257,6 +262,7 @@
 				C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */,
 				1930638958A5B521B00B4602 /* DocumentPersistenceTests.swift */,
 				641052BB65DE3FDCA0793CFC /* DraftServiceTests.swift */,
+				39082292F413B0865540E801 /* ExportServiceTests.swift */,
 				76011B9ACA3397331B1A89A2 /* FileReferencePersistenceTests.swift */,
 				1CDF3891632379E2253D5659 /* FileReferenceResolverTests.swift */,
 				F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */,
@@ -330,6 +336,14 @@
 				252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */,
 			);
 			path = Timer;
+			sourceTree = "<group>";
+		};
+		C8FF822C3DF8F06D6CDC952A /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				A9B05BC00F9041DA41AA5E74 /* ExportService.swift */,
+			);
+			path = Export;
 			sourceTree = "<group>";
 		};
 		CB7836209AAEC32AF2E04F48 /* Files */ = {
@@ -492,6 +506,7 @@
 				BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */,
 				1865E473DFE6B7569208F40F /* DocumentPersistenceTests.swift in Sources */,
 				8740D4BCC1FB2754B41C9253 /* DraftServiceTests.swift in Sources */,
+				03D44179E2B16A921189478E /* ExportServiceTests.swift in Sources */,
 				F1FB21DD03B2DEB7FDD60265 /* FileReferencePersistenceTests.swift in Sources */,
 				B9FC67F714FAEC4F64B4E9B8 /* FileReferenceResolverTests.swift in Sources */,
 				56C54A78A73CFBB8F6C8F4AE /* FocusTimerControllerTests.swift in Sources */,
@@ -528,6 +543,7 @@
 				B97F7A629A30E355726229FE /* DocumentService.swift in Sources */,
 				0CC9DBEDD583A50ECB4D2F71 /* DocumentsDevView.swift in Sources */,
 				81EB55285C7B381763B6EFC4 /* DraftService.swift in Sources */,
+				243CF232F0A678D058CEE3B4 /* ExportService.swift in Sources */,
 				22B73189D6C93F99B7E0DF4C /* FileReferenceResolver.swift in Sources */,
 				12A8B2FBB431ED4C58C0575C /* FileReferenceService.swift in Sources */,
 				353166ABFBF7406F5F3F015A /* FinishSessionPrompt.swift in Sources */,
