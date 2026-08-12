@@ -3,7 +3,9 @@ import SwiftData
 
 /// PRD §6.4: "A writing project is a container for all related documents." Only Prose and Act
 /// Outline documents are creatable from here — Script/Scene Outline/Bible modes aren't built yet
-/// (Decision Gate A governs the script editor specifically).
+/// (Decision Gate A governs the script editor specifically). Total time reuses
+/// `HomeService.totalLoggedSeconds`, the same cumulative-across-all-WorkItems calculation Home's
+/// project cards already use (PRD §4.3: "include all logged work across the project").
 struct WritingProjectDetailView: View {
     let project: ProjectService.Project
     @Environment(\.modelContext) private var context
@@ -38,11 +40,14 @@ struct WritingProjectDetailView: View {
                 }
                 .frame(width: 160)
             }
-            if let deadline = project.deadline {
-                Text("Deadline: \(deadline.dueAt.formatted(date: .abbreviated, time: .omitted))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            HStack(spacing: 12) {
+                if let deadline = project.deadline {
+                    Text("Deadline: \(deadline.dueAt.formatted(date: .abbreviated, time: .omitted))")
+                }
+                Text("Total time: \(TimeFormatting.shortDuration(HomeService.totalLoggedSeconds(for: project)))")
             }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
     }
 

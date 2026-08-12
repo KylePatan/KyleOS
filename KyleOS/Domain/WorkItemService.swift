@@ -109,4 +109,26 @@ enum WorkItemService {
         )
         return try context.fetch(descriptor)
     }
+
+    /// PRD §6.18: "Writing documents/stages use the universal Focus Timer." Lazily finds or
+    /// creates the one Work Item that represents timed sessions on this Document, rather than
+    /// requiring the user to set one up explicitly before they can just start writing.
+    static func writingWorkItem(for document: Document, context: ModelContext) throws -> WorkItem {
+        guard let project = document.project else {
+            preconditionFailure("A Document used for Writing sessions must belong to a Project")
+        }
+        let documentID = document.id
+        let existing = try context.fetch(
+            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.document?.id == documentID })
+        ).first
+        if let existing { return existing }
+        return try createWorkItem(
+            title: document.title,
+            workspace: .writing,
+            workTypeName: document.documentType.rawValue,
+            in: project,
+            document: document,
+            context: context
+        )
+    }
 }

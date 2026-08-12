@@ -3,10 +3,14 @@ import SwiftData
 
 /// PRD §6.6's "Prose mode for short stories and general prose" — the only in-app writing mode
 /// built this increment. Script/outline/flexible long-form modes are later increments; script
-/// mode specifically waits on Decision Gate A (native editor architecture).
+/// mode specifically waits on Decision Gate A (native editor architecture). §6.18: "Writing
+/// documents/stages use the universal Focus Timer" — reuses the same shared `FocusTimerController`
+/// and `ActiveTimerBanner` Home already uses, via `WorkItemService.writingWorkItem`, rather than
+/// building separate timing logic. Untimed writing remains allowed (targetDurationMinutes: nil).
 struct ProseEditorView: View {
     let document: DocumentService.Document
     @Environment(\.modelContext) private var context
+    @Environment(FocusTimerController.self) private var timerController
 
     @State private var editorText = ""
     @State private var lastSavedAt: Date?
@@ -15,6 +19,14 @@ struct ProseEditorView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            ActiveTimerBanner()
+            if timerController.state == .idle {
+                Button("Start Timer") {
+                    guard let workItem = try? WorkItemService.writingWorkItem(for: document, context: context) else { return }
+                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                    try? context.save()
+                }
+            }
             TextEditor(text: $editorText)
                 .font(.system(.body, design: .serif))
                 .onChange(of: editorText) {
@@ -129,4 +141,5 @@ private struct DraftHistorySheet: View {
         ProseEditorView(document: document)
     }
     .modelContainer(container)
+    .environment(FocusTimerController())
 }

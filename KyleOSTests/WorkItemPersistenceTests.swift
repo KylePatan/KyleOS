@@ -4,6 +4,34 @@ import SwiftData
 
 final class WorkItemPersistenceTests: XCTestCase {
 
+    func testWritingWorkItemCreatesOneLinkedToTheDocumentOnFirstCall() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, in: context)
+        let document = DocumentService.createDocument(title: "Chapter One", type: .prose, in: project, context: context)
+
+        let workItem = try WorkItemService.writingWorkItem(for: document, context: context)
+        try context.save()
+
+        XCTAssertEqual(workItem.document?.id, document.id)
+        XCTAssertEqual(workItem.workspace, .writing)
+        XCTAssertEqual(workItem.title, "Chapter One")
+    }
+
+    func testWritingWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, in: context)
+        let document = DocumentService.createDocument(title: "Chapter One", type: .prose, in: project, context: context)
+
+        let first = try WorkItemService.writingWorkItem(for: document, context: context)
+        try context.save()
+        let second = try WorkItemService.writingWorkItem(for: document, context: context)
+
+        XCTAssertEqual(first.id, second.id)
+        XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1, "A second call must not create a duplicate")
+    }
+
     func testCreatingAWorkItemSeedsEstimateFromMatchingWorkTypeDefault() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
