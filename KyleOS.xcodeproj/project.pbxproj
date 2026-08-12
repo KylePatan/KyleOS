@@ -65,6 +65,7 @@
 		EC3FE050D3D76369D0611A36 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E659CA3986E4A2AF2FBDF9 /* BackupService.swift */; };
 		ECCA840DA9EB0FA44B181C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */; };
 		EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */; };
+		F08983CA4E1FF053BD29A2F0 /* QuickAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 522D786A6B687BD929FB976C /* QuickAddButton.swift */; };
 		F1FB21DD03B2DEB7FDD60265 /* FileReferencePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76011B9ACA3397331B1A89A2 /* FileReferencePersistenceTests.swift */; };
 		F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */; };
 		F3674B5F4ED317D2A104484A /* AllTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB94F8A6EA8F258C2656AF18 /* AllTasksView.swift */; };
@@ -104,6 +105,7 @@
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutosaveController.swift; sourceTree = "<group>"; };
 		4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV3.swift; sourceTree = "<group>"; };
+		522D786A6B687BD929FB976C /* QuickAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddButton.swift; sourceTree = "<group>"; };
 		5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultTests.swift; sourceTree = "<group>"; };
 		5D8B75DB46A34A6FBEE83DB6 /* InterruptedSessionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptedSessionPrompt.swift; sourceTree = "<group>"; };
 		5E07B579165EA51ACC58D342 /* SidebarSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarSelection.swift; sourceTree = "<group>"; };
@@ -315,6 +317,7 @@
 				F070CFB1807E813ABCC7B7DE /* FinishSessionPrompt.swift */,
 				5E8D57D0B5B87CC2EEB0705D /* HomeView.swift */,
 				5D8B75DB46A34A6FBEE83DB6 /* InterruptedSessionPrompt.swift */,
+				522D786A6B687BD929FB976C /* QuickAddButton.swift */,
 				DF53CB376ECB46AE2DF923C8 /* TimeFormatting.swift */,
 				23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */,
 			);
@@ -475,6 +478,7 @@
 				E832ACA1B33B82DDE5D13C33 /* PlannedSessionService.swift in Sources */,
 				01134AAB63A71C8DA242A66C /* ProjectService.swift in Sources */,
 				BD2BB791E75391AFCD5A2349 /* ProjectsDevView.swift in Sources */,
+				F08983CA4E1FF053BD29A2F0 /* QuickAddButton.swift in Sources */,
 				680ED53C1E3989CD253F4950 /* RootView.swift in Sources */,
 				EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */,
 				8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */,

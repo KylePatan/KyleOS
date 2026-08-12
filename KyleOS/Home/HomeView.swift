@@ -1,11 +1,11 @@
 import SwiftUI
 import SwiftData
 
-/// The real V0.1 Home Today/Priority View + All Tasks + Creative Capacity + Active Timer display
-/// (PRD §4.1/§4.2/§4.4/§4.5/§4.8). Still deliberately NOT the finished dashboard — no Quick Add
-/// or month calendar yet (separate increments). "Do not build the finished Home dashboard"
-/// (CURRENT_PHASE.md) means don't build all of §4 at once, not that no real piece of it may
-/// exist during V0.1.
+/// The real V0.1 Home Today/Priority View + All Tasks + Creative Capacity + Quick Add + Active
+/// Timer display (PRD §4.1/§4.2/§4.4/§4.5/§4.7/§4.8). Still deliberately NOT the finished
+/// dashboard — no month calendar yet (a separate increment). "Do not build the finished Home
+/// dashboard" (CURRENT_PHASE.md) means don't build all of §4 at once, not that no real piece of
+/// it may exist during V0.1.
 struct HomeView: View {
     private enum Tab: String, CaseIterable, Identifiable {
         case today = "Today"
@@ -49,6 +49,11 @@ struct HomeView: View {
             }
         }
         .navigationTitle("Home")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                QuickAddButton()
+            }
+        }
         .task {
             guard !hasCheckedForRecovery else { return }
             hasCheckedForRecovery = true
