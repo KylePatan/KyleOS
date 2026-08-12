@@ -1,15 +1,17 @@
 import SwiftUI
 import SwiftData
 
-/// The real V0.1 Home Today/Priority View + All Tasks + Creative Capacity + Quick Add + Active
-/// Timer display (PRD §4.1/§4.2/§4.4/§4.5/§4.7/§4.8). Still deliberately NOT the finished
-/// dashboard — no month calendar yet (a separate increment). "Do not build the finished Home
-/// dashboard" (CURRENT_PHASE.md) means don't build all of §4 at once, not that no real piece of
-/// it may exist during V0.1.
+/// The real V0.1 Home Today/Priority View + All Tasks + Creative Capacity + Basic Month Calendar +
+/// Quick Add + Active Timer display (PRD §4.1/§4.2/§4.4/§4.5/§4.7/§4.8, roadmap's "Basic month
+/// calendar"). Still deliberately NOT the finished dashboard and NOT the full Calendar workspace
+/// (PRD §11, still a nav placeholder) — cascade rescheduling (§4.6) is explicitly V0.7. "Do not
+/// build the finished Home dashboard" (CURRENT_PHASE.md) means don't build all of §4 at once, not
+/// that no real piece of it may exist during V0.1.
 struct HomeView: View {
     private enum Tab: String, CaseIterable, Identifiable {
         case today = "Today"
         case allTasks = "All Tasks"
+        case calendar = "Calendar"
         var id: String { rawValue }
     }
 
@@ -39,13 +41,15 @@ struct HomeView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding(.horizontal)
-            .frame(maxWidth: 300)
+            .frame(maxWidth: 420)
 
             switch selectedTab {
             case .today:
                 todayContent
             case .allTasks:
                 AllTasksView()
+            case .calendar:
+                MonthCalendarView()
             }
         }
         .navigationTitle("Home")
