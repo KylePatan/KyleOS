@@ -64,6 +64,7 @@
 		EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */; };
 		F1FB21DD03B2DEB7FDD60265 /* FileReferencePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76011B9ACA3397331B1A89A2 /* FileReferencePersistenceTests.swift */; };
 		F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */; };
+		F3674B5F4ED317D2A104484A /* AllTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB94F8A6EA8F258C2656AF18 /* AllTasksView.swift */; };
 		F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */; };
 		F76C9254BED6894DDA2CA598 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8D57D0B5B87CC2EEB0705D /* HomeView.swift */; };
 		FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4013FEDF4F30E962B4F6F8 /* ActiveTimerStateService.swift */; };
@@ -135,6 +136,7 @@
 		D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRecoveryServiceTests.swift; sourceTree = "<group>"; };
 		D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV5.swift; sourceTree = "<group>"; };
 		D9DBB03886DE8A4DF8268447 /* ProjectsDevView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsDevView.swift; sourceTree = "<group>"; };
+		DB94F8A6EA8F258C2656AF18 /* AllTasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTasksView.swift; sourceTree = "<group>"; };
 		DF53CB376ECB46AE2DF923C8 /* TimeFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatting.swift; sourceTree = "<group>"; };
 		E3522C8B1A80D72FCC6071D2 /* FocusTimerSessionLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerSessionLength.swift; sourceTree = "<group>"; };
 		F070CFB1807E813ABCC7B7DE /* FinishSessionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishSessionPrompt.swift; sourceTree = "<group>"; };
@@ -300,6 +302,7 @@
 			isa = PBXGroup;
 			children = (
 				2A701BEF36396910E6ADA359 /* ActiveTimerBanner.swift */,
+				DB94F8A6EA8F258C2656AF18 /* AllTasksView.swift */,
 				F070CFB1807E813ABCC7B7DE /* FinishSessionPrompt.swift */,
 				5E8D57D0B5B87CC2EEB0705D /* HomeView.swift */,
 				5D8B75DB46A34A6FBEE83DB6 /* InterruptedSessionPrompt.swift */,
@@ -430,6 +433,7 @@
 			files = (
 				C05EA5601A5BFEE75C50BC2F /* ActiveTimerBanner.swift in Sources */,
 				FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */,
+				F3674B5F4ED317D2A104484A /* AllTasksView.swift in Sources */,
 				C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */,
 				EC3FE050D3D76369D0611A36 /* BackupService.swift in Sources */,
 				29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */,

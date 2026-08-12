@@ -1,17 +1,23 @@
 import SwiftUI
 import SwiftData
 
-/// The real V0.1 Home Today/Priority View + Active Timer display (PRD §4.1/§4.2/§4.8). Still
-/// deliberately NOT the finished dashboard — no All Tasks drag-reorder, Quick Add, or month
-/// calendar yet (those are separate increments). "Do not build the finished Home dashboard"
-/// (CURRENT_PHASE.md) means don't build all of §4 at once, not that no real piece of it may
-/// exist during V0.1.
+/// The real V0.1 Home Today/Priority View + All Tasks + Active Timer display (PRD §4.1/§4.2/
+/// §4.5/§4.8). Still deliberately NOT the finished dashboard — no Quick Add or month calendar
+/// yet (separate increments). "Do not build the finished Home dashboard" (CURRENT_PHASE.md)
+/// means don't build all of §4 at once, not that no real piece of it may exist during V0.1.
 struct HomeView: View {
+    private enum Tab: String, CaseIterable, Identifiable {
+        case today = "Today"
+        case allTasks = "All Tasks"
+        var id: String { rawValue }
+    }
+
     @Environment(\.modelContext) private var context
     @Environment(FocusTimerController.self) private var timerController
 
     @Query private var allWorkItems: [HomeService.WorkItem]
 
+    @State private var selectedTab: Tab = .today
     @State private var interruptedSession: KyleOSSchemaV7.ActiveTimerState?
     @State private var hasCheckedForRecovery = false
 
@@ -20,25 +26,26 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                ActiveTimerBanner()
+        VStack(alignment: .leading, spacing: 16) {
+            ActiveTimerBanner()
+                .padding([.horizontal, .top])
 
-                Text("Today")
-                    .font(.title2)
-                    .bold()
-
-                if todayItems.isEmpty {
-                    // PRD §4.9: an empty/blocked day isn't failure — say so plainly.
-                    Text("Nothing scheduled. Enjoy the break, or start something from Projects.")
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(todayItems) { item in
-                        TodayItemCard(workItem: item)
-                    }
+            Picker("", selection: $selectedTab) {
+                ForEach(Tab.allCases) { tab in
+                    Text(tab.rawValue).tag(tab)
                 }
             }
-            .padding()
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(.horizontal)
+            .frame(maxWidth: 300)
+
+            switch selectedTab {
+            case .today:
+                todayContent
+            case .allTasks:
+                AllTasksView()
+            }
         }
         .navigationTitle("Home")
         .task {
@@ -54,6 +61,23 @@ struct HomeView: View {
             InterruptedSessionPrompt(state: state) {
                 interruptedSession = nil
             }
+        }
+    }
+
+    private var todayContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                if todayItems.isEmpty {
+                    // PRD §4.9: an empty/blocked day isn't failure — say so plainly.
+                    Text("Nothing scheduled. Enjoy the break, or start something from Projects.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(todayItems) { item in
+                        TodayItemCard(workItem: item)
+                    }
+                }
+            }
+            .padding()
         }
     }
 }
