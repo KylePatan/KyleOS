@@ -4,9 +4,9 @@ import SwiftData
 /// Reusable domain actions for Projects — Create/Rename/Archive/Restore — kept out of views
 /// per CLAUDE.md §4 so later modules (Writing, Sketches, ...) call the same logic UI ever does.
 enum ProjectService {
-    typealias Project = KyleOSSchemaV8.Project
-    typealias WritingProjectType = KyleOSSchemaV8.WritingProjectType
-    typealias ProjectStatus = KyleOSSchemaV8.ProjectStatus
+    typealias Project = KyleOSSchemaV9.Project
+    typealias WritingProjectType = KyleOSSchemaV9.WritingProjectType
+    typealias ProjectStatus = KyleOSSchemaV9.ProjectStatus
 
     @discardableResult
     static func createProject(

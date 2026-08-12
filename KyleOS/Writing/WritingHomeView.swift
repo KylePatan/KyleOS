@@ -1,10 +1,10 @@
 import SwiftUI
 import SwiftData
 
-/// V0.2 Writing's first increment (PRD §6.3): shows active, finished, and idea/not-started
-/// Writing Projects. Only the container/list layer + a prose editor exist yet — script mode,
-/// layered outlining, and split view are later increments (Decision Gate A governs the script
-/// editor specifically, see docs/PHASE_DECISION_REGISTER.md).
+/// V0.2 Writing (PRD §6.3): shows active, finished, and idea/not-started Writing Projects.
+/// Container/list layer, prose editor, and the High-Level Act Outline (§6.11) exist so far —
+/// Scene Outline, script mode, and side-by-side split view are later increments (Decision Gate A
+/// governs the script editor specifically, see docs/PHASE_DECISION_REGISTER.md).
 struct WritingHomeView: View {
     // SwiftData's #Predicate can't reliably evaluate a keypath into an enum-typed property
     // (confirmed live: even a plain `!= nil` check on `projectType` crashed with "keypath
@@ -60,7 +60,12 @@ struct WritingHomeView: View {
             }
             .navigationDestination(for: DocumentRoute.self) { route in
                 if let document = allWritingProjects.flatMap(\.documents).first(where: { $0.persistentModelID == route.id }) {
-                    ProseEditorView(document: document)
+                    switch document.documentType {
+                    case .actOutline:
+                        ActOutlineView(document: document)
+                    default:
+                        ProseEditorView(document: document)
+                    }
                 }
             }
             .toolbar {

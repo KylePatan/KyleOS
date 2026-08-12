@@ -9,8 +9,8 @@ import SwiftData
 /// shared underlying data rather than maintaining a separate duplicate task database" (§4.1) —
 /// no new persisted model, just reads over WorkItem/Deadline/WorkSession.
 enum HomeService {
-    typealias WorkItem = KyleOSSchemaV8.WorkItem
-    typealias Project = KyleOSSchemaV8.Project
+    typealias WorkItem = KyleOSSchemaV9.WorkItem
+    typealias Project = KyleOSSchemaV9.Project
 
     /// Active (not completed) Work Items, nearest hard deadline first (items with no deadline
     /// sort last), then higher manual priority first. A pure function over an already-fetched

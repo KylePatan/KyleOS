@@ -1,8 +1,8 @@
 import SwiftUI
 import SwiftData
 
-/// PRD §6.4: "A writing project is a container for all related documents." Only Prose documents
-/// are creatable from here this increment — Script/Outline/Bible modes aren't built yet
+/// PRD §6.4: "A writing project is a container for all related documents." Only Prose and Act
+/// Outline documents are creatable from here — Script/Scene Outline/Bible modes aren't built yet
 /// (Decision Gate A governs the script editor specifically).
 struct WritingProjectDetailView: View {
     let project: ProjectService.Project
@@ -51,11 +51,14 @@ struct WritingProjectDetailView: View {
             HStack {
                 Text("Documents").font(.headline)
                 Spacer()
-                Button {
-                    addProseDocument()
+                Menu {
+                    Button("Prose", action: addProseDocument)
+                    Button("Act Outline", action: addActOutlineDocument)
                 } label: {
                     Label("New Document", systemImage: "plus")
                 }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
             }
             if project.documents.isEmpty {
                 Text("No documents yet. Outline stages are never mandatory — start writing whenever you're ready.")
@@ -79,14 +82,24 @@ struct WritingProjectDetailView: View {
 
     private func addProseDocument() {
         let ordinal = project.documents.filter { $0.documentType == .prose }.count + 1
-        let document = DocumentService.createDocument(
+        DocumentService.createDocument(
             title: ordinal == 1 ? "Untitled" : "Untitled \(ordinal)",
             type: .prose,
             in: project,
             context: context
         )
         try? context.save()
-        _ = document
+    }
+
+    private func addActOutlineDocument() {
+        let ordinal = project.documents.filter { $0.documentType == .actOutline }.count + 1
+        DocumentService.createDocument(
+            title: ordinal == 1 ? "Act Outline" : "Act Outline \(ordinal)",
+            type: .actOutline,
+            in: project,
+            context: context
+        )
+        try? context.save()
     }
 }
 

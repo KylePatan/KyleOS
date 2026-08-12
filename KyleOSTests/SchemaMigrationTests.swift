@@ -446,4 +446,62 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(document.currentDraftLabel, "Second Draft", "Any write self-heals the field to a concrete value going forward")
         }
     }
+
+    func testStoreWrittenUnderV8OpensCleanlyAsV9WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV8Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        let documentID: UUID
+        // Write a store using ONLY the V8 schema shape — Act does not exist yet, Document has no
+        // `acts` relationship.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV8.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV8.Project(title: "Pre-V9 Project", projectType: .tvPilot)
+            projectID = project.id
+            context.insert(project)
+            let document = KyleOSSchemaV8.Document(title: "Act Outline", documentType: .actOutline, project: project)
+            documentID = document.id
+            context.insert(document)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            XCTAssertEqual(projects.first?.id, projectID)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+
+            let documents = try DocumentService.documents(for: project, in: context)
+            XCTAssertEqual(documents.count, 1)
+            XCTAssertEqual(documents.first?.id, documentID)
+            guard let document = documents.first else {
+                return XCTFail("Expected the pre-migration document to survive")
+            }
+            XCTAssertTrue(document.acts.isEmpty)
+
+            // The new entity must actually be usable post-migration, not just present.
+            let act = ActService.createAct(title: "Act One", in: document, context: context)
+            try context.save()
+
+            XCTAssertEqual(ActService.acts(for: document).map(\.id), [act.id])
+        }
+    }
 }
