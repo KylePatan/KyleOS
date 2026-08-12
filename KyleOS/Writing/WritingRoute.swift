@@ -10,3 +10,7 @@ struct ProjectRoute: Hashable {
 struct DocumentRoute: Hashable {
     let id: PersistentIdentifier
 }
+
+struct ActRoute: Hashable {
+    let id: PersistentIdentifier
+}

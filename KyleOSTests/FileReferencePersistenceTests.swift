@@ -74,7 +74,7 @@ final class FileReferencePersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV9.FileReference>())
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV10.FileReference>())
         XCTAssertEqual(remaining.count, 1, "Deleting a Project must not destroy a File Reference to real external media")
         XCTAssertEqual(remaining.first?.id, reference.id)
         XCTAssertNil(remaining.first?.project)
@@ -108,7 +108,7 @@ final class FileReferencePersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let refs = try context.fetch(FetchDescriptor<KyleOSSchemaV9.FileReference>())
+            let refs = try context.fetch(FetchDescriptor<KyleOSSchemaV10.FileReference>())
             XCTAssertEqual(refs.count, 1)
             XCTAssertEqual(refs.first?.id, referenceID)
             XCTAssertNotNil(refs.first?.bookmarkData, "The bookmark itself must survive a restart")

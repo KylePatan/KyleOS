@@ -106,7 +106,7 @@ final class WorkSessionPersistenceTests: XCTestCase {
         context.delete(workItem)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV9.WorkSession>())
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV10.WorkSession>())
         XCTAssertEqual(remaining.count, 0, "Deleting a Work Item must cascade-delete its Work Sessions")
     }
 
@@ -146,7 +146,7 @@ final class WorkSessionPersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let sessions = try context.fetch(FetchDescriptor<KyleOSSchemaV9.WorkSession>())
+            let sessions = try context.fetch(FetchDescriptor<KyleOSSchemaV10.WorkSession>())
             XCTAssertEqual(sessions.count, 1)
             XCTAssertEqual(sessions.first?.id, sessionID)
             XCTAssertEqual(sessions.first?.activeDurationSeconds, 2400)

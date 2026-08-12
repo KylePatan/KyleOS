@@ -42,6 +42,7 @@
 		5787E7930CD832EEDD0B609B /* ActOutlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19607CC2ADCAD7D10A5947BE /* ActOutlineView.swift */; };
 		5D9E935642D80AD91D348AEB /* WorkItemPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */; };
 		611611949E3B2EC9139C40ED /* HomeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D6194C1261A3FE3D72A7E0 /* HomeServiceTests.swift */; };
+		62EDCD61FE258B4E58A006D2 /* SceneListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DC9236620E3CC2F2D17E65 /* SceneListView.swift */; };
 		66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */; };
 		67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660BC2802312A49BFFD14B72 /* KyleOSApp.swift */; };
 		680ED53C1E3989CD253F4950 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2245AF51F43F2E8BDD6097CC /* RootView.swift */; };
@@ -71,9 +72,11 @@
 		C05EA5601A5BFEE75C50BC2F /* ActiveTimerBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A701BEF36396910E6ADA359 /* ActiveTimerBanner.swift */; };
 		C0C06664776E9BA5A1EBD793 /* ProseEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927D2BFE0A22A5B5FCFF5CA0 /* ProseEditorView.swift */; };
 		C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */; };
+		C5B1E662BE16444ED83FD3DF /* KyleOSSchemaV10.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4C4089E7FC5E791FCD907E /* KyleOSSchemaV10.swift */; };
 		C5F7ADB03EAAEEAFD09A7786 /* KyleOSSchemaV9.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8838F5790C0503AC9836FE8 /* KyleOSSchemaV9.swift */; };
 		C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */; };
 		D3E04B6C451A896E257D3E33 /* KyleOSSchemaV7.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */; };
+		D9C432D80F6A9A270C76F2A9 /* SceneService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57EF212EF2CA4D50F3310F5 /* SceneService.swift */; };
 		E11770EA10A8A94105FD80B4 /* MonthCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B329BF7E07F1430773368F9 /* MonthCalendarService.swift */; };
 		E832ACA1B33B82DDE5D13C33 /* PlannedSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9A5C83517F88DE4D86E509 /* PlannedSessionService.swift */; };
 		EC3FE050D3D76369D0611A36 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E659CA3986E4A2AF2FBDF9 /* BackupService.swift */; };
@@ -87,6 +90,7 @@
 		F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */; };
 		F76C9254BED6894DDA2CA598 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8D57D0B5B87CC2EEB0705D /* HomeView.swift */; };
 		FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4013FEDF4F30E962B4F6F8 /* ActiveTimerStateService.swift */; };
+		FDC29563036BDA9019F9DD08 /* SceneServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,6 +123,7 @@
 		27D6194C1261A3FE3D72A7E0 /* HomeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeServiceTests.swift; sourceTree = "<group>"; };
 		28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemPersistenceTests.swift; sourceTree = "<group>"; };
 		2A701BEF36396910E6ADA359 /* ActiveTimerBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerBanner.swift; sourceTree = "<group>"; };
+		2E4C4089E7FC5E791FCD907E /* KyleOSSchemaV10.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV10.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3B329BF7E07F1430773368F9 /* MonthCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthCalendarService.swift; sourceTree = "<group>"; };
 		45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutosaveController.swift; sourceTree = "<group>"; };
@@ -140,6 +145,7 @@
 		83F94DC097B024E09365AC92 /* DeadlineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineService.swift; sourceTree = "<group>"; };
 		849994C0589224C7D03A863E /* NewWritingProjectSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWritingProjectSheet.swift; sourceTree = "<group>"; };
 		84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedSessionPersistenceTests.swift; sourceTree = "<group>"; };
+		85DC9236620E3CC2F2D17E65 /* SceneListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneListView.swift; sourceTree = "<group>"; };
 		8699CAAF2060D7228C0250A7 /* ActService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActService.swift; sourceTree = "<group>"; };
 		86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerStateServiceTests.swift; sourceTree = "<group>"; };
 		89B76BD0DA4E4676163DF711 /* HomeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeService.swift; sourceTree = "<group>"; };
@@ -155,6 +161,8 @@
 		A5897E3E141CBB89EEF7E317 /* WritingHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingHomeView.swift; sourceTree = "<group>"; };
 		A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventService.swift; sourceTree = "<group>"; };
 		B3481CB5346116A1D3BAD6F3 /* WorkSessionPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionPersistenceTests.swift; sourceTree = "<group>"; };
+		B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneServiceTests.swift; sourceTree = "<group>"; };
+		B57EF212EF2CA4D50F3310F5 /* SceneService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneService.swift; sourceTree = "<group>"; };
 		B8838F5790C0503AC9836FE8 /* KyleOSSchemaV9.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV9.swift; sourceTree = "<group>"; };
 		B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceTests.swift; sourceTree = "<group>"; };
 		BB76812141269FB271CEAC48 /* FileReferenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferenceService.swift; sourceTree = "<group>"; };
@@ -200,6 +208,7 @@
 				19607CC2ADCAD7D10A5947BE /* ActOutlineView.swift */,
 				849994C0589224C7D03A863E /* NewWritingProjectSheet.swift */,
 				927D2BFE0A22A5B5FCFF5CA0 /* ProseEditorView.swift */,
+				85DC9236620E3CC2F2D17E65 /* SceneListView.swift */,
 				A5897E3E141CBB89EEF7E317 /* WritingHomeView.swift */,
 				70C398E983030FD58708ACD3 /* WritingProjectDetailView.swift */,
 				9C03488FFD5B66DD40893E94 /* WritingRoute.swift */,
@@ -255,6 +264,7 @@
 				CB5A12EDF34A5FF515C0D8DA /* MonthCalendarServiceTests.swift */,
 				84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */,
 				B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */,
+				B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */,
 				C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */,
 				044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */,
 				D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */,
@@ -286,6 +296,7 @@
 				A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */,
 				6D985C2961227F5700E44113 /* KyleOSSchemaV8.swift */,
 				B8838F5790C0503AC9836FE8 /* KyleOSSchemaV9.swift */,
+				2E4C4089E7FC5E791FCD907E /* KyleOSSchemaV10.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -343,6 +354,7 @@
 				3B329BF7E07F1430773368F9 /* MonthCalendarService.swift */,
 				9D9A5C83517F88DE4D86E509 /* PlannedSessionService.swift */,
 				BC08B1D8915E0171514F5A14 /* ProjectService.swift */,
+				B57EF212EF2CA4D50F3310F5 /* SceneService.swift */,
 				CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */,
 				0729CE85464C6F1BDF375A30 /* WorkItemService.swift */,
 				F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */,
@@ -487,6 +499,7 @@
 				2F877317691F404F62173786 /* MonthCalendarServiceTests.swift in Sources */,
 				6E82854BA860A44FC52ADF4B /* PlannedSessionPersistenceTests.swift in Sources */,
 				852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */,
+				FDC29563036BDA9019F9DD08 /* SceneServiceTests.swift in Sources */,
 				193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */,
 				020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */,
 				3F24A4975186AE59CB1B33CC /* TimerRecoveryServiceTests.swift in Sources */,
@@ -526,6 +539,7 @@
 				67825D03AECE7E108CB084CB /* KyleOSApp.swift in Sources */,
 				3F165D1B067D4E3A55FE90F4 /* KyleOSMigrationPlan.swift in Sources */,
 				66D7AC0F90542379089813AF /* KyleOSSchemaV1.swift in Sources */,
+				C5B1E662BE16444ED83FD3DF /* KyleOSSchemaV10.swift in Sources */,
 				F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */,
 				3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */,
 				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,
@@ -545,6 +559,8 @@
 				C0C06664776E9BA5A1EBD793 /* ProseEditorView.swift in Sources */,
 				F08983CA4E1FF053BD29A2F0 /* QuickAddButton.swift in Sources */,
 				680ED53C1E3989CD253F4950 /* RootView.swift in Sources */,
+				62EDCD61FE258B4E58A006D2 /* SceneListView.swift in Sources */,
+				D9C432D80F6A9A270C76F2A9 /* SceneService.swift in Sources */,
 				EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */,
 				8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */,
 				A5B10545D2035CB9E2499AF5 /* SidebarSelection.swift in Sources */,

@@ -81,6 +81,10 @@ private struct ActRow: View {
                         ActService.updateSynopsis(act, synopsis: synopsis)
                         try? context.save()
                     }
+                NavigationLink(value: ActRoute(id: act.persistentModelID)) {
+                    Text("\(act.scenes.count) scene\(act.scenes.count == 1 ? "" : "s")")
+                        .font(.caption)
+                }
             }
             Spacer()
             Button(role: .destructive, action: onDelete) {
