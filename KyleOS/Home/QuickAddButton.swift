@@ -1,11 +1,11 @@
 import SwiftUI
 import SwiftData
 
-/// PRD §4.7: "Home should provide a simple + Add action for quick capture." Only 3 of the PRD's
-/// 6 suggested options are wired up in V0.1 — Task, Calendar Event, Writing Project. Joke Idea,
-/// Clip, and Gig all belong to modules that don't exist yet (Stand Up/Clips aren't built), so
-/// those options would just be dead menu items pointing at nothing; add them when those modules
-/// are actually built.
+/// PRD §4.7: "Home should provide a simple + Add action for quick capture." Task, Calendar
+/// Event, Writing Project, and (per §7.3: "Home's + Add menu should also support quick Joke Idea
+/// capture") Joke Idea are wired up. Clip and Gig still belong to modules that don't exist yet
+/// (Clips isn't built), so those options would just be dead menu items pointing at nothing; add
+/// them when that module is actually built.
 struct QuickAddButton: View {
     @State private var activeSheet: QuickAddKind?
 
@@ -14,6 +14,7 @@ struct QuickAddButton: View {
             Button("Task") { activeSheet = .task }
             Button("Calendar Event") { activeSheet = .calendarEvent }
             Button("Writing Project") { activeSheet = .project }
+            Button("Joke Idea") { activeSheet = .jokeIdea }
         } label: {
             Label("Add", systemImage: "plus.circle")
         }
@@ -26,7 +27,7 @@ struct QuickAddButton: View {
 }
 
 private enum QuickAddKind: String, Identifiable {
-    case task, calendarEvent, project
+    case task, calendarEvent, project, jokeIdea
     var id: String { rawValue }
 }
 
@@ -58,6 +59,9 @@ private struct QuickAddSheet: View {
     // Writing Project fields
     @State private var projectTitle = ""
 
+    // Joke Idea fields
+    @State private var jokeText = ""
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
@@ -67,6 +71,7 @@ private struct QuickAddSheet: View {
             case .task: taskForm
             case .calendarEvent: calendarEventForm
             case .project: projectForm
+            case .jokeIdea: jokeIdeaForm
             }
 
             HStack {
@@ -86,6 +91,7 @@ private struct QuickAddSheet: View {
         case .task: return "Quick Add — Task"
         case .calendarEvent: return "Quick Add — Calendar Event"
         case .project: return "Quick Add — Writing Project"
+        case .jokeIdea: return "Quick Add — Joke Idea"
         }
     }
 
@@ -99,6 +105,8 @@ private struct QuickAddSheet: View {
             return eventDurationMinutes > 0
         case .project:
             return !projectTitle.trimmingCharacters(in: .whitespaces).isEmpty
+        case .jokeIdea:
+            return !jokeText.trimmingCharacters(in: .whitespaces).isEmpty
         }
     }
 
@@ -137,6 +145,10 @@ private struct QuickAddSheet: View {
         TextField("Title", text: $projectTitle)
     }
 
+    private var jokeIdeaForm: some View {
+        TextField("Idea text", text: $jokeText, axis: .vertical)
+    }
+
     private func add() {
         switch kind {
         case .task:
@@ -158,6 +170,8 @@ private struct QuickAddSheet: View {
             )
         case .project:
             ProjectService.createProject(title: projectTitle.trimmingCharacters(in: .whitespaces), in: context)
+        case .jokeIdea:
+            JokeService.quickCapture(text: jokeText.trimmingCharacters(in: .whitespaces), context: context)
         }
         try? context.save()
         dismiss()

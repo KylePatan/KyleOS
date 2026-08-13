@@ -28,6 +28,8 @@ struct RootView: View {
                 HomeView()
             case .destination(.writing):
                 WritingHomeView()
+            case .destination(.standUp):
+                JokeBoardView()
             case .destination(let destination):
                 PlaceholderDestinationView(destination: destination)
             case .dev(.projects):

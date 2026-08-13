@@ -6,7 +6,7 @@ import SwiftData
 /// is independently testable — this is the piece PRD's "Local File References" note wants
 /// "tested early in Foundation."
 enum FileReferenceResolver {
-    typealias FileReference = KyleOSSchemaV12.FileReference
+    typealias FileReference = KyleOSSchemaV13.FileReference
 
     enum Resolution: Equatable {
         case available(path: String)

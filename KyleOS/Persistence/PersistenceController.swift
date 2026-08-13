@@ -4,7 +4,7 @@ import SwiftData
 /// Owns the SwiftData stack (schema + migration plan + container creation) as its own
 /// architectural boundary, kept out of views and domain logic per CLAUDE.md §4.
 enum PersistenceController {
-    static let schema = Schema(versionedSchema: KyleOSSchemaV12.self)
+    static let schema = Schema(versionedSchema: KyleOSSchemaV13.self)
 
     /// Namespaced under a `KyleOS/` subdirectory rather than SwiftData's bare, unnamed default
     /// location. Kyle OS isn't sandboxed yet (deliberately, Decision Gate E), which means an

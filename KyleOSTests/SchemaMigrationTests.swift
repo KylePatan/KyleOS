@@ -678,4 +678,48 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(ScriptBlockService.blocks(for: document).map(\.text), ["INT. DINER - DAY"])
         }
     }
+
+    func testStoreWrittenUnderV12OpensCleanlyAsV13WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV12Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        // Write a store using ONLY the V12 schema shape — Joke does not exist yet. Joke has no
+        // relationship to any existing model, so this test's job is mainly confirming unrelated
+        // data survives a migration stage that adds a wholly independent new model.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV12.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV12.Project(title: "Pre-V13 Project")
+            projectID = project.id
+            context.insert(project)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            XCTAssertEqual(projects.first?.id, projectID)
+
+            // The new entity must actually be usable post-migration, not just present.
+            let joke = JokeService.quickCapture(text: "A brand new joke.", context: context)
+            try context.save()
+
+            XCTAssertEqual(JokeService.jokes(withStatus: .ideas, in: context).map(\.id), [joke.id])
+        }
+    }
 }
