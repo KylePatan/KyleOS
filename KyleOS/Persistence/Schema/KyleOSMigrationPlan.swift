@@ -7,11 +7,11 @@ import SwiftData
 /// Never resolve a future model change by deleting the user's store (CLAUDE.md §5).
 enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self, KyleOSSchemaV14.self, KyleOSSchemaV15.self, KyleOSSchemaV16.self, KyleOSSchemaV17.self, KyleOSSchemaV18.self, KyleOSSchemaV19.self]
+        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self, KyleOSSchemaV14.self, KyleOSSchemaV15.self, KyleOSSchemaV16.self, KyleOSSchemaV17.self, KyleOSSchemaV18.self, KyleOSSchemaV19.self, KyleOSSchemaV20.self]
     }
 
     static var stages: [MigrationStage] {
-        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13, migrateV13toV14, migrateV14toV15, migrateV15toV16, migrateV16toV17, migrateV17toV18, migrateV18toV19]
+        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13, migrateV13toV14, migrateV14toV15, migrateV15toV16, migrateV16toV17, migrateV17toV18, migrateV18toV19, migrateV19toV20]
     }
 
     /// V2 only adds a new entity (Document) and a relationship pointing at it — no existing
@@ -151,5 +151,13 @@ enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static let migrateV18toV19 = MigrationStage.lightweight(
         fromVersion: KyleOSSchemaV18.self,
         toVersion: KyleOSSchemaV19.self
+    )
+
+    /// V20 adds Source and Clip (new models, with new relationships from Clip to Source/Joke/
+    /// Chunk and a new plain field on FileReference) — all new models/relationship arrays/plain
+    /// optional fields, the same safe additive shape as every stage except V8.
+    static let migrateV19toV20 = MigrationStage.lightweight(
+        fromVersion: KyleOSSchemaV19.self,
+        toVersion: KyleOSSchemaV20.self
     )
 }

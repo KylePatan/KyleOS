@@ -5,7 +5,7 @@ import SwiftData
 /// offer resume/end/discard. This step provides the three actions; the actual "ask the user"
 /// prompt is a UI concern for whichever screen eventually hosts the real timer.
 enum TimerRecoveryService {
-    typealias ActiveTimerState = KyleOSSchemaV19.ActiveTimerState
+    typealias ActiveTimerState = KyleOSSchemaV20.ActiveTimerState
 
     static func checkForInterruptedSession(in context: ModelContext) throws -> ActiveTimerState? {
         try ActiveTimerStateService.interruptedSessions(in: context).first

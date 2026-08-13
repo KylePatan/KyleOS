@@ -30,6 +30,8 @@ struct RootView: View {
                 WritingHomeView()
             case .destination(.standUp):
                 StandUpHomeView()
+            case .destination(.clips):
+                ClipsHomeView()
             case .destination(let destination):
                 PlaceholderDestinationView(destination: destination)
             case .dev(.projects):

@@ -1015,4 +1015,54 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(joke.workItems.map(\.id), [workItem.id])
         }
     }
+
+    func testStoreWrittenUnderV19OpensCleanlyAsV20WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV19Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let jokeID: UUID
+        // Write a store using ONLY the V19 schema shape — Source/Clip don't exist yet, Joke has
+        // no clipAppearances.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV19.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let joke = KyleOSSchemaV19.Joke(text: "Pre-V20 joke", order: 0)
+            jokeID = joke.id
+            context.insert(joke)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let jokes = try context.fetch(FetchDescriptor<JokeService.Joke>())
+            XCTAssertEqual(jokes.count, 1)
+            guard let joke = jokes.first(where: { $0.id == jokeID }) else {
+                return XCTFail("Expected the pre-migration joke to survive")
+            }
+            XCTAssertTrue(joke.clipAppearances.isEmpty, "New relationship array should default to empty, not crash or fabricate data")
+
+            // The new entities must actually be usable post-migration, not just present.
+            let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+            let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+            ClipService.linkJoke(clip, to: joke)
+            try context.save()
+
+            XCTAssertEqual(clip.source?.id, source.id)
+            XCTAssertEqual(clip.joke?.id, jokeID)
+            XCTAssertEqual(joke.clipAppearances.map(\.id), [clip.id])
+        }
+    }
 }
