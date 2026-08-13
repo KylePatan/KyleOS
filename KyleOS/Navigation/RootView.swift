@@ -32,6 +32,8 @@ struct RootView: View {
                 StandUpHomeView()
             case .destination(.clips):
                 ClipsHomeView()
+            case .destination(.sketches):
+                SketchBoardView()
             case .destination(let destination):
                 PlaceholderDestinationView(destination: destination)
             case .dev(.projects):

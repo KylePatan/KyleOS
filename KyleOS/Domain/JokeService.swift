@@ -5,8 +5,8 @@ import SwiftData
 /// §4. `order` positions a Joke within its current status column — the same "plain ascending
 /// index, renumber on delete/move" pattern ActService/SceneService already established.
 enum JokeService {
-    typealias Joke = KyleOSSchemaV21.Joke
-    typealias JokeStatus = KyleOSSchemaV21.JokeStatus
+    typealias Joke = KyleOSSchemaV22.Joke
+    typealias JokeStatus = KyleOSSchemaV22.JokeStatus
 
     /// PRD §7.3: "+ Joke Idea should require only the idea text. A short title and additional
     /// detail can be added later."

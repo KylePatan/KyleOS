@@ -32,7 +32,9 @@
 		243CF232F0A678D058CEE3B4 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B05BC00F9041DA41AA5E74 /* ExportService.swift */; };
 		252B55FA286040385CE319DF /* ScriptBlockServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BDD98234E1607C97ADCA2D0 /* ScriptBlockServiceTests.swift */; };
 		25948435255141F199AC1872 /* KyleOSSchemaV19.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */; };
+		262EF5371EDF0B42E677F82C /* SketchBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD25AFAA1F4A7C9234D63D1 /* SketchBoardView.swift */; };
 		28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */; };
+		29090345C4C5C8513953AFC7 /* SketchProductionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC806CFAA90C92159C5BD2 /* SketchProductionServiceTests.swift */; };
 		29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */; };
 		2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */; };
 		2BAABA3A1CFB7F9AF5676567 /* JokeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02CA4026D19A121892F2FB4 /* JokeService.swift */; };
@@ -73,6 +75,7 @@
 		80EAE83E7EE0097A2D6CF202 /* CreativeCapacityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D7849258563EBED16DAA991 /* CreativeCapacityWidget.swift */; };
 		81EB55285C7B381763B6EFC4 /* DraftService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1758113B2ED3EDEEF682144C /* DraftService.swift */; };
 		852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */; };
+		85C488F0D114EF9397663D23 /* SketchProductionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25AB6E3B8BAFED8E629DBD01 /* SketchProductionService.swift */; };
 		8740D4BCC1FB2754B41C9253 /* DraftServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641052BB65DE3FDCA0793CFC /* DraftServiceTests.swift */; };
 		88C2227DB8EAA8D40E124331 /* SourceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C08B38393B95469BC468618D /* SourceDetailView.swift */; };
 		8AA271F45558077C103A36ED /* WorkSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */; };
@@ -134,6 +137,7 @@
 		F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */; };
 		F76C9254BED6894DDA2CA598 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8D57D0B5B87CC2EEB0705D /* HomeView.swift */; };
 		FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4013FEDF4F30E962B4F6F8 /* ActiveTimerStateService.swift */; };
+		FCE5195B792BD8646AA80253 /* KyleOSSchemaV22.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15224FB43759F4D958E53F9C /* KyleOSSchemaV22.swift */; };
 		FD6CDCB8E487687EA35A4149 /* KyleOSSchemaV20.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6ED48BAF8D9BAF6D289699 /* KyleOSSchemaV20.swift */; };
 		FDC29563036BDA9019F9DD08 /* SceneServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */; };
 /* End PBXBuildFile section */
@@ -158,6 +162,7 @@
 		0E32DBF93F3191403E561ABD /* WorkTypeDefaultService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultService.swift; sourceTree = "<group>"; };
 		108DAD9FC4FE4F4E840A624E /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
 		11711CB53AB95183CB693448 /* ScriptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorView.swift; sourceTree = "<group>"; };
+		15224FB43759F4D958E53F9C /* KyleOSSchemaV22.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV22.swift; sourceTree = "<group>"; };
 		1538987F36ED00C5947A950D /* ClipReadyQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipReadyQueueView.swift; sourceTree = "<group>"; };
 		1758113B2ED3EDEEF682144C /* DraftService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftService.swift; sourceTree = "<group>"; };
 		184D0A3872C61E432D3C248C /* KyleOSSchemaV21.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV21.swift; sourceTree = "<group>"; };
@@ -174,6 +179,7 @@
 		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayItemCard.swift; sourceTree = "<group>"; };
 		252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRecoveryService.swift; sourceTree = "<group>"; };
+		25AB6E3B8BAFED8E629DBD01 /* SketchProductionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchProductionService.swift; sourceTree = "<group>"; };
 		27D6194C1261A3FE3D72A7E0 /* HomeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeServiceTests.swift; sourceTree = "<group>"; };
 		28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemPersistenceTests.swift; sourceTree = "<group>"; };
 		2A701BEF36396910E6ADA359 /* ActiveTimerBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerBanner.swift; sourceTree = "<group>"; };
@@ -188,6 +194,7 @@
 		42C5CDBE46872A0E0FD33CD8 /* SourceServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceServiceTests.swift; sourceTree = "<group>"; };
 		45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutosaveController.swift; sourceTree = "<group>"; };
 		48B9D005FDD6D676804D7607 /* ActServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActServiceTests.swift; sourceTree = "<group>"; };
+		49BC806CFAA90C92159C5BD2 /* SketchProductionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchProductionServiceTests.swift; sourceTree = "<group>"; };
 		4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV3.swift; sourceTree = "<group>"; };
 		5118E5FE8729FFEA8FB2D27A /* ChunkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChunkService.swift; sourceTree = "<group>"; };
 		522D786A6B687BD929FB976C /* QuickAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddButton.swift; sourceTree = "<group>"; };
@@ -254,6 +261,7 @@
 		C666739B8DC9F109621A875F /* StandUpHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUpHomeView.swift; sourceTree = "<group>"; };
 		C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationTests.swift; sourceTree = "<group>"; };
 		C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlinePersistenceTests.swift; sourceTree = "<group>"; };
+		CAD25AFAA1F4A7C9234D63D1 /* SketchBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchBoardView.swift; sourceTree = "<group>"; };
 		CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderDestinationView.swift; sourceTree = "<group>"; };
 		CB5A12EDF34A5FF515C0D8DA /* MonthCalendarServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthCalendarServiceTests.swift; sourceTree = "<group>"; };
 		CBE110981FB0F1F3ED6CDECD /* DocumentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentService.swift; sourceTree = "<group>"; };
@@ -335,6 +343,7 @@
 				F97409F31277AD6FBFBC126A /* Home */,
 				474886536D11B067E057E2A1 /* Navigation */,
 				A7E620E76C850162542CF1A2 /* Persistence */,
+				ABFAD64A1711BD92D4E9B0CD /* Sketches */,
 				F2595A1BFCEABCD4330301A1 /* StandUp */,
 				B125041E446B6B3A03E34DDF /* Timer */,
 				323874B850311BCDAC1EF427 /* Writing */,
@@ -383,6 +392,7 @@
 				C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */,
 				0BDD98234E1607C97ADCA2D0 /* ScriptBlockServiceTests.swift */,
 				044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */,
+				49BC806CFAA90C92159C5BD2 /* SketchProductionServiceTests.swift */,
 				42C5CDBE46872A0E0FD33CD8 /* SourceServiceTests.swift */,
 				D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */,
 				28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */,
@@ -425,6 +435,7 @@
 				52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */,
 				7E6ED48BAF8D9BAF6D289699 /* KyleOSSchemaV20.swift */,
 				184D0A3872C61E432D3C248C /* KyleOSSchemaV21.swift */,
+				15224FB43759F4D958E53F9C /* KyleOSSchemaV22.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -447,6 +458,14 @@
 				823E66977CD511037E73B53A /* Schema */,
 			);
 			path = Persistence;
+			sourceTree = "<group>";
+		};
+		ABFAD64A1711BD92D4E9B0CD /* Sketches */ = {
+			isa = PBXGroup;
+			children = (
+				CAD25AFAA1F4A7C9234D63D1 /* SketchBoardView.swift */,
+			);
+			path = Sketches;
 			sourceTree = "<group>";
 		};
 		B125041E446B6B3A03E34DDF /* Timer */ = {
@@ -499,6 +518,7 @@
 				B57EF212EF2CA4D50F3310F5 /* SceneService.swift */,
 				FA536F325A3D3ACF08E50BCB /* ScriptBlockService.swift */,
 				CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */,
+				25AB6E3B8BAFED8E629DBD01 /* SketchProductionService.swift */,
 				DFE69DD91F0B820753D4356A /* SourceService.swift */,
 				0729CE85464C6F1BDF375A30 /* WorkItemService.swift */,
 				F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */,
@@ -669,6 +689,7 @@
 				193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */,
 				252B55FA286040385CE319DF /* ScriptBlockServiceTests.swift in Sources */,
 				020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */,
+				29090345C4C5C8513953AFC7 /* SketchProductionServiceTests.swift in Sources */,
 				2EFE655F08CE1F07A301CB0A /* SourceServiceTests.swift in Sources */,
 				3F24A4975186AE59CB1B33CC /* TimerRecoveryServiceTests.swift in Sources */,
 				5D9E935642D80AD91D348AEB /* WorkItemPersistenceTests.swift in Sources */,
@@ -739,6 +760,7 @@
 				F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */,
 				FD6CDCB8E487687EA35A4149 /* KyleOSSchemaV20.swift in Sources */,
 				78E30C4137C762D803D0F8C9 /* KyleOSSchemaV21.swift in Sources */,
+				FCE5195B792BD8646AA80253 /* KyleOSSchemaV22.swift in Sources */,
 				3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */,
 				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,
 				2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */,
@@ -764,6 +786,8 @@
 				EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */,
 				8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */,
 				A5B10545D2035CB9E2499AF5 /* SidebarSelection.swift in Sources */,
+				262EF5371EDF0B42E677F82C /* SketchBoardView.swift in Sources */,
+				85C488F0D114EF9397663D23 /* SketchProductionService.swift in Sources */,
 				88C2227DB8EAA8D40E124331 /* SourceDetailView.swift in Sources */,
 				B96C91A176567D08F15C76FB /* SourceListView.swift in Sources */,
 				BE5CFBB4A2DEC01B50386A74 /* SourceService.swift in Sources */,

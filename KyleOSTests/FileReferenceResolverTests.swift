@@ -48,7 +48,7 @@ final class FileReferenceResolverTests: XCTestCase {
     func testResolveReturnsNoBookmarkDataWhenNoneStored() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
-        let bare = KyleOSSchemaV21.FileReference(displayName: "No bookmark", originalPath: "/nowhere", bookmarkData: nil)
+        let bare = KyleOSSchemaV22.FileReference(displayName: "No bookmark", originalPath: "/nowhere", bookmarkData: nil)
         context.insert(bare)
 
         XCTAssertEqual(FileReferenceResolver.resolve(bare), .noBookmarkData)

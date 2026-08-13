@@ -1115,4 +1115,51 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(clip.workItems.map(\.id), [workItem.id])
         }
     }
+
+    func testStoreWrittenUnderV21OpensCleanlyAsV22WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV21Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        // Write a store using ONLY the V21 schema shape — Project has no sketchProduction field,
+        // SketchProduction does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV21.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV21.Project(title: "Airport Sketch", projectType: .sketch, status: .finished)
+            projectID = project.id
+            context.insert(project)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = SketchProductionService.finishedSketchProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            guard let project = projects.first(where: { $0.id == projectID }) else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            XCTAssertNil(project.sketchProduction, "New optional relationship should default to nil, not crash or fabricate data")
+            XCTAssertEqual(SketchProductionService.status(for: project), .filmingNotScheduled)
+
+            // The new entity must actually be usable post-migration, not just present.
+            SketchProductionService.changeStatus(for: project, to: .filmingScheduled, context: context)
+            try context.save()
+
+            XCTAssertEqual(SketchProductionService.status(for: project), .filmingScheduled)
+        }
+    }
 }

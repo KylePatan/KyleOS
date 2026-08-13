@@ -4,14 +4,14 @@ import SwiftData
 /// Reusable domain actions for Work Items — Create/Complete/Change Status per PRD §15.1 — kept
 /// out of views per CLAUDE.md §4.
 enum WorkItemService {
-    typealias WorkItem = KyleOSSchemaV21.WorkItem
-    typealias Workspace = KyleOSSchemaV21.Workspace
-    typealias WorkItemStatus = KyleOSSchemaV21.WorkItemStatus
-    typealias Project = KyleOSSchemaV21.Project
-    typealias Document = KyleOSSchemaV21.Document
-    typealias Joke = KyleOSSchemaV21.Joke
-    typealias Chunk = KyleOSSchemaV21.Chunk
-    typealias Clip = KyleOSSchemaV21.Clip
+    typealias WorkItem = KyleOSSchemaV22.WorkItem
+    typealias Workspace = KyleOSSchemaV22.Workspace
+    typealias WorkItemStatus = KyleOSSchemaV22.WorkItemStatus
+    typealias Project = KyleOSSchemaV22.Project
+    typealias Document = KyleOSSchemaV22.Document
+    typealias Joke = KyleOSSchemaV22.Joke
+    typealias Chunk = KyleOSSchemaV22.Chunk
+    typealias Clip = KyleOSSchemaV22.Clip
 
     /// Generic fallback when no WorkTypeDefault matches `workTypeName` — better than a hard
     /// crash, but real usage should mostly hit the WorkTypeDefault-seeded path below.

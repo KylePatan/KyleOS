@@ -15,7 +15,7 @@ final class CalendarEventPersistenceTests: XCTestCase {
         )
         try context.save()
 
-        let fetched = try context.fetch(FetchDescriptor<KyleOSSchemaV21.CalendarEvent>())
+        let fetched = try context.fetch(FetchDescriptor<KyleOSSchemaV22.CalendarEvent>())
         XCTAssertEqual(fetched.count, 1)
         XCTAssertEqual(fetched.first?.id, event.id)
         XCTAssertEqual(fetched.first?.availability, .busy)
@@ -39,7 +39,7 @@ final class CalendarEventPersistenceTests: XCTestCase {
         try context.save()
         XCTAssertEqual(event.availability, .busy)
 
-        let fetched = try context.fetch(FetchDescriptor<KyleOSSchemaV21.CalendarEvent>())
+        let fetched = try context.fetch(FetchDescriptor<KyleOSSchemaV22.CalendarEvent>())
         XCTAssertEqual(fetched.first?.availability, .busy)
     }
 
@@ -132,7 +132,7 @@ final class CalendarEventPersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV21.CalendarEvent>())
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV22.CalendarEvent>())
         XCTAssertEqual(remaining.count, 1, "A Calendar Event must survive its linked Project being deleted")
         XCTAssertEqual(remaining.first?.id, event.id)
         XCTAssertNil(remaining.first?.project, "The link should be nullified, not left dangling")
@@ -168,7 +168,7 @@ final class CalendarEventPersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let events = try context.fetch(FetchDescriptor<KyleOSSchemaV21.CalendarEvent>())
+            let events = try context.fetch(FetchDescriptor<KyleOSSchemaV22.CalendarEvent>())
             XCTAssertEqual(events.count, 1)
             XCTAssertEqual(events.first?.id, eventID)
             XCTAssertEqual(events.first?.notes, "Location TBD")
