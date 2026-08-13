@@ -138,6 +138,52 @@ final class CalendarEventPersistenceTests: XCTestCase {
         XCTAssertNil(remaining.first?.project, "The link should be nullified, not left dangling")
     }
 
+    func testDeletingAnEventRemovesIt() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let start = Date()
+        let event = CalendarEventService.createEvent(type: .personal, startAt: start, endAt: start.addingTimeInterval(3600), context: context)
+        try context.save()
+
+        CalendarEventService.delete(event, context: context)
+        try context.save()
+
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV24.CalendarEvent>())
+        XCTAssertTrue(remaining.isEmpty)
+    }
+
+    func testUpdateDetailsPersistsNotesAndLocation() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let start = Date()
+        let event = CalendarEventService.createEvent(type: .personal, startAt: start, endAt: start.addingTimeInterval(3600), context: context)
+        try context.save()
+
+        CalendarEventService.updateDetails(event, notes: "Bring script pages", location: "The Rehearsal Room")
+        try context.save()
+
+        XCTAssertEqual(event.notes, "Bring script pages")
+        XCTAssertEqual(event.location, "The Rehearsal Room")
+    }
+
+    func testSetHardCommitmentAndAllDayPersist() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let start = Date()
+        let event = CalendarEventService.createEvent(type: .personal, startAt: start, endAt: start.addingTimeInterval(3600), context: context)
+        try context.save()
+
+        CalendarEventService.setHardCommitment(event, true)
+        CalendarEventService.setAllDay(event, true)
+        try context.save()
+
+        XCTAssertTrue(event.isHardCommitment)
+        XCTAssertTrue(event.isAllDay)
+    }
+
     func testDataSurvivesReopeningTheStore() throws {
         let storeURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("KyleOSCalendarEventRestartTest-\(UUID().uuidString)")

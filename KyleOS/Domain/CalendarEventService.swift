@@ -63,6 +63,32 @@ enum CalendarEventService {
         event.updatedAt = .now
     }
 
+    static func setHardCommitment(_ event: CalendarEvent, _ isHardCommitment: Bool) {
+        event.isHardCommitment = isHardCommitment
+        event.updatedAt = .now
+    }
+
+    static func setAllDay(_ event: CalendarEvent, _ isAllDay: Bool) {
+        event.isAllDay = isAllDay
+        event.updatedAt = .now
+    }
+
+    static func updateDetails(_ event: CalendarEvent, notes: String, location: String) {
+        event.notes = notes
+        event.location = location
+        event.updatedAt = .now
+    }
+
+    /// PRD §11.2: the full Calendar workspace lets the user manage events directly, unlike the
+    /// read-only Home month calendar widget. Manually-created events (no Gig/Shoot/etc. owner)
+    /// are freely deletable; events owned by another module's cascade relationship should be
+    /// removed from that module instead, but nothing here needs to enforce that — deleting an
+    /// owned CalendarEvent directly just leaves its owner's `calendarEvent` link nil, which the
+    /// owning module's own sync logic will simply recreate next time it's touched.
+    static func delete(_ event: CalendarEvent, context: ModelContext) {
+        context.delete(event)
+    }
+
     static func events(from start: Date, to end: Date, in context: ModelContext) throws -> [CalendarEvent] {
         let descriptor = FetchDescriptor<CalendarEvent>(
             predicate: #Predicate { $0.startAt < end && $0.endAt > start },
