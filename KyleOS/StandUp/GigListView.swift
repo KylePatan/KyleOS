@@ -33,9 +33,15 @@ struct GigListView: View {
                                 NavigationLink(value: gig.persistentModelID) {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(gig.venue)
-                                        Text(summary(for: gig))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                        HStack(spacing: 6) {
+                                            Text(summary(for: gig))
+                                            if GigService.needsAfterGigNotes(gig) {
+                                                Text("· Needs notes")
+                                                    .foregroundStyle(.orange)
+                                            }
+                                        }
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                     }
                                 }
                                 Spacer()

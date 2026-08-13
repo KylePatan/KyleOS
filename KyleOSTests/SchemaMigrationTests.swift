@@ -922,4 +922,51 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(GigSetListService.items(in: gig).map { $0.joke?.id }, [jokeID])
         }
     }
+
+    func testStoreWrittenUnderV17OpensCleanlyAsV18WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV17Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let gigID: UUID
+        // Write a store using ONLY the V17 schema shape — Gig has no afterGigNotes,
+        // GigSetListItem has no performanceNotes.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV17.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let gig = KyleOSSchemaV17.Gig(venue: "Pre-V18 Venue", startAt: .now)
+            gigID = gig.id
+            context.insert(gig)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let gigs = GigService.gigs(in: context)
+            XCTAssertEqual(gigs.count, 1)
+            guard let gig = gigs.first(where: { $0.id == gigID }) else {
+                return XCTFail("Expected the pre-migration gig to survive")
+            }
+            XCTAssertNil(gig.afterGigNotes, "New optional field should default to nil, not crash or fabricate data")
+            XCTAssertEqual(gig.displayAfterGigNotes, "")
+
+            // The new entity must actually be usable post-migration, not just present.
+            GigService.updateAfterGigNotes(gig, notes: "Killed with the closer.")
+            try context.save()
+
+            XCTAssertEqual(gig.afterGigNotes, "Killed with the closer.")
+        }
+    }
 }

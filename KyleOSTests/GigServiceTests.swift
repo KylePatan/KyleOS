@@ -136,4 +136,44 @@ final class GigServiceTests: XCTestCase {
         let remainingEvents = try context.fetch(FetchDescriptor<GigService.CalendarEvent>())
         XCTAssertFalse(remainingEvents.contains { $0.id == eventID })
     }
+
+    func testNeedsAfterGigNotesIsFalseBeforeTheGigEnds() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let now = Date()
+        let gig = GigService.createGig(venue: "The Comedy Cellar", startAt: now, setLengthMinutes: 15, context: context)
+        try context.save()
+
+        XCTAssertFalse(GigService.needsAfterGigNotes(gig, now: now))
+        XCTAssertFalse(GigService.needsAfterGigNotes(gig, now: now.addingTimeInterval(5 * 60)))
+    }
+
+    func testNeedsAfterGigNotesIsTrueAfterTheGigEndsUntilNotesAreAdded() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let now = Date()
+        let gig = GigService.createGig(venue: "The Comedy Cellar", startAt: now, setLengthMinutes: 15, context: context)
+        try context.save()
+        let afterGig = now.addingTimeInterval(20 * 60)
+
+        XCTAssertTrue(GigService.needsAfterGigNotes(gig, now: afterGig))
+
+        GigService.updateAfterGigNotes(gig, notes: "Killed with the closer.")
+        try context.save()
+
+        XCTAssertFalse(GigService.needsAfterGigNotes(gig, now: afterGig))
+    }
+
+    func testUpdateAfterGigNotesPersists() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let gig = GigService.createGig(venue: "The Comedy Cellar", startAt: .now, context: context)
+        try context.save()
+
+        GigService.updateAfterGigNotes(gig, notes: "Killed with the closer.")
+        try context.save()
+
+        XCTAssertEqual(gig.afterGigNotes, "Killed with the closer.")
+        XCTAssertEqual(gig.displayAfterGigNotes, "Killed with the closer.")
+    }
 }

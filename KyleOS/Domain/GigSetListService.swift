@@ -8,10 +8,10 @@ import SwiftData
 /// the model itself has no way to enforce that (SwiftData has no sum-type/enum-relationship
 /// construct), so it's enforced here instead.
 enum GigSetListService {
-    typealias Gig = KyleOSSchemaV17.Gig
-    typealias GigSetListItem = KyleOSSchemaV17.GigSetListItem
-    typealias Joke = KyleOSSchemaV17.Joke
-    typealias Chunk = KyleOSSchemaV17.Chunk
+    typealias Gig = KyleOSSchemaV18.Gig
+    typealias GigSetListItem = KyleOSSchemaV18.GigSetListItem
+    typealias Joke = KyleOSSchemaV18.Joke
+    typealias Chunk = KyleOSSchemaV18.Chunk
 
     static func items(in gig: Gig) -> [GigSetListItem] {
         gig.setListItems.sorted { $0.order < $1.order }
@@ -53,6 +53,12 @@ enum GigSetListService {
 
     static func targetDurationSeconds(for gig: Gig) -> Int {
         gig.setLengthMinutes * 60
+    }
+
+    /// PRD §7.10: "Notes can be attached to... individual Jokes, or Chunks" — scoped to this
+    /// item's performance at this specific gig, not the referenced Joke/Chunk's own notes.
+    static func updatePerformanceNotes(_ item: GigSetListItem, notes: String) {
+        item.performanceNotes = notes
     }
 
     private static func renumber(_ ordered: [GigSetListItem]) {

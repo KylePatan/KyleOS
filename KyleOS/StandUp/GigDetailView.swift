@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 
-/// PRD §7.8/§7.9: Gig detail — venue/show/date/start time/set length/location/notes (all
+/// PRD §7.8/§7.9/§7.10: Gig detail — venue/show/date/start time/set length/location/notes (all
 /// editable, keeping the auto-created CalendarEvent in sync per "Gigs automatically appear on
-/// Calendar"), plus the planned Set List built from existing Jokes/Chunks (§7.9).
+/// Calendar"), the planned Set List built from existing Jokes/Chunks (§7.9), and After-Gig Notes
+/// (§7.10) once the gig has passed.
 struct GigDetailView: View {
     let gig: GigService.Gig
     @Environment(\.modelContext) private var context
@@ -16,6 +17,7 @@ struct GigDetailView: View {
     @State private var setLengthMinutes = 10
     @State private var location = ""
     @State private var notes = ""
+    @State private var afterGigNotes = ""
 
     private var setListItems: [GigSetListService.GigSetListItem] {
         GigSetListService.items(in: gig)
@@ -30,16 +32,20 @@ struct GigDetailView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header
-            Divider()
-            scheduleSection
-            Divider()
-            setListSection
-            Divider()
-            notesSection
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                header
+                Divider()
+                scheduleSection
+                Divider()
+                setListSection
+                Divider()
+                notesSection
+                Divider()
+                afterGigSection
+            }
+            .padding()
         }
-        .padding()
         .navigationTitle(gig.venue)
         .onAppear {
             venue = gig.venue
@@ -48,6 +54,7 @@ struct GigDetailView: View {
             setLengthMinutes = gig.setLengthMinutes
             location = gig.location
             notes = gig.notes
+            afterGigNotes = gig.displayAfterGigNotes
         }
     }
 
@@ -142,19 +149,34 @@ struct GigDetailView: View {
             } else {
                 List {
                     ForEach(setListItems) { item in
-                        HStack {
-                            Text(item.title)
-                            Spacer()
-                            Text(TimeFormatting.shortDuration(item.runtimeSeconds))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Button(role: .destructive) {
-                                GigSetListService.removeItem(item, from: gig, context: context)
-                                try? context.save()
-                            } label: {
-                                Image(systemName: "minus.circle")
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack {
+                                Text(item.title)
+                                Spacer()
+                                Text(TimeFormatting.shortDuration(item.runtimeSeconds))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Button(role: .destructive) {
+                                    GigSetListService.removeItem(item, from: gig, context: context)
+                                    try? context.save()
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                }
+                                .buttonStyle(.borderless)
                             }
-                            .buttonStyle(.borderless)
+                            /// PRD §7.10: per-item "how'd this land" note, scoped to this gig's
+                            /// performance — bound directly to the model since each row is its
+                            /// own SwiftData object, not a single shared `@State`.
+                            TextField("How'd this land?", text: Binding(
+                                get: { item.displayPerformanceNotes },
+                                set: {
+                                    GigSetListService.updatePerformanceNotes(item, notes: $0)
+                                    try? context.save()
+                                }
+                            ))
+                            .textFieldStyle(.plain)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                         }
                     }
                     .onMove { source, destination in
@@ -163,7 +185,7 @@ struct GigDetailView: View {
                     }
                 }
                 .listStyle(.inset)
-                .frame(minHeight: 100, idealHeight: CGFloat(setListItems.count) * 40 + 20)
+                .frame(minHeight: 100, idealHeight: CGFloat(setListItems.count) * 60 + 20)
             }
         }
     }
@@ -175,6 +197,25 @@ struct GigDetailView: View {
                 .textFieldStyle(.plain)
                 .onChange(of: notes) {
                     GigService.updateNotes(gig, notes: notes)
+                    try? context.save()
+                }
+        }
+    }
+
+    /// PRD §7.10: "After a gig, Kyle OS may optionally ask how the set went." Shown as a
+    /// standing section (so notes can be added any time), but calls out the prompt visually once
+    /// the gig has actually passed with nothing recorded yet — "optionally ask" without a full
+    /// notification system (CLAUDE.md §9: don't prematurely build the reminder system).
+    private var afterGigSection: some View {
+        let needsNotes = GigService.needsAfterGigNotes(gig)
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(needsNotes ? "How did the set go?" : "After the Gig")
+                .font(.headline)
+                .foregroundStyle(needsNotes ? .orange : .primary)
+            TextField("After-gig notes", text: $afterGigNotes, axis: .vertical)
+                .textFieldStyle(.plain)
+                .onChange(of: afterGigNotes) {
+                    GigService.updateAfterGigNotes(gig, notes: afterGigNotes)
                     try? context.save()
                 }
         }

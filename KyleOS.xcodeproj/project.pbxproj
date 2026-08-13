@@ -105,6 +105,7 @@
 		D9C432D80F6A9A270C76F2A9 /* SceneService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57EF212EF2CA4D50F3310F5 /* SceneService.swift */; };
 		E11770EA10A8A94105FD80B4 /* MonthCalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B329BF7E07F1430773368F9 /* MonthCalendarService.swift */; };
 		E3C1CDF96B14C6575A70D4B1 /* KyleOSSchemaV14.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B7D1D7BB58ABBC9F506FADE /* KyleOSSchemaV14.swift */; };
+		E64DF16A6CB29FBF28525A71 /* KyleOSSchemaV18.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CE449B27F40FD8589092D9 /* KyleOSSchemaV18.swift */; };
 		E832ACA1B33B82DDE5D13C33 /* PlannedSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9A5C83517F88DE4D86E509 /* PlannedSessionService.swift */; };
 		E9C9247F9E54839AAA1535E6 /* HeadlineSetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59E199DA7890341CDC60AA6C /* HeadlineSetDetailView.swift */; };
 		EAC937CC66F67ACE94CFFFFC /* ScriptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11711CB53AB95183CB693448 /* ScriptEditorView.swift */; };
@@ -221,6 +222,7 @@
 		B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPersistenceTests.swift; sourceTree = "<group>"; };
 		BB76812141269FB271CEAC48 /* FileReferenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferenceService.swift; sourceTree = "<group>"; };
 		BC08B1D8915E0171514F5A14 /* ProjectService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectService.swift; sourceTree = "<group>"; };
+		C2CE449B27F40FD8589092D9 /* KyleOSSchemaV18.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV18.swift; sourceTree = "<group>"; };
 		C3089150D20B0D789E6A972E /* CreativeCapacityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreativeCapacityServiceTests.swift; sourceTree = "<group>"; };
 		C55AAF6B60E824D48A2EA9D4 /* DocumentsDevView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentsDevView.swift; sourceTree = "<group>"; };
 		C666739B8DC9F109621A875F /* StandUpHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUpHomeView.swift; sourceTree = "<group>"; };
@@ -374,6 +376,7 @@
 				DF2BA7F9F4820A38C7132875 /* KyleOSSchemaV15.swift */,
 				AB5781A1BEB14219FA2CC9B6 /* KyleOSSchemaV16.swift */,
 				2A748D5CB451E94B6E24D834 /* KyleOSSchemaV17.swift */,
+				C2CE449B27F40FD8589092D9 /* KyleOSSchemaV18.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -673,6 +676,7 @@
 				0563882F5E5EFE36B6108D4E /* KyleOSSchemaV15.swift in Sources */,
 				23BF84EE1A9C948F49E12B63 /* KyleOSSchemaV16.swift in Sources */,
 				ACA5A09C72C62104E171C3B4 /* KyleOSSchemaV17.swift in Sources */,
+				E64DF16A6CB29FBF28525A71 /* KyleOSSchemaV18.swift in Sources */,
 				F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */,
 				3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */,
 				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,

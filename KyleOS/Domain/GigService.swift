@@ -16,8 +16,8 @@ import SwiftData
 /// changing already-shipped, PRD-§4.4-accurate behavior. Flagged, not silently decided either
 /// way, per CLAUDE.md §13.
 enum GigService {
-    typealias Gig = KyleOSSchemaV17.Gig
-    typealias CalendarEvent = KyleOSSchemaV17.CalendarEvent
+    typealias Gig = KyleOSSchemaV18.Gig
+    typealias CalendarEvent = KyleOSSchemaV18.CalendarEvent
 
     @discardableResult
     static func createGig(
@@ -89,6 +89,22 @@ enum GigService {
 
     static func upcoming(after date: Date = .now, in context: ModelContext) -> [Gig] {
         gigs(in: context).filter { $0.startAt >= date }
+    }
+
+    /// PRD §7.10: "After a gig, Kyle OS may optionally ask how the set went." A gig "ends" at
+    /// startAt + setLengthMinutes; once that's passed and no reflection has been recorded yet,
+    /// it's a candidate to ask about.
+    static func hasEnded(_ gig: Gig, now: Date = .now) -> Bool {
+        gig.startAt.addingTimeInterval(TimeInterval(gig.setLengthMinutes * 60)) < now
+    }
+
+    static func needsAfterGigNotes(_ gig: Gig, now: Date = .now) -> Bool {
+        hasEnded(gig, now: now) && gig.displayAfterGigNotes.isEmpty
+    }
+
+    static func updateAfterGigNotes(_ gig: Gig, notes: String) {
+        gig.afterGigNotes = notes
+        gig.updatedAt = .now
     }
 
     /// Cascade delete rule on `Gig.calendarEvent` removes the linked CalendarEvent too.

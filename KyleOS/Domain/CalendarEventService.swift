@@ -4,12 +4,12 @@ import SwiftData
 /// Reusable domain actions for Calendar Events (PRD §14.9), kept out of views per CLAUDE.md §4.
 /// No Google Calendar sync logic here — that's V0.6 (CLAUDE.md §8).
 enum CalendarEventService {
-    typealias CalendarEvent = KyleOSSchemaV17.CalendarEvent
-    typealias CalendarEventType = KyleOSSchemaV17.CalendarEventType
-    typealias Availability = KyleOSSchemaV17.Availability
-    typealias Project = KyleOSSchemaV17.Project
-    typealias WorkItem = KyleOSSchemaV17.WorkItem
-    typealias Deadline = KyleOSSchemaV17.Deadline
+    typealias CalendarEvent = KyleOSSchemaV18.CalendarEvent
+    typealias CalendarEventType = KyleOSSchemaV18.CalendarEventType
+    typealias Availability = KyleOSSchemaV18.Availability
+    typealias Project = KyleOSSchemaV18.Project
+    typealias WorkItem = KyleOSSchemaV18.WorkItem
+    typealias Deadline = KyleOSSchemaV18.Deadline
 
     @discardableResult
     static func createEvent(

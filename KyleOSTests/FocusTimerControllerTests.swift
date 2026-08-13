@@ -12,7 +12,7 @@ private final class FakeClock {
 
 final class FocusTimerControllerTests: XCTestCase {
 
-    private func makeWorkItem(in context: ModelContext) throws -> KyleOSSchemaV17.WorkItem {
+    private func makeWorkItem(in context: ModelContext) throws -> KyleOSSchemaV18.WorkItem {
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
         return try WorkItemService.createWorkItem(
             title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context

@@ -137,4 +137,21 @@ final class GigSetListServiceTests: XCTestCase {
         let remainingJokes = try context.fetch(FetchDescriptor<GigSetListService.Joke>())
         XCTAssertTrue(remainingJokes.contains { $0.id == jokeID })
     }
+
+    func testUpdatePerformanceNotesPersistsPerItemNotSharedWithTheJokesOwnNotes() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let gig = GigService.createGig(venue: "The Comedy Cellar", startAt: .now, context: context)
+        let joke = JokeService.quickCapture(text: "Bit One", context: context)
+        try context.save()
+        let item = GigSetListService.addJoke(joke, to: gig, context: context)
+        try context.save()
+
+        GigSetListService.updatePerformanceNotes(item, notes: "Killed with this one.")
+        try context.save()
+
+        XCTAssertEqual(item.performanceNotes, "Killed with this one.")
+        XCTAssertEqual(item.displayPerformanceNotes, "Killed with this one.")
+        XCTAssertEqual(joke.notes, "", "Per-performance notes must not leak into the Joke's own standing notes field")
+    }
 }
