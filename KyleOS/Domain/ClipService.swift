@@ -113,4 +113,32 @@ enum ClipService {
     static func delete(_ clip: Clip, context: ModelContext) {
         context.delete(clip)
     }
+
+    /// PRD §8.7: "Getting ahead should be valuable. Kyle OS should distinguish: Production
+    /// Backlog, Ready Content Buffer, Scheduled Posts." Everything not yet Ready (and not yet
+    /// Posted, which falls outside all three buckets — it's done, not part of the in-flight
+    /// pipeline this queue tracks).
+    static func productionBacklog(in context: ModelContext) -> [Clip] {
+        allClips(in: context).filter {
+            let lane = boardLane(for: $0.status)
+            return lane != .ready && lane != .posted
+        }
+    }
+
+    /// Ready with no confirmed Post Date yet — "getting ahead" inventory, available whenever.
+    static func readyContentBuffer(in context: ModelContext) -> [Clip] {
+        allClips(in: context).filter { boardLane(for: $0.status) == .ready && $0.postDate == nil }
+    }
+
+    /// Ready AND a Post Date has been set — sorted soonest first.
+    static func scheduledPosts(in context: ModelContext) -> [Clip] {
+        allClips(in: context)
+            .filter { boardLane(for: $0.status) == .ready && $0.postDate != nil }
+            .sorted { ($0.postDate ?? .distantFuture) < ($1.postDate ?? .distantFuture) }
+    }
+
+    /// PRD §8.7: "show the number of finished pieces waiting for release."
+    static func readyToPostCount(in context: ModelContext) -> Int {
+        readyContentBuffer(in: context).count + scheduledPosts(in: context).count
+    }
 }

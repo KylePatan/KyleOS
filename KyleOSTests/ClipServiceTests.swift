@@ -172,4 +172,77 @@ final class ClipServiceTests: XCTestCase {
         XCTAssertNotNil(survivingSource)
         XCTAssertTrue(ClipService.clips(in: survivingSource!).isEmpty)
     }
+
+    func testProductionBacklogExcludesReadyAndPostedClips() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        try context.save()
+        let backlogClip = ClipService.createClip(title: "To Isolate Clip", in: source, context: context)
+        let editingClip = ClipService.createClip(title: "Editing Clip", in: source, context: context)
+        ClipService.changeStatus(editingClip, to: .currentlyEditing)
+        let readyClip = ClipService.createClip(title: "Ready Clip", in: source, context: context)
+        ClipService.changeStatus(readyClip, to: .ready)
+        let postedClip = ClipService.createClip(title: "Posted Clip", in: source, context: context)
+        ClipService.changeStatus(postedClip, to: .posted)
+        try context.save()
+
+        let backlog = ClipService.productionBacklog(in: context)
+
+        XCTAssertEqual(Set(backlog.map(\.id)), Set([backlogClip.id, editingClip.id]))
+    }
+
+    func testReadyContentBufferOnlyIncludesReadyClipsWithNoPostDate() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        try context.save()
+        let bufferClip = ClipService.createClip(title: "Buffer Clip", in: source, context: context)
+        ClipService.changeStatus(bufferClip, to: .ready)
+        let scheduledClip = ClipService.createClip(title: "Scheduled Clip", in: source, context: context)
+        ClipService.changeStatus(scheduledClip, to: .ready)
+        ClipService.setPostDate(scheduledClip, date: .now)
+        try context.save()
+
+        let buffer = ClipService.readyContentBuffer(in: context)
+
+        XCTAssertEqual(buffer.map(\.id), [bufferClip.id])
+    }
+
+    func testScheduledPostsOnlyIncludesReadyClipsWithAPostDateSortedSoonestFirst() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        try context.save()
+        let later = ClipService.createClip(title: "Later Post", in: source, context: context)
+        ClipService.changeStatus(later, to: .ready)
+        ClipService.setPostDate(later, date: Date(timeIntervalSince1970: 1_800_000_000))
+        let sooner = ClipService.createClip(title: "Sooner Post", in: source, context: context)
+        ClipService.changeStatus(sooner, to: .ready)
+        ClipService.setPostDate(sooner, date: Date(timeIntervalSince1970: 1_700_000_000))
+        let unscheduled = ClipService.createClip(title: "Unscheduled", in: source, context: context)
+        ClipService.changeStatus(unscheduled, to: .ready)
+        try context.save()
+
+        let scheduled = ClipService.scheduledPosts(in: context)
+
+        XCTAssertEqual(scheduled.map(\.title), ["Sooner Post", "Later Post"])
+    }
+
+    func testReadyToPostCountCombinesBufferAndScheduled() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        try context.save()
+        let buffered = ClipService.createClip(title: "Buffered", in: source, context: context)
+        ClipService.changeStatus(buffered, to: .ready)
+        let scheduled = ClipService.createClip(title: "Scheduled", in: source, context: context)
+        ClipService.changeStatus(scheduled, to: .ready)
+        ClipService.setPostDate(scheduled, date: .now)
+        let stillEditing = ClipService.createClip(title: "Still Editing", in: source, context: context)
+        ClipService.changeStatus(stillEditing, to: .currentlyEditing)
+        try context.save()
+
+        XCTAssertEqual(ClipService.readyToPostCount(in: context), 2)
+    }
 }
