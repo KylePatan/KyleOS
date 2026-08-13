@@ -4,31 +4,25 @@ import SwiftData
 /// Reusable domain actions for the Script Editor's structured blocks (PRD §6.7/§14.3), kept out
 /// of views per CLAUDE.md §4.
 ///
-/// The Enter-key/Tab-key transition rules below implement Decision Gate A's "How should
-/// structured screenplay blocks behave" question, resolved as documented industry-standard
-/// screenplay-formatting convention (the same Enter/Tab behavior long-established software in
-/// this space uses) rather than an invented scheme — PRD §6.7: "Enter-key behavior should move
-/// naturally between common screenplay elements."
+/// The Enter-key transition rule below implements Decision Gate A's "How should structured
+/// screenplay blocks behave" question — PRD §6.7: "Enter-key behavior should move naturally
+/// between common screenplay elements." Standard Final Draft-style industry convention: a scene
+/// heading or transition is always followed by action; action stays in action (most action
+/// description runs multiple paragraphs); a character cue is followed by their dialogue; a
+/// parenthetical is followed by more dialogue; dialogue is followed by a new character cue (the
+/// next line of the exchange). Kyle briefly tried a tighter beat-by-beat cycle instead
+/// (action->character->dialogue->action) and confirmed after using it for real that he wanted
+/// standard convention back — Enter still drives the transitions, just via this mapping.
+///
+/// Tab no longer cycles types silently — it now opens a visible element-type menu directly in
+/// ScriptTextView (PRD §6.7's "visible element selector" fallback, made literal rather than a
+/// blind Tab-to-cycle), so there's no `nextTypeInCycle` here anymore.
 enum ScriptBlockService {
     typealias ScriptBlock = KyleOSSchemaV21.ScriptBlock
     typealias ScriptElementType = KyleOSSchemaV21.ScriptElementType
     typealias Document = KyleOSSchemaV21.Document
 
-    /// Tab cycles a block's type manually, in this fixed order, regardless of what Enter would
-    /// have suggested — PRD §6.7: "The editor should offer a visible element selector as a
-    /// fallback"; Tab is the keyboard equivalent of that fallback.
-    private static let cycleOrder: [ScriptElementType] = [.sceneHeading, .action, .character, .parenthetical, .dialogue, .transition]
-
-    static func nextTypeInCycle(after type: ScriptElementType) -> ScriptElementType {
-        guard let index = cycleOrder.firstIndex(of: type) else { return .action }
-        return cycleOrder[(index + 1) % cycleOrder.count]
-    }
-
-    /// What Enter after a block of `type` should start next, absent any other signal — standard
-    /// screenplay convention: a scene heading or transition is always followed by action; a
-    /// character cue is followed by their dialogue; a parenthetical is followed by more dialogue;
-    /// dialogue is followed by a new character cue (the next line of the exchange); action stays
-    /// in action (most action description runs multiple paragraphs).
+    /// What Enter after a block of `type` should start next, absent any other signal.
     static func suggestedNextType(afterEnterFrom type: ScriptElementType) -> ScriptElementType {
         switch type {
         case .sceneHeading, .transition: return .action

@@ -80,10 +80,10 @@ enum ScriptFormatting {
 }
 
 /// Custom key-command handling is the entire reason this isn't plain SwiftUI (see file doc
-/// comment) — Enter suggests the natural next element, Tab manually cycles the current
-/// paragraph's type, matching PRD §6.7's "keyboard-first" requirement and its explicit fallback
-/// ("The editor should offer a visible element selector as a fallback" — Tab is that fallback's
-/// keyboard equivalent).
+/// comment) — Enter suggests the natural next element (Kyle's confirmed beat-by-beat cycle, see
+/// ScriptBlockService.suggestedNextType's doc comment), Tab opens a visible element-type menu at
+/// the caret, matching PRD §6.7's "keyboard-first" requirement and its explicit fallback ("The
+/// editor should offer a visible element selector as a fallback").
 final class ScriptTextView: NSTextView {
     /// Set once by ScriptEditorRepresentable right after creation — needed for the
     /// character/scene-heading suggestions below (PRD §6.8/§6.9).
@@ -95,13 +95,67 @@ final class ScriptTextView: NSTextView {
         let nextType = ScriptBlockService.suggestedNextType(afterEnterFrom: currentType)
         typingAttributes = ScriptFormatting.attributes(for: nextType)
         applyTypeToCurrentParagraph(nextType)
+        triggerLiveSuggestionsIfNeeded(for: nextType)
     }
 
+    /// PRD §6.7's "visible element selector" fallback, made literal: Tab pops up a real menu at
+    /// the caret rather than silently cycling through a fixed order — Kyle found the blind cycle
+    /// not "smooth" to use. "FADE IN:"/"CUT TO:" are quick-insert Transition text, not separate
+    /// element types; picking one replaces the current paragraph's text with that phrase.
     override func insertTab(_ sender: Any?) {
-        let currentType = ScriptFormatting.type(at: selectedRange().location, in: textStorage!)
-        let nextType = ScriptBlockService.nextTypeInCycle(after: currentType)
-        applyTypeToCurrentParagraph(nextType)
-        typingAttributes = ScriptFormatting.attributes(for: nextType)
+        showElementTypeMenu()
+    }
+
+    private static let transitionQuickInserts = ["FADE IN:", "CUT TO:"]
+
+    private func showElementTypeMenu() {
+        let menu = NSMenu()
+        let typeItems: [(String, ScriptBlockService.ScriptElementType)] = [
+            ("Scene Heading", .sceneHeading),
+            ("Action", .action),
+            ("Character", .character),
+            ("Dialogue", .dialogue),
+            ("Parenthetical", .parenthetical)
+        ]
+        for (title, type) in typeItems {
+            let item = NSMenuItem(title: title, action: #selector(selectElementType(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = type
+            menu.addItem(item)
+        }
+        menu.addItem(.separator())
+        for phrase in Self.transitionQuickInserts {
+            let item = NSMenuItem(title: phrase, action: #selector(selectTransitionPhrase(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = phrase
+            menu.addItem(item)
+        }
+
+        guard let window else { return }
+        let screenRect = firstRect(forCharacterRange: selectedRange(), actualRange: nil)
+        let windowRect = window.convertFromScreen(screenRect)
+        let viewPoint = convert(windowRect.origin, from: nil)
+        menu.popUp(positioning: nil, at: viewPoint, in: self)
+    }
+
+    @objc private func selectElementType(_ sender: NSMenuItem) {
+        guard let type = sender.representedObject as? ScriptBlockService.ScriptElementType else { return }
+        applyTypeToCurrentParagraph(type)
+        typingAttributes = ScriptFormatting.attributes(for: type)
+        triggerLiveSuggestionsIfNeeded(for: type)
+        didChangeText()
+    }
+
+    @objc private func selectTransitionPhrase(_ sender: NSMenuItem) {
+        guard let phrase = sender.representedObject as? String, let storage = textStorage else { return }
+        let paragraphRange = (storage.string as NSString).paragraphRange(for: selectedRange())
+        guard shouldChangeText(in: paragraphRange, replacementString: phrase) else { return }
+        storage.replaceCharacters(in: paragraphRange, with: phrase)
+        let newRange = NSRange(location: paragraphRange.location, length: (phrase as NSString).length)
+        storage.addAttributes(ScriptFormatting.attributes(for: .transition), range: newRange)
+        setSelectedRange(NSRange(location: newRange.location + newRange.length, length: 0))
+        typingAttributes = ScriptFormatting.attributes(for: .transition)
+        didChangeText()
     }
 
     /// Auto-uppercases scene headings/character cues/transitions while typing — screenplay
@@ -121,6 +175,7 @@ final class ScriptTextView: NSTextView {
             return
         }
         super.insertText(text.uppercased(), replacementRange: replacementRange)
+        triggerLiveSuggestionsIfNeeded(for: type)
     }
 
     private func applyTypeToCurrentParagraph(_ type: ScriptBlockService.ScriptElementType) {
@@ -130,10 +185,16 @@ final class ScriptTextView: NSTextView {
         storage.addAttributes(ScriptFormatting.attributes(for: type), range: paragraphRange)
     }
 
-    /// PRD §6.8/§6.9: known character names and scene headings, offered via AppKit's native
-    /// completion UI (triggered by the standard macOS completion key, Escape by default) —
-    /// "The user can always type manually," so this is a suggestion mechanism, not forced
-    /// autocomplete, matching that requirement without hand-building a custom popover.
+    /// PRD §6.8/§6.9: known character names and scene headings. Originally only shown via
+    /// AppKit's native completion key (Escape by default) — Kyle found that not discoverable or
+    /// "smooth," so Scene Heading/Character blocks now trigger the same native popup
+    /// automatically (live, as-you-type) instead of waiting for a manual keystroke. "The user
+    /// can always type manually" still holds — this only ever suggests, never forces text.
+    private func triggerLiveSuggestionsIfNeeded(for type: ScriptBlockService.ScriptElementType) {
+        guard type == .sceneHeading || type == .character else { return }
+        complete(nil)
+    }
+
     private func currentElementType() -> ScriptBlockService.ScriptElementType {
         guard let storage = textStorage else { return .action }
         return ScriptFormatting.type(at: selectedRange().location, in: storage)
@@ -182,7 +243,8 @@ struct ScriptEditorRepresentable: NSViewRepresentable {
         textView.allowsUndo = true
         textView.textContainerInset = NSSize(width: 20, height: 20)
         textView.textStorage?.setAttributedString(Self.attributedString(for: document))
-        if textView.textStorage?.length == 0 {
+        let isFreshBlankScript = textView.textStorage?.length == 0
+        if isFreshBlankScript {
             textView.typingAttributes = ScriptFormatting.attributes(for: .sceneHeading)
         }
 
@@ -196,6 +258,16 @@ struct ScriptEditorRepresentable: NSViewRepresentable {
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
         textView.textContainer?.widthTracksTextView = true
+
+        // A brand-new script starts in Scene Heading — show INT./EXT. suggestions immediately
+        // rather than waiting for the first keystroke, same "make it live" fix as the rest of
+        // this pass. Deferred to the next run loop turn since the view has no window yet here.
+        if isFreshBlankScript {
+            DispatchQueue.main.async {
+                textView.window?.makeFirstResponder(textView)
+                textView.complete(nil)
+            }
+        }
 
         return scrollView
     }

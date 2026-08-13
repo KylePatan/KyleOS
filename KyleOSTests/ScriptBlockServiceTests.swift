@@ -35,19 +35,6 @@ final class ScriptBlockServiceTests: XCTestCase {
         XCTAssertEqual(ScriptBlockService.suggestedNextType(afterEnterFrom: .transition), .action)
     }
 
-    // MARK: - Tab-cycle (manual override fallback)
-
-    func testTabCycleVisitsAllSixTypesAndReturnsToStart() {
-        var type = ScriptBlockService.ScriptElementType.sceneHeading
-        var seen: [ScriptBlockService.ScriptElementType] = [type]
-        for _ in 0..<5 {
-            type = ScriptBlockService.nextTypeInCycle(after: type)
-            seen.append(type)
-        }
-        XCTAssertEqual(Set(seen), Set(ScriptBlockService.ScriptElementType.allCases), "Every type should be reachable")
-        XCTAssertEqual(ScriptBlockService.nextTypeInCycle(after: type), .sceneHeading, "Cycle should be closed")
-    }
-
     // MARK: - Persistence
 
     func testReplaceAllBlocksCreatesOrderedBlocksMatchingTheirIndex() throws {
