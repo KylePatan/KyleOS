@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 
-/// PRD §6.4: "A writing project is a container for all related documents." Only Prose and Act
-/// Outline documents are creatable from here — Script/Scene Outline/Bible modes aren't built yet
-/// (Decision Gate A governs the script editor specifically). Total time reuses
+/// PRD §6.4: "A writing project is a container for all related documents." Prose, Act Outline,
+/// and Script documents are creatable from here — Scene Outline/Bible modes aren't standalone
+/// document types (see SceneService.swift's doc comment for why Scene Outline specifically isn't
+/// one). Total time reuses
 /// `HomeService.totalLoggedSeconds`, the same cumulative-across-all-WorkItems calculation Home's
 /// project cards already use (PRD §4.3: "include all logged work across the project").
 struct WritingProjectDetailView: View {
@@ -80,6 +81,7 @@ struct WritingProjectDetailView: View {
                 Menu {
                     Button("Prose", action: addProseDocument)
                     Button("Act Outline", action: addActOutlineDocument)
+                    Button("Script", action: addScriptDocument)
                 } label: {
                     Label("New Document", systemImage: "plus")
                 }
@@ -122,6 +124,17 @@ struct WritingProjectDetailView: View {
         DocumentService.createDocument(
             title: ordinal == 1 ? "Act Outline" : "Act Outline \(ordinal)",
             type: .actOutline,
+            in: project,
+            context: context
+        )
+        try? context.save()
+    }
+
+    private func addScriptDocument() {
+        let ordinal = project.documents.filter { $0.documentType == .script }.count + 1
+        DocumentService.createDocument(
+            title: ordinal == 1 ? "Script" : "Script \(ordinal)",
+            type: .script,
             in: project,
             context: context
         )

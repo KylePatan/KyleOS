@@ -2,10 +2,10 @@ import SwiftUI
 import SwiftData
 
 /// V0.2 Writing (PRD §6.3): shows active, finished, and idea/not-started Writing Projects.
-/// Container/list layer, prose editor, Act Outline (§6.11), and Scene Outline (§6.11, a
-/// drill-down of an Act — see SceneService.swift) exist so far — script mode and side-by-side
-/// split view are later increments (Decision Gate A governs the script editor specifically, see
-/// docs/PHASE_DECISION_REGISTER.md).
+/// Container/list layer, prose editor, Act Outline (§6.11), Scene Outline (§6.11, a drill-down
+/// of an Act — see SceneService.swift), Focus Timer, PDF export, Workspace Restoration, and the
+/// Script Editor (Decision Gate A, resolved with Kyle — see ScriptEditorView.swift) exist so far.
+/// Side-by-side split view (§6.12/§6.13) is a later increment.
 struct WritingHomeView: View {
     // SwiftData's #Predicate can't reliably evaluate a keypath into an enum-typed property
     // (confirmed live: even a plain `!= nil` check on `projectType` crashed with "keypath
@@ -64,6 +64,8 @@ struct WritingHomeView: View {
                     switch document.documentType {
                     case .actOutline:
                         ActOutlineView(document: document)
+                    case .script:
+                        ScriptEditorView(document: document)
                     default:
                         ProseEditorView(document: document)
                     }

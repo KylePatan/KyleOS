@@ -623,4 +623,59 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(project.lastOpenedDocument?.id, documentID)
         }
     }
+
+    func testStoreWrittenUnderV11OpensCleanlyAsV12WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV11Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        let documentID: UUID
+        // Write a store using ONLY the V11 schema shape — ScriptBlock does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV11.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV11.Project(title: "Pre-V12 Project", projectType: .tvPilot)
+            projectID = project.id
+            context.insert(project)
+            let document = KyleOSSchemaV11.Document(title: "Pilot Script", documentType: .script, project: project)
+            documentID = document.id
+            context.insert(document)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            XCTAssertEqual(projects.count, 1)
+            guard let project = projects.first else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            let documents = try DocumentService.documents(for: project, in: context)
+            XCTAssertEqual(documents.count, 1)
+            XCTAssertEqual(documents.first?.id, documentID)
+            guard let document = documents.first else {
+                return XCTFail("Expected the pre-migration document to survive")
+            }
+            XCTAssertTrue(document.scriptBlocks.isEmpty)
+
+            // The new entity must actually be usable post-migration, not just present.
+            ScriptBlockService.replaceAllBlocks(for: document, with: [(.sceneHeading, "INT. DINER - DAY")], context: context)
+            try context.save()
+
+            XCTAssertEqual(ScriptBlockService.blocks(for: document).map(\.text), ["INT. DINER - DAY"])
+        }
+    }
 }

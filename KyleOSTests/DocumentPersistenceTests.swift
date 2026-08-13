@@ -45,7 +45,7 @@ final class DocumentPersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV11.Document>())
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV12.Document>())
         XCTAssertEqual(remaining.count, 0, "Deleting a Project must cascade-delete its Documents")
     }
 
@@ -78,7 +78,7 @@ final class DocumentPersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let allDocs = try context.fetch(FetchDescriptor<KyleOSSchemaV11.Document>())
+            let allDocs = try context.fetch(FetchDescriptor<KyleOSSchemaV12.Document>())
             XCTAssertEqual(allDocs.count, 1)
             XCTAssertEqual(allDocs.first?.id, documentID)
             XCTAssertEqual(allDocs.first?.content, "Beat sheet draft one.")
