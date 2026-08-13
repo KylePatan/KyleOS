@@ -32,6 +32,93 @@ final class WorkItemPersistenceTests: XCTestCase {
         XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1, "A second call must not create a duplicate")
     }
 
+    func testStandUpWorkItemForJokeCreatesOneLinkedToTheJokeOnFirstCall() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food bit", context: context)
+        try context.save()
+
+        let workItem = try WorkItemService.standUpWorkItem(for: joke, context: context)
+        try context.save()
+
+        XCTAssertEqual(workItem.joke?.id, joke.id)
+        XCTAssertNil(workItem.chunk)
+        XCTAssertNil(workItem.project)
+        XCTAssertEqual(workItem.workspace, .standUp)
+    }
+
+    func testStandUpWorkItemForJokeReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food bit", context: context)
+        try context.save()
+
+        let first = try WorkItemService.standUpWorkItem(for: joke, context: context)
+        try context.save()
+        let second = try WorkItemService.standUpWorkItem(for: joke, context: context)
+
+        XCTAssertEqual(first.id, second.id)
+    }
+
+    func testStandUpWorkItemForChunkCreatesOneLinkedToTheChunk() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let chunk = ChunkService.createChunk(title: "Travel Bit", context: context)
+        try context.save()
+
+        let workItem = try WorkItemService.standUpWorkItem(for: chunk, context: context)
+        try context.save()
+
+        XCTAssertEqual(workItem.chunk?.id, chunk.id)
+        XCTAssertNil(workItem.joke)
+        XCTAssertEqual(workItem.title, "Travel Bit")
+    }
+
+    func testGeneralStandUpWorkItemHasNoJokeOrChunkAndIsReused() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let first = try WorkItemService.generalStandUpWorkItem(context: context)
+        try context.save()
+        let second = try WorkItemService.generalStandUpWorkItem(context: context)
+
+        XCTAssertEqual(first.id, second.id)
+        XCTAssertNil(first.joke)
+        XCTAssertNil(first.chunk)
+        XCTAssertEqual(first.workspace, .standUp)
+        XCTAssertEqual(first.title, "Stand-Up Writing")
+    }
+
+    func testGeneralStandUpWorkItemIsDistinctFromAJokeSpecificWorkItem() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food bit", context: context)
+        try context.save()
+
+        let general = try WorkItemService.generalStandUpWorkItem(context: context)
+        let jokeSpecific = try WorkItemService.standUpWorkItem(for: joke, context: context)
+
+        XCTAssertNotEqual(general.id, jokeSpecific.id)
+    }
+
+    func testDeletingJokeNullifiesRatherThanDeletingItsWorkItem() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food bit", context: context)
+        try context.save()
+        let workItem = try WorkItemService.standUpWorkItem(for: joke, context: context)
+        let workItemID = workItem.id
+        try context.save()
+
+        context.delete(joke)
+        try context.save()
+
+        let survivingWorkItems = try context.fetch(FetchDescriptor<WorkItemService.WorkItem>())
+        let survivor = survivingWorkItems.first { $0.id == workItemID }
+        XCTAssertNotNil(survivor, "Deleting the Joke must not delete its logged Work Item history")
+        XCTAssertNil(survivor?.joke)
+    }
+
     func testCreatingAWorkItemSeedsEstimateFromMatchingWorkTypeDefault() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
@@ -163,7 +250,7 @@ final class WorkItemPersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV18.WorkItem>())
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV19.WorkItem>())
         XCTAssertEqual(remaining.count, 0, "Deleting a Project must cascade-delete its Work Items")
     }
 
@@ -198,7 +285,7 @@ final class WorkItemPersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let allItems = try context.fetch(FetchDescriptor<KyleOSSchemaV18.WorkItem>())
+            let allItems = try context.fetch(FetchDescriptor<KyleOSSchemaV19.WorkItem>())
             XCTAssertEqual(allItems.count, 1)
             XCTAssertEqual(allItems.first?.id, workItemID)
             XCTAssertEqual(allItems.first?.progress, 40)

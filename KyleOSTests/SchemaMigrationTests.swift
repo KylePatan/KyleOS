@@ -969,4 +969,50 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(gig.afterGigNotes, "Killed with the closer.")
         }
     }
+
+    func testStoreWrittenUnderV18OpensCleanlyAsV19WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV18Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let jokeID: UUID
+        // Write a store using ONLY the V18 schema shape — WorkItem has no joke/chunk fields yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV18.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let joke = KyleOSSchemaV18.Joke(text: "Pre-V19 joke", order: 0)
+            jokeID = joke.id
+            context.insert(joke)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let jokes = try context.fetch(FetchDescriptor<JokeService.Joke>())
+            XCTAssertEqual(jokes.count, 1)
+            guard let joke = jokes.first(where: { $0.id == jokeID }) else {
+                return XCTFail("Expected the pre-migration joke to survive")
+            }
+            XCTAssertTrue(joke.workItems.isEmpty, "New relationship array should default to empty, not crash or fabricate data")
+
+            // The new entity must actually be usable post-migration, not just present.
+            let workItem = try WorkItemService.standUpWorkItem(for: joke, context: context)
+            try context.save()
+
+            XCTAssertEqual(workItem.joke?.id, jokeID)
+            XCTAssertEqual(joke.workItems.map(\.id), [workItem.id])
+        }
+    }
 }

@@ -88,6 +88,7 @@ private struct JokeCard: View {
     let otherStatuses: [JokeService.JokeStatus]
 
     @Environment(\.modelContext) private var context
+    @Environment(FocusTimerController.self) private var timerController
     @State private var title = ""
     @State private var text = ""
 
@@ -119,6 +120,19 @@ private struct JokeCard: View {
                 .menuStyle(.borderlessButton)
                 .fixedSize()
                 Spacer()
+                /// PRD §7.11: "start a timed session against a specific Joke." Only offered when
+                /// idle — the app has one shared timer, so a running session must be
+                /// finished/discarded via the ActiveTimerBanner before starting another.
+                if timerController.state == .idle {
+                    Button {
+                        guard let workItem = try? WorkItemService.standUpWorkItem(for: joke, context: context) else { return }
+                        timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                        try? context.save()
+                    } label: {
+                        Image(systemName: "timer")
+                    }
+                    .buttonStyle(.borderless)
+                }
                 Button(role: .destructive) {
                     JokeService.archive(joke)
                     try? context.save()
@@ -146,4 +160,5 @@ private struct JokeCard: View {
         JokeBoardView()
     }
     .modelContainer(container)
+    .environment(FocusTimerController())
 }

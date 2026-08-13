@@ -1,11 +1,14 @@
 import SwiftUI
 import SwiftData
 
-/// PRD §7.6: Chunk detail — title/notes/status, its ordered Jokes (draggable within the Chunk,
-/// removable without deleting the Joke), and adding loose Jokes into it.
+/// PRD §7.6/§7.11: Chunk detail — title/notes/status, its ordered Jokes (draggable within the
+/// Chunk, removable without deleting the Joke), adding loose Jokes into it, and starting a timed
+/// session against this Chunk (§7.11). No `ActiveTimerBanner` here — `StandUpHomeView` already
+/// shows one at the container level, shared across all Stand Up screens.
 struct ChunkDetailView: View {
     let chunk: ChunkService.Chunk
     @Environment(\.modelContext) private var context
+    @Environment(FocusTimerController.self) private var timerController
 
     @State private var title = ""
     @State private var notes = ""
@@ -57,6 +60,13 @@ struct ChunkDetailView: View {
                 }
             }
             .frame(width: 160)
+            if timerController.state == .idle {
+                Button("Start Timer") {
+                    guard let workItem = try? WorkItemService.standUpWorkItem(for: chunk, context: context) else { return }
+                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                    try? context.save()
+                }
+            }
         }
     }
 
@@ -123,4 +133,5 @@ struct ChunkDetailView: View {
         ChunkDetailView(chunk: chunk)
     }
     .modelContainer(container)
+    .environment(FocusTimerController())
 }

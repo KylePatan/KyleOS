@@ -5,8 +5,8 @@ import SwiftData
 /// §4. A Draft is a formally preserved, immutable prior version — distinct from autosave
 /// recovery snapshots, which are transient and never user-visible (§6.16).
 enum DraftService {
-    typealias Document = KyleOSSchemaV18.Document
-    typealias Draft = KyleOSSchemaV18.Draft
+    typealias Document = KyleOSSchemaV19.Document
+    typealias Draft = KyleOSSchemaV19.Draft
 
     /// PRD §6.15's own example progression: "First Draft, Second Draft, Third Draft,
     /// additional/custom drafts." Beyond the named ordinals, falls back to a numbered label —

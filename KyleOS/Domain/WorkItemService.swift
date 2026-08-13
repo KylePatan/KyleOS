@@ -4,11 +4,13 @@ import SwiftData
 /// Reusable domain actions for Work Items — Create/Complete/Change Status per PRD §15.1 — kept
 /// out of views per CLAUDE.md §4.
 enum WorkItemService {
-    typealias WorkItem = KyleOSSchemaV18.WorkItem
-    typealias Workspace = KyleOSSchemaV18.Workspace
-    typealias WorkItemStatus = KyleOSSchemaV18.WorkItemStatus
-    typealias Project = KyleOSSchemaV18.Project
-    typealias Document = KyleOSSchemaV18.Document
+    typealias WorkItem = KyleOSSchemaV19.WorkItem
+    typealias Workspace = KyleOSSchemaV19.Workspace
+    typealias WorkItemStatus = KyleOSSchemaV19.WorkItemStatus
+    typealias Project = KyleOSSchemaV19.Project
+    typealias Document = KyleOSSchemaV19.Document
+    typealias Joke = KyleOSSchemaV19.Joke
+    typealias Chunk = KyleOSSchemaV19.Chunk
 
     /// Generic fallback when no WorkTypeDefault matches `workTypeName` — better than a hard
     /// crash, but real usage should mostly hit the WorkTypeDefault-seeded path below.
@@ -130,5 +132,64 @@ enum WorkItemService {
             document: document,
             context: context
         )
+    }
+
+    /// PRD §7.11: "The user can start a timed session against a specific Joke... or a general
+    /// Stand-Up Writing session." Stand-Up material has no Project (unlike Writing's Documents),
+    /// so this constructs the WorkItem directly rather than routing through `createWorkItem`
+    /// (which requires one). Lazily finds or creates, same pattern as `writingWorkItem`.
+    static func standUpWorkItem(for joke: Joke, context: ModelContext) throws -> WorkItem {
+        let jokeID = joke.id
+        if let existing = try context.fetch(
+            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.joke?.id == jokeID })
+        ).first {
+            return existing
+        }
+        let workItem = WorkItem(
+            title: joke.title.isEmpty ? joke.text : joke.title,
+            workspace: .standUp,
+            workTypeName: "Stand-Up Development",
+            project: nil
+        )
+        workItem.joke = joke
+        context.insert(workItem)
+        return workItem
+    }
+
+    static func standUpWorkItem(for chunk: Chunk, context: ModelContext) throws -> WorkItem {
+        let chunkID = chunk.id
+        if let existing = try context.fetch(
+            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.chunk?.id == chunkID })
+        ).first {
+            return existing
+        }
+        let workItem = WorkItem(
+            title: chunk.title,
+            workspace: .standUp,
+            workTypeName: "Stand-Up Development",
+            project: nil
+        )
+        workItem.chunk = chunk
+        context.insert(workItem)
+        return workItem
+    }
+
+    /// The "general Stand-Up Writing session" case — no Joke/Chunk attached. Filters in-memory
+    /// rather than via `#Predicate` (the Sixth/Tenth lesson: `#Predicate` can't reliably
+    /// evaluate a comparison against an enum-typed property like `workspace`); fine at
+    /// Foundation's data volumes, same established workaround used elsewhere.
+    static func generalStandUpWorkItem(context: ModelContext) throws -> WorkItem {
+        let all = try context.fetch(FetchDescriptor<WorkItem>())
+        if let existing = all.first(where: { $0.workspace == .standUp && $0.joke == nil && $0.chunk == nil }) {
+            return existing
+        }
+        let workItem = WorkItem(
+            title: "Stand-Up Writing",
+            workspace: .standUp,
+            workTypeName: "Stand-Up Development",
+            project: nil
+        )
+        context.insert(workItem)
+        return workItem
     }
 }

@@ -30,6 +30,7 @@
 		23BF84EE1A9C948F49E12B63 /* KyleOSSchemaV16.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5781A1BEB14219FA2CC9B6 /* KyleOSSchemaV16.swift */; };
 		243CF232F0A678D058CEE3B4 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B05BC00F9041DA41AA5E74 /* ExportService.swift */; };
 		252B55FA286040385CE319DF /* ScriptBlockServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BDD98234E1607C97ADCA2D0 /* ScriptBlockServiceTests.swift */; };
+		25948435255141F199AC1872 /* KyleOSSchemaV19.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */; };
 		28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */; };
 		29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */; };
 		2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */; };
@@ -171,6 +172,7 @@
 		4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV3.swift; sourceTree = "<group>"; };
 		5118E5FE8729FFEA8FB2D27A /* ChunkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChunkService.swift; sourceTree = "<group>"; };
 		522D786A6B687BD929FB976C /* QuickAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddButton.swift; sourceTree = "<group>"; };
+		52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV19.swift; sourceTree = "<group>"; };
 		59E199DA7890341CDC60AA6C /* HeadlineSetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadlineSetDetailView.swift; sourceTree = "<group>"; };
 		5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultTests.swift; sourceTree = "<group>"; };
 		5D8B75DB46A34A6FBEE83DB6 /* InterruptedSessionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterruptedSessionPrompt.swift; sourceTree = "<group>"; };
@@ -377,6 +379,7 @@
 				AB5781A1BEB14219FA2CC9B6 /* KyleOSSchemaV16.swift */,
 				2A748D5CB451E94B6E24D834 /* KyleOSSchemaV17.swift */,
 				C2CE449B27F40FD8589092D9 /* KyleOSSchemaV18.swift */,
+				52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -677,6 +680,7 @@
 				23BF84EE1A9C948F49E12B63 /* KyleOSSchemaV16.swift in Sources */,
 				ACA5A09C72C62104E171C3B4 /* KyleOSSchemaV17.swift in Sources */,
 				E64DF16A6CB29FBF28525A71 /* KyleOSSchemaV18.swift in Sources */,
+				25948435255141F199AC1872 /* KyleOSSchemaV19.swift in Sources */,
 				F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */,
 				3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */,
 				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,

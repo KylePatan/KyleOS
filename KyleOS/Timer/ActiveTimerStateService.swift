@@ -5,8 +5,8 @@ import SwiftData
 /// FocusTimerController (the live in-memory state machine) so the persistence primitive is
 /// independently testable, matching the AutosaveController/DocumentService split.
 enum ActiveTimerStateService {
-    typealias ActiveTimerState = KyleOSSchemaV18.ActiveTimerState
-    typealias WorkItem = KyleOSSchemaV18.WorkItem
+    typealias ActiveTimerState = KyleOSSchemaV19.ActiveTimerState
+    typealias WorkItem = KyleOSSchemaV19.WorkItem
 
     @discardableResult
     static func start(
