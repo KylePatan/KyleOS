@@ -7,11 +7,11 @@ import SwiftData
 /// Never resolve a future model change by deleting the user's store (CLAUDE.md §5).
 enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self, KyleOSSchemaV14.self, KyleOSSchemaV15.self]
+        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self, KyleOSSchemaV14.self, KyleOSSchemaV15.self, KyleOSSchemaV16.self]
     }
 
     static var stages: [MigrationStage] {
-        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13, migrateV13toV14, migrateV14toV15]
+        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13, migrateV13toV14, migrateV14toV15, migrateV15toV16]
     }
 
     /// V2 only adds a new entity (Document) and a relationship pointing at it — no existing
@@ -120,5 +120,13 @@ enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static let migrateV14toV15 = MigrationStage.lightweight(
         fromVersion: KyleOSSchemaV14.self,
         toVersion: KyleOSSchemaV15.self
+    )
+
+    /// V16 adds Gig (with a new relationship from Gig to the existing CalendarEvent model) plus
+    /// one new field on CalendarEvent (gig) — both genuinely Optional/additive, the safe shape,
+    /// not V8's mistake.
+    static let migrateV15toV16 = MigrationStage.lightweight(
+        fromVersion: KyleOSSchemaV15.self,
+        toVersion: KyleOSSchemaV16.self
     )
 }

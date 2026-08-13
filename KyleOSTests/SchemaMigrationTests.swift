@@ -824,4 +824,55 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(chunk.headlineSet?.id, set.id)
         }
     }
+
+    func testStoreWrittenUnderV15OpensCleanlyAsV16WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV15Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let eventID: UUID
+        // Write a store using ONLY the V15 schema shape — CalendarEvent has no `gig` field,
+        // Gig does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV15.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let event = KyleOSSchemaV15.CalendarEvent(
+                eventType: .personal,
+                startAt: .now,
+                endAt: .now.addingTimeInterval(3600)
+            )
+            eventID = event.id
+            context.insert(event)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let events = try context.fetch(FetchDescriptor<KyleOSSchemaV16.CalendarEvent>())
+            XCTAssertEqual(events.count, 1)
+            guard let event = events.first(where: { $0.id == eventID }) else {
+                return XCTFail("Expected the pre-migration calendar event to survive")
+            }
+            XCTAssertNil(event.gig, "New optional field should default to nil, not crash or fabricate data")
+
+            // The new entity must actually be usable post-migration, not just present.
+            let gig = GigService.createGig(venue: "The Comedy Cellar", startAt: .now, context: context)
+            try context.save()
+
+            XCTAssertNotNil(gig.calendarEvent)
+            XCTAssertEqual(gig.calendarEvent?.eventType, .standUpGig)
+        }
+    }
 }
