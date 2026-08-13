@@ -10,6 +10,7 @@ import SwiftData
 struct SketchBoardView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \ProjectService.Project.updatedAt, order: .reverse) private var allProjects: [ProjectService.Project]
+    @State private var path = NavigationPath()
 
     private var finishedSketches: [ProjectService.Project] {
         allProjects.filter { $0.projectType == .sketch && $0.status == .finished && !$0.isArchived }
@@ -20,20 +21,27 @@ struct SketchBoardView: View {
     }
 
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: 16) {
-                ForEach(SketchProductionService.SketchProductionStatus.allCases, id: \.self) { status in
-                    column(for: status)
+        NavigationStack(path: $path) {
+            ScrollView(.horizontal) {
+                HStack(alignment: .top, spacing: 16) {
+                    ForEach(SketchProductionService.SketchProductionStatus.allCases, id: \.self) { status in
+                        column(for: status)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Sketches")
+            .overlay {
+                if finishedSketches.isEmpty {
+                    Text("No finished Sketches yet. Mark a Sketch project's Writing status Finished to see it here.")
+                        .foregroundStyle(.secondary)
+                        .padding()
                 }
             }
-            .padding()
-        }
-        .navigationTitle("Sketches")
-        .overlay {
-            if finishedSketches.isEmpty {
-                Text("No finished Sketches yet. Mark a Sketch project's Writing status Finished to see it here.")
-                    .foregroundStyle(.secondary)
-                    .padding()
+            .navigationDestination(for: PersistentIdentifier.self) { id in
+                if let project = finishedSketches.first(where: { $0.persistentModelID == id }) {
+                    SketchDetailView(project: project)
+                }
             }
         }
     }
@@ -70,7 +78,9 @@ private struct SketchCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(project.title).font(.callout.bold())
+            NavigationLink(value: project.persistentModelID) {
+                Text(project.title).font(.callout.bold())
+            }
             Toggle("Post date", isOn: $hasPostDate)
                 .font(.caption)
                 .onChange(of: hasPostDate) {

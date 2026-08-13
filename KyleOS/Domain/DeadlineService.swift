@@ -4,9 +4,9 @@ import SwiftData
 /// Reusable domain actions for Deadlines (PRD §14.10), kept out of views per CLAUDE.md §4. A
 /// Deadline attaches to exactly one of Project or WorkItem — callers pick which factory to use.
 enum DeadlineService {
-    typealias Deadline = KyleOSSchemaV22.Deadline
-    typealias Project = KyleOSSchemaV22.Project
-    typealias WorkItem = KyleOSSchemaV22.WorkItem
+    typealias Deadline = KyleOSSchemaV23.Deadline
+    typealias Project = KyleOSSchemaV23.Project
+    typealias WorkItem = KyleOSSchemaV23.WorkItem
 
     @discardableResult
     static func setDeadline(

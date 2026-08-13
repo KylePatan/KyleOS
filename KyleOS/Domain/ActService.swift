@@ -5,8 +5,8 @@ import SwiftData
 /// per CLAUDE.md §4. Acts read top-to-bottom in story order — `order` is a plain ascending
 /// index, not WorkItem's inverted "higher number = more important" priority scheme.
 enum ActService {
-    typealias Act = KyleOSSchemaV22.Act
-    typealias Document = KyleOSSchemaV22.Document
+    typealias Act = KyleOSSchemaV23.Act
+    typealias Document = KyleOSSchemaV23.Document
 
     @discardableResult
     static func createAct(title: String, synopsis: String = "", in document: Document, context: ModelContext) -> Act {
