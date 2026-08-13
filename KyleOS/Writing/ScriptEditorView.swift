@@ -9,9 +9,9 @@ import SwiftData
 /// `.scriptElementType` attribute identifying its ScriptElementType, which drives both the
 /// paragraph's visual formatting and Enter/Tab's transition behavior.
 ///
-/// Deliberately still deferred to later increments: character/location autocomplete (§6.8/§6.9)
-/// and PDF export of scripts. Auto-uppercasing and the scene navigator (§6.10), both originally
-/// deferred too, have since been added.
+/// Deliberately still deferred to a later increment: PDF export of scripts. Auto-uppercasing,
+/// the scene navigator (§6.10), and character/scene-heading suggestions (§6.8/§6.9) — all
+/// originally deferred too — have since been added.
 private extension NSAttributedString.Key {
     static let scriptElementType = NSAttributedString.Key("KyleOSScriptElementType")
 }
@@ -81,6 +81,10 @@ private enum ScriptFormatting {
 /// ("The editor should offer a visible element selector as a fallback" — Tab is that fallback's
 /// keyboard equivalent).
 final class ScriptTextView: NSTextView {
+    /// Set once by ScriptEditorRepresentable right after creation — needed for the
+    /// character/scene-heading suggestions below (PRD §6.8/§6.9).
+    var document: ScriptBlockService.Document?
+
     override func insertNewline(_ sender: Any?) {
         let currentType = ScriptFormatting.type(at: max(selectedRange().location - 1, 0), in: textStorage!)
         super.insertNewline(sender)
@@ -121,6 +125,41 @@ final class ScriptTextView: NSTextView {
         guard paragraphRange.length > 0 else { return }
         storage.addAttributes(ScriptFormatting.attributes(for: type), range: paragraphRange)
     }
+
+    /// PRD §6.8/§6.9: known character names and scene headings, offered via AppKit's native
+    /// completion UI (triggered by the standard macOS completion key, Escape by default) —
+    /// "The user can always type manually," so this is a suggestion mechanism, not forced
+    /// autocomplete, matching that requirement without hand-building a custom popover.
+    private func currentElementType() -> ScriptBlockService.ScriptElementType {
+        guard let storage = textStorage else { return .action }
+        return ScriptFormatting.type(at: selectedRange().location, in: storage)
+    }
+
+    /// Widened to the whole current paragraph for Character/Scene Heading blocks so multi-word
+    /// names ("SHERIFF COLE") and full headings ("INT. DINER - DAY") complete as a unit, rather
+    /// than NSTextView's default single-word range.
+    override var rangeForUserCompletion: NSRange {
+        guard let storage = textStorage else { return super.rangeForUserCompletion }
+        let type = currentElementType()
+        guard type == .character || type == .sceneHeading else { return super.rangeForUserCompletion }
+        return (storage.string as NSString).paragraphRange(for: selectedRange())
+    }
+
+    override func completions(
+        forPartialWordRange charRange: NSRange,
+        indexOfSelectedItem index: UnsafeMutablePointer<Int>
+    ) -> [String]? {
+        guard let document, let storage = textStorage else { return nil }
+        let partial = (storage.string as NSString).substring(with: charRange)
+        let candidates: [String]
+        switch currentElementType() {
+        case .character: candidates = ScriptBlockService.knownCharacterNames(for: document)
+        case .sceneHeading: candidates = ScriptBlockService.sceneHeadingSuggestions(for: document)
+        default: return nil
+        }
+        guard !partial.isEmpty else { return candidates }
+        return candidates.filter { $0.hasPrefix(partial.uppercased()) }
+    }
 }
 
 struct ScriptEditorRepresentable: NSViewRepresentable {
@@ -133,6 +172,7 @@ struct ScriptEditorRepresentable: NSViewRepresentable {
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = ScriptTextView()
+        textView.document = document
         textView.delegate = context.coordinator
         textView.isRichText = true
         textView.allowsUndo = true

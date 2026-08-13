@@ -53,6 +53,38 @@ enum ScriptBlockService {
         blocks(for: document).filter { $0.elementType == .sceneHeading }
     }
 
+    /// PRD §6.9: "Character names previously used in the project should be suggested when
+    /// entering a Character block." Distinct, non-empty names in first-used order.
+    static func knownCharacterNames(for document: Document) -> [String] {
+        var seen = Set<String>()
+        var names: [String] = []
+        for block in blocks(for: document) where block.elementType == .character {
+            let name = block.text.trimmingCharacters(in: .whitespaces)
+            guard !name.isEmpty, !seen.contains(name) else { continue }
+            seen.insert(name)
+            names.append(name)
+        }
+        return names
+    }
+
+    /// PRD §6.8: "Known project locations" and previously-used scene headings, alongside the
+    /// standard INT./EXT./INT.-EXT. prefixes (the user can always type manually — this is
+    /// suggestion, not a forced format).
+    static func sceneHeadingSuggestions(for document: Document) -> [String] {
+        let standardPrefixes = SceneElementType.allCases.map(\.rawValue)
+        var seen = Set(standardPrefixes)
+        var suggestions = standardPrefixes
+        for block in sceneHeadings(for: document) {
+            let heading = block.text.trimmingCharacters(in: .whitespaces)
+            guard !heading.isEmpty, !seen.contains(heading) else { continue }
+            seen.insert(heading)
+            suggestions.append(heading)
+        }
+        return suggestions
+    }
+
+    private typealias SceneElementType = KyleOSSchemaV12.SceneLocationType
+
     /// Syncs a document's entire block array in one operation — the simplest correct way to
     /// persist edits from a free-form NSTextStorage (see ScriptEditorView) back to structured
     /// SwiftData rows, rather than diffing paragraph-by-paragraph. Existing blocks beyond the

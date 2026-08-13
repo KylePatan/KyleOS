@@ -105,6 +105,74 @@ final class ScriptBlockServiceTests: XCTestCase {
         XCTAssertTrue(ScriptBlockService.sceneHeadings(for: document).isEmpty)
     }
 
+    // MARK: - Character/location suggestions
+
+    func testKnownCharacterNamesReturnsDistinctNamesInFirstUsedOrder() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [
+                (.character, "MARA"), (.dialogue, "Hi."),
+                (.character, "SHERIFF COLE"), (.dialogue, "Morning."),
+                (.character, "MARA"), (.dialogue, "Coffee, black.")
+            ],
+            context: context
+        )
+        try context.save()
+
+        XCTAssertEqual(ScriptBlockService.knownCharacterNames(for: document), ["MARA", "SHERIFF COLE"])
+    }
+
+    func testKnownCharacterNamesExcludesBlankCharacterBlocks() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(for: document, with: [(.character, "")], context: context)
+        try context.save()
+
+        XCTAssertTrue(ScriptBlockService.knownCharacterNames(for: document).isEmpty)
+    }
+
+    func testSceneHeadingSuggestionsIncludesStandardPrefixesAndPreviouslyUsedHeadings() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [(.sceneHeading, "INT. DINER - DAY"), (.action, "..."), (.sceneHeading, "EXT. DOCKS - NIGHT")],
+            context: context
+        )
+        try context.save()
+
+        let suggestions = ScriptBlockService.sceneHeadingSuggestions(for: document)
+        XCTAssertTrue(suggestions.contains("INT."))
+        XCTAssertTrue(suggestions.contains("EXT."))
+        XCTAssertTrue(suggestions.contains("INT./EXT."))
+        XCTAssertTrue(suggestions.contains("INT. DINER - DAY"))
+        XCTAssertTrue(suggestions.contains("EXT. DOCKS - NIGHT"))
+    }
+
+    func testSceneHeadingSuggestionsHasNoDuplicates() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [(.sceneHeading, "INT. DINER - DAY"), (.action, "..."), (.sceneHeading, "INT. DINER - DAY")],
+            context: context
+        )
+        try context.save()
+
+        let suggestions = ScriptBlockService.sceneHeadingSuggestions(for: document)
+        XCTAssertEqual(suggestions.filter { $0 == "INT. DINER - DAY" }.count, 1)
+    }
+
     func testReplaceAllBlocksReplacesRatherThanAppends() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
