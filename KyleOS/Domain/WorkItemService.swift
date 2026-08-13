@@ -215,4 +215,22 @@ enum WorkItemService {
         context.insert(workItem)
         return workItem
     }
+
+    /// PRD §9.7: "Cumulative project time should include Writing and later production/post-
+    /// production work as one connected history." Unlike Writing (per-Document) or Clips
+    /// (per-Clip), the whole Project is the natural unit for a Sketch's editing phase, and
+    /// Project already supports WorkItem directly, so no new schema is needed. Lazily finds or
+    /// creates, same pattern as `writingWorkItem`/`clipWorkItem`.
+    static func sketchEditingWorkItem(for project: Project, context: ModelContext) throws -> WorkItem {
+        if let existing = try workItems(for: project, in: context).first(where: { $0.workspace == .sketches }) {
+            return existing
+        }
+        return try createWorkItem(
+            title: project.title,
+            workspace: .sketches,
+            workTypeName: "Sketch Editing",
+            in: project,
+            context: context
+        )
+    }
 }

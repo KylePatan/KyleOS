@@ -168,6 +168,35 @@ final class WorkItemPersistenceTests: XCTestCase {
         XCTAssertNil(survivor?.clip)
     }
 
+    func testSketchEditingWorkItemCreatesOneLinkedToTheProjectOnFirstCall() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+
+        let workItem = try WorkItemService.sketchEditingWorkItem(for: project, context: context)
+        try context.save()
+
+        XCTAssertEqual(workItem.project?.id, project.id)
+        XCTAssertEqual(workItem.workspace, .sketches)
+        XCTAssertEqual(workItem.title, "Airport Sketch")
+        XCTAssertEqual(workItem.workTypeName, "Sketch Editing")
+    }
+
+    func testSketchEditingWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+
+        let first = try WorkItemService.sketchEditingWorkItem(for: project, context: context)
+        try context.save()
+        let second = try WorkItemService.sketchEditingWorkItem(for: project, context: context)
+
+        XCTAssertEqual(first.id, second.id)
+        XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1, "A second call must not create a duplicate")
+    }
+
     func testCreatingAWorkItemSeedsEstimateFromMatchingWorkTypeDefault() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

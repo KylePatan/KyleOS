@@ -10,6 +10,7 @@ import UniformTypeIdentifiers
 struct SketchDetailView: View {
     let project: ProjectService.Project
     @Environment(\.modelContext) private var context
+    @Environment(FocusTimerController.self) private var timerController
 
     @State private var status: SketchProductionService.SketchProductionStatus = .filmingNotScheduled
     @State private var hasPostDate = false
@@ -51,6 +52,8 @@ struct SketchDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 header
+                Divider()
+                timerSection
                 Divider()
                 statusSection
                 Divider()
@@ -102,6 +105,22 @@ struct SketchDetailView: View {
 
     private var header: some View {
         Text(project.title).font(.title3.bold())
+    }
+
+    /// PRD §9.7: "Cumulative project time should include Writing and later production/post-
+    /// production work as one connected history." Reuses the shared FocusTimerController/
+    /// ActiveTimerBanner verbatim, same pattern as ClipDetailView's timerSection.
+    private var timerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ActiveTimerBanner()
+            if timerController.state == .idle {
+                Button("Start Timer") {
+                    guard let workItem = try? WorkItemService.sketchEditingWorkItem(for: project, context: context) else { return }
+                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                    try? context.save()
+                }
+            }
+        }
     }
 
     private var statusSection: some View {
@@ -369,4 +388,5 @@ struct SketchDetailView: View {
         SketchDetailView(project: project)
     }
     .modelContainer(container)
+    .environment(FocusTimerController())
 }
