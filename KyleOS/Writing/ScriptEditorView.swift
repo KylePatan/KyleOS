@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import SwiftData
+import UniformTypeIdentifiers
 
 /// Decision Gate A's chosen architecture (docs/PHASE_DECISION_REGISTER.md, resolved with Kyle):
 /// AppKit/TextKit wrapped for SwiftUI, not plain SwiftUI text components — the only approach that
@@ -9,14 +10,17 @@ import SwiftData
 /// `.scriptElementType` attribute identifying its ScriptElementType, which drives both the
 /// paragraph's visual formatting and Enter/Tab's transition behavior.
 ///
-/// Deliberately still deferred to a later increment: PDF export of scripts. Auto-uppercasing,
-/// the scene navigator (§6.10), and character/scene-heading suggestions (§6.8/§6.9) — all
-/// originally deferred too — have since been added.
+/// Auto-uppercasing, the scene navigator (§6.10), character/scene-heading suggestions
+/// (§6.8/§6.9), and PDF export (§6.20) — all originally deferred from the first increment —
+/// have since been added, closing out every Script Editor requirement that doesn't depend on
+/// another module that doesn't exist yet (e.g. §6.14's "Create Script from Scene Outline").
 private extension NSAttributedString.Key {
     static let scriptElementType = NSAttributedString.Key("KyleOSScriptElementType")
 }
 
-private enum ScriptFormatting {
+/// Internal, not private — ExportService.exportScriptPDF reuses this directly so the exported
+/// PDF always visually matches the live editor.
+enum ScriptFormatting {
     static func font(for type: ScriptBlockService.ScriptElementType) -> NSFont {
         NSFont(name: "Courier", size: 12) ?? NSFont.userFixedPitchFont(ofSize: 12)!
     }
@@ -294,12 +298,32 @@ struct ScriptEditorView: View {
             .frame(minWidth: 400, maxWidth: .infinity)
         }
         .navigationTitle(document.title)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    exportPDF()
+                } label: {
+                    Label("Export PDF", systemImage: "square.and.arrow.up")
+                }
+            }
+        }
         .onAppear {
             if let project = document.project {
                 ProjectService.recordLastOpenedDocument(document, in: project)
                 try? context.save()
             }
         }
+    }
+
+    /// PRD §6.20: "Writing should support clean PDF export." Reuses ScriptFormatting so the
+    /// exported PDF matches what's on screen (see ExportService.exportScriptPDF's doc comment).
+    private func exportPDF() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.pdf]
+        panel.nameFieldStringValue = document.title
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let blocks = ScriptBlockService.blocks(for: document).map { (type: $0.elementType, text: $0.text) }
+        try? ExportService.exportScriptPDF(title: document.title, blocks: blocks, to: url)
     }
 
     /// PRD §6.10: "A scene navigator should allow jumping between scenes."
