@@ -9,13 +9,9 @@ import SwiftData
 /// `.scriptElementType` attribute identifying its ScriptElementType, which drives both the
 /// paragraph's visual formatting and Enter/Tab's transition behavior.
 ///
-/// Deliberately NOT included in this first increment (kept for later, narrower increments,
-/// matching how Prose got autosave → timer → export as separate passes): auto-uppercasing scene
-/// headings/character cues/transitions while typing, scene navigator, character/location
-/// autocomplete (§6.8/§6.9), and PDF export of scripts. This increment's bar is a correct,
-/// reliable structured editing core — PRD's own priority order for Decision Gate A: "writing
-/// reliability, autosave safety, keyboard flow, and maintainable structured data before
-/// attempting Final Draft-level feature parity."
+/// Deliberately still deferred to later increments: character/location autocomplete (§6.8/§6.9)
+/// and PDF export of scripts. Auto-uppercasing and the scene navigator (§6.10), both originally
+/// deferred too, have since been added.
 private extension NSAttributedString.Key {
     static let scriptElementType = NSAttributedString.Key("KyleOSScriptElementType")
 }
@@ -130,6 +126,10 @@ final class ScriptTextView: NSTextView {
 struct ScriptEditorRepresentable: NSViewRepresentable {
     let document: ScriptBlockService.Document
     let onChange: ([(type: ScriptBlockService.ScriptElementType, text: String)]) -> Void
+    /// PRD §6.10's scene navigator "jump" target — a paragraph index, not a block ID, since
+    /// `replaceAllBlocks` gives every block a fresh ID on every edit (see ScriptBlockService's
+    /// `sceneHeadings(for:)` doc comment).
+    @Binding var scrollToParagraphIndex: Int?
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = ScriptTextView()
@@ -156,7 +156,30 @@ struct ScriptEditorRepresentable: NSViewRepresentable {
         return scrollView
     }
 
-    func updateNSView(_ nsView: NSScrollView, context: Context) {}
+    func updateNSView(_ nsView: NSScrollView, context: Context) {
+        guard let index = scrollToParagraphIndex, let textView = nsView.documentView as? NSTextView, let storage = textView.textStorage else { return }
+        if let range = Self.paragraphRange(at: index, in: storage) {
+            textView.scrollRangeToVisible(range)
+            textView.setSelectedRange(NSRange(location: range.location, length: 0))
+            textView.window?.makeFirstResponder(textView)
+        }
+        DispatchQueue.main.async { scrollToParagraphIndex = nil }
+    }
+
+    static func paragraphRange(at index: Int, in storage: NSTextStorage) -> NSRange? {
+        let fullString = storage.string as NSString
+        guard fullString.length > 0 else { return nil }
+        var location = 0
+        var currentIndex = 0
+        while location < fullString.length {
+            let paragraphRange = fullString.paragraphRange(for: NSRange(location: location, length: 0))
+            if currentIndex == index { return paragraphRange }
+            currentIndex += 1
+            location = paragraphRange.location + paragraphRange.length
+            if paragraphRange.length == 0 { break }
+        }
+        return nil
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onChange: onChange)
@@ -209,18 +232,54 @@ struct ScriptEditorRepresentable: NSViewRepresentable {
 struct ScriptEditorView: View {
     let document: ScriptBlockService.Document
     @Environment(\.modelContext) private var context
+    @State private var scrollToParagraphIndex: Int?
+
+    private var sceneHeadings: [ScriptBlockService.ScriptBlock] {
+        ScriptBlockService.sceneHeadings(for: document)
+    }
 
     var body: some View {
-        ScriptEditorRepresentable(document: document) { entries in
-            ScriptBlockService.replaceAllBlocks(for: document, with: entries, context: context)
-            document.updatedAt = .now
-            try? context.save()
+        HSplitView {
+            sceneNavigator
+                .frame(minWidth: 160, idealWidth: 200, maxWidth: 260)
+            ScriptEditorRepresentable(
+                document: document,
+                onChange: { entries in
+                    ScriptBlockService.replaceAllBlocks(for: document, with: entries, context: context)
+                    document.updatedAt = .now
+                    try? context.save()
+                },
+                scrollToParagraphIndex: $scrollToParagraphIndex
+            )
+            .frame(minWidth: 400, maxWidth: .infinity)
         }
         .navigationTitle(document.title)
         .onAppear {
             if let project = document.project {
                 ProjectService.recordLastOpenedDocument(document, in: project)
                 try? context.save()
+            }
+        }
+    }
+
+    /// PRD §6.10: "A scene navigator should allow jumping between scenes."
+    private var sceneNavigator: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Scenes").font(.headline).padding(8)
+            if sceneHeadings.isEmpty {
+                Text("No scenes yet.").foregroundStyle(.secondary).font(.caption).padding(.horizontal, 8)
+            } else {
+                List(Array(sceneHeadings.enumerated()), id: \.offset) { _, block in
+                    Button {
+                        scrollToParagraphIndex = block.order
+                    } label: {
+                        Text(block.text.isEmpty ? "(untitled scene)" : block.text)
+                            .font(.caption)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }

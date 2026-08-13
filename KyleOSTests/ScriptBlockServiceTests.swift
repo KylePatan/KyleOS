@@ -68,6 +68,43 @@ final class ScriptBlockServiceTests: XCTestCase {
         XCTAssertEqual(blocks.map(\.order), [0, 1, 2, 3])
     }
 
+    // MARK: - Scene navigator
+
+    func testSceneHeadingsReturnsOnlySceneHeadingBlocksInDocumentOrder() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [
+                (.sceneHeading, "INT. DINER - DAY"),
+                (.action, "Quiet morning."),
+                (.sceneHeading, "EXT. DOCKS - NIGHT"),
+                (.action, "The tide is out."),
+                (.transition, "CUT TO:"),
+                (.sceneHeading, "INT. DINER - CONTINUOUS")
+            ],
+            context: context
+        )
+        try context.save()
+
+        let sceneHeadings = ScriptBlockService.sceneHeadings(for: document)
+        XCTAssertEqual(sceneHeadings.map(\.text), ["INT. DINER - DAY", "EXT. DOCKS - NIGHT", "INT. DINER - CONTINUOUS"])
+        XCTAssertEqual(sceneHeadings.map(\.order), [0, 2, 5], "Order should reflect each scene heading's real paragraph position, not its position within just the scene list")
+    }
+
+    func testSceneHeadingsIsEmptyWhenScriptHasNone() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(for: document, with: [(.action, "No scenes yet.")], context: context)
+        try context.save()
+
+        XCTAssertTrue(ScriptBlockService.sceneHeadings(for: document).isEmpty)
+    }
+
     func testReplaceAllBlocksReplacesRatherThanAppends() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

@@ -43,6 +43,16 @@ enum ScriptBlockService {
         document.scriptBlocks.sorted { $0.order < $1.order }
     }
 
+    /// PRD §6.10: "Scene Heading blocks create recognizable scene objects. A scene navigator
+    /// should allow jumping between scenes." Each block's `order` doubles as its paragraph index
+    /// in the editor's NSTextStorage (they're 1:1 by construction), so callers can jump directly
+    /// to a scene without needing a separately-tracked scene identity — useful since
+    /// `replaceAllBlocks` gives every block a fresh ID on every edit, but `order` stays
+    /// meaningful as "the Nth paragraph" for as long as the jump target stays valid.
+    static func sceneHeadings(for document: Document) -> [ScriptBlock] {
+        blocks(for: document).filter { $0.elementType == .sceneHeading }
+    }
+
     /// Syncs a document's entire block array in one operation — the simplest correct way to
     /// persist edits from a free-form NSTextStorage (see ScriptEditorView) back to structured
     /// SwiftData rows, rather than diffing paragraph-by-paragraph. Existing blocks beyond the
