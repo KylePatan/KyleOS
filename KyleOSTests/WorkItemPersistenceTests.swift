@@ -119,6 +119,55 @@ final class WorkItemPersistenceTests: XCTestCase {
         XCTAssertNil(survivor?.joke)
     }
 
+    func testClipWorkItemCreatesOneLinkedToTheClipOnFirstCall() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+
+        let workItem = try WorkItemService.clipWorkItem(for: clip, context: context)
+        try context.save()
+
+        XCTAssertEqual(workItem.clip?.id, clip.id)
+        XCTAssertNil(workItem.project)
+        XCTAssertEqual(workItem.workspace, .clips)
+        XCTAssertEqual(workItem.title, "Airline Bit")
+    }
+
+    func testClipWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+
+        let first = try WorkItemService.clipWorkItem(for: clip, context: context)
+        try context.save()
+        let second = try WorkItemService.clipWorkItem(for: clip, context: context)
+
+        XCTAssertEqual(first.id, second.id)
+    }
+
+    func testDeletingClipNullifiesRatherThanDeletingItsWorkItem() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+        let workItem = try WorkItemService.clipWorkItem(for: clip, context: context)
+        let workItemID = workItem.id
+        try context.save()
+
+        ClipService.delete(clip, context: context)
+        try context.save()
+
+        let survivingWorkItems = try context.fetch(FetchDescriptor<WorkItemService.WorkItem>())
+        let survivor = survivingWorkItems.first { $0.id == workItemID }
+        XCTAssertNotNil(survivor, "Deleting the Clip must not delete its logged Work Item history")
+        XCTAssertNil(survivor?.clip)
+    }
+
     func testCreatingAWorkItemSeedsEstimateFromMatchingWorkTypeDefault() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
@@ -250,7 +299,7 @@ final class WorkItemPersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV20.WorkItem>())
+        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV21.WorkItem>())
         XCTAssertEqual(remaining.count, 0, "Deleting a Project must cascade-delete its Work Items")
     }
 
@@ -285,7 +334,7 @@ final class WorkItemPersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let allItems = try context.fetch(FetchDescriptor<KyleOSSchemaV20.WorkItem>())
+            let allItems = try context.fetch(FetchDescriptor<KyleOSSchemaV21.WorkItem>())
             XCTAssertEqual(allItems.count, 1)
             XCTAssertEqual(allItems.first?.id, workItemID)
             XCTAssertEqual(allItems.first?.progress, 40)

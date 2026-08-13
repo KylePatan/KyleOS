@@ -16,8 +16,8 @@ import SwiftData
 /// changing already-shipped, PRD-§4.4-accurate behavior. Flagged, not silently decided either
 /// way, per CLAUDE.md §13.
 enum GigService {
-    typealias Gig = KyleOSSchemaV20.Gig
-    typealias CalendarEvent = KyleOSSchemaV20.CalendarEvent
+    typealias Gig = KyleOSSchemaV21.Gig
+    typealias CalendarEvent = KyleOSSchemaV21.CalendarEvent
 
     @discardableResult
     static func createGig(

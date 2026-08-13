@@ -4,13 +4,14 @@ import SwiftData
 /// Reusable domain actions for Work Items — Create/Complete/Change Status per PRD §15.1 — kept
 /// out of views per CLAUDE.md §4.
 enum WorkItemService {
-    typealias WorkItem = KyleOSSchemaV20.WorkItem
-    typealias Workspace = KyleOSSchemaV20.Workspace
-    typealias WorkItemStatus = KyleOSSchemaV20.WorkItemStatus
-    typealias Project = KyleOSSchemaV20.Project
-    typealias Document = KyleOSSchemaV20.Document
-    typealias Joke = KyleOSSchemaV20.Joke
-    typealias Chunk = KyleOSSchemaV20.Chunk
+    typealias WorkItem = KyleOSSchemaV21.WorkItem
+    typealias Workspace = KyleOSSchemaV21.Workspace
+    typealias WorkItemStatus = KyleOSSchemaV21.WorkItemStatus
+    typealias Project = KyleOSSchemaV21.Project
+    typealias Document = KyleOSSchemaV21.Document
+    typealias Joke = KyleOSSchemaV21.Joke
+    typealias Chunk = KyleOSSchemaV21.Chunk
+    typealias Clip = KyleOSSchemaV21.Clip
 
     /// Generic fallback when no WorkTypeDefault matches `workTypeName` — better than a hard
     /// crash, but real usage should mostly hit the WorkTypeDefault-seeded path below.
@@ -189,6 +190,28 @@ enum WorkItemService {
             workTypeName: "Stand-Up Development",
             project: nil
         )
+        context.insert(workItem)
+        return workItem
+    }
+
+    /// PRD roadmap V0.4 "Editing progress/timer." Every Clips timer is against a specific Clip —
+    /// unlike Stand-Up, the PRD never mentions a "general" untargeted Clips session, so there's
+    /// no `generalClipsWorkItem` counterpart to `generalStandUpWorkItem`. Lazily finds or
+    /// creates, same pattern as `standUpWorkItem`.
+    static func clipWorkItem(for clip: Clip, context: ModelContext) throws -> WorkItem {
+        let clipID = clip.id
+        if let existing = try context.fetch(
+            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.clip?.id == clipID })
+        ).first {
+            return existing
+        }
+        let workItem = WorkItem(
+            title: clip.title,
+            workspace: .clips,
+            workTypeName: "Clip Editing",
+            project: nil
+        )
+        workItem.clip = clip
         context.insert(workItem)
         return workItem
     }

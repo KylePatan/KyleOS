@@ -10,9 +10,9 @@ import SwiftData
 /// this space uses) rather than an invented scheme — PRD §6.7: "Enter-key behavior should move
 /// naturally between common screenplay elements."
 enum ScriptBlockService {
-    typealias ScriptBlock = KyleOSSchemaV20.ScriptBlock
-    typealias ScriptElementType = KyleOSSchemaV20.ScriptElementType
-    typealias Document = KyleOSSchemaV20.Document
+    typealias ScriptBlock = KyleOSSchemaV21.ScriptBlock
+    typealias ScriptElementType = KyleOSSchemaV21.ScriptElementType
+    typealias Document = KyleOSSchemaV21.Document
 
     /// Tab cycles a block's type manually, in this fixed order, regardless of what Enter would
     /// have suggested — PRD §6.7: "The editor should offer a visible element selector as a
@@ -83,7 +83,7 @@ enum ScriptBlockService {
         return suggestions
     }
 
-    private typealias SceneElementType = KyleOSSchemaV20.SceneLocationType
+    private typealias SceneElementType = KyleOSSchemaV21.SceneLocationType
 
     /// Syncs a document's entire block array in one operation — the simplest correct way to
     /// persist edits from a free-form NSTextStorage (see ScriptEditorView) back to structured

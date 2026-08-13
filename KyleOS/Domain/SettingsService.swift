@@ -4,7 +4,7 @@ import SwiftData
 /// Reusable domain actions for the single app-wide Settings row, kept out of views per
 /// CLAUDE.md §4.
 enum SettingsService {
-    typealias AppSettings = KyleOSSchemaV20.AppSettings
+    typealias AppSettings = KyleOSSchemaV21.AppSettings
 
     /// Returns the one Settings row, creating it with PRD-default values on first launch.
     /// Safe to call repeatedly — never creates a second row.

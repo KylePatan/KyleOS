@@ -6,9 +6,9 @@ import SwiftData
 /// FileReferenceResolver so the two concerns (persistence vs. live filesystem access) are
 /// independently testable.
 enum FileReferenceService {
-    typealias FileReference = KyleOSSchemaV20.FileReference
-    typealias Project = KyleOSSchemaV20.Project
-    typealias Source = KyleOSSchemaV20.Source
+    typealias FileReference = KyleOSSchemaV21.FileReference
+    typealias Project = KyleOSSchemaV21.Project
+    typealias Source = KyleOSSchemaV21.Source
 
     enum FileReferenceError: Error {
         case bookmarkCreationFailed(underlying: Error)

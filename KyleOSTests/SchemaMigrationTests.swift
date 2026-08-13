@@ -1065,4 +1065,54 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(joke.clipAppearances.map(\.id), [clip.id])
         }
     }
+
+    func testStoreWrittenUnderV20OpensCleanlyAsV21WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV20Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let clipID: UUID
+        // Write a store using ONLY the V20 schema shape — WorkItem/Clip have no relationship to
+        // each other yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV20.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let source = KyleOSSchemaV20.Source(title: "March Comedy Slam")
+            let clip = KyleOSSchemaV20.Clip(title: "Pre-V21 Clip")
+            clip.source = source
+            clipID = clip.id
+            context.insert(source)
+            context.insert(clip)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let clips = try context.fetch(FetchDescriptor<ClipService.Clip>())
+            XCTAssertEqual(clips.count, 1)
+            guard let clip = clips.first(where: { $0.id == clipID }) else {
+                return XCTFail("Expected the pre-migration clip to survive")
+            }
+            XCTAssertTrue(clip.workItems.isEmpty, "New relationship array should default to empty, not crash or fabricate data")
+
+            // The new entity must actually be usable post-migration, not just present.
+            let workItem = try WorkItemService.clipWorkItem(for: clip, context: context)
+            try context.save()
+
+            XCTAssertEqual(workItem.clip?.id, clipID)
+            XCTAssertEqual(clip.workItems.map(\.id), [workItem.id])
+        }
+    }
 }

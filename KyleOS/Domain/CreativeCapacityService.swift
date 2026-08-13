@@ -6,9 +6,9 @@ import SwiftData
 /// are explicitly "planning assumptions, not hard restrictions" (§4.4's own words) — a simple
 /// baseline-minus-scheduled calculation, not a precise minute-by-minute free/busy derivation.
 enum CreativeCapacityService {
-    typealias AppSettings = KyleOSSchemaV20.AppSettings
-    typealias CalendarEvent = KyleOSSchemaV20.CalendarEvent
-    typealias PlannedSession = KyleOSSchemaV20.PlannedSession
+    typealias AppSettings = KyleOSSchemaV21.AppSettings
+    typealias CalendarEvent = KyleOSSchemaV21.CalendarEvent
+    typealias PlannedSession = KyleOSSchemaV21.PlannedSession
 
     struct Summary: Equatable {
         let baselineHours: Double

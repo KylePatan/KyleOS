@@ -2,10 +2,13 @@ import SwiftUI
 import SwiftData
 
 /// PRD §8.3/§8.4: Clip detail — title/description/source-timestamps/notes/editing-notes/status/
-/// progress/post-date, plus an optional related Joke/Chunk reference.
+/// progress/post-date, plus an optional related Joke/Chunk reference. Also the Editing progress/
+/// timer entry point (roadmap V0.4) — reuses the shared FocusTimerController/ActiveTimerBanner
+/// verbatim, same pattern as ProseEditorView/ChunkDetailView.
 struct ClipDetailView: View {
     let clip: ClipService.Clip
     @Environment(\.modelContext) private var context
+    @Environment(FocusTimerController.self) private var timerController
     @Query(sort: \ClipService.Joke.createdAt) private var allJokes: [ClipService.Joke]
     @Query(sort: \ClipService.Chunk.createdAt) private var allChunks: [ClipService.Chunk]
 
@@ -23,6 +26,8 @@ struct ClipDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 header
+                Divider()
+                timerSection
                 Divider()
                 timestampsSection
                 Divider()
@@ -67,6 +72,19 @@ struct ClipDetailView: View {
                     ClipService.updateDescription(clip, description: clipDescription)
                     try? context.save()
                 }
+        }
+    }
+
+    private var timerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ActiveTimerBanner()
+            if timerController.state == .idle {
+                Button("Start Timer") {
+                    guard let workItem = try? WorkItemService.clipWorkItem(for: clip, context: context) else { return }
+                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                    try? context.save()
+                }
+            }
         }
     }
 
@@ -203,4 +221,5 @@ struct ClipDetailView: View {
         ClipDetailView(clip: clip)
     }
     .modelContainer(container)
+    .environment(FocusTimerController())
 }
