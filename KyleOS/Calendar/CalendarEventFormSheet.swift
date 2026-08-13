@@ -78,7 +78,13 @@ struct CalendarEventFormSheet: View {
             HStack {
                 if case .edit(let event) = mode {
                     Button("Delete", role: .destructive) {
-                        CalendarEventService.delete(event, context: context)
+                        // Deleting a .dayJob block is an override (PRD §11.4) — must not
+                        // silently regenerate; see DayJobScheduleService.markDayOff.
+                        if event.eventType == .dayJob {
+                            try? DayJobScheduleService.markDayOff(event.startAt, context: context)
+                        } else {
+                            CalendarEventService.delete(event, context: context)
+                        }
                         try? context.save()
                         dismiss()
                     }

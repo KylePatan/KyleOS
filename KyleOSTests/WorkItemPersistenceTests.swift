@@ -328,7 +328,7 @@ final class WorkItemPersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV24.WorkItem>())
+        let remaining = try context.fetch(FetchDescriptor<WorkItemService.WorkItem>())
         XCTAssertEqual(remaining.count, 0, "Deleting a Project must cascade-delete its Work Items")
     }
 
@@ -363,7 +363,7 @@ final class WorkItemPersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let allItems = try context.fetch(FetchDescriptor<KyleOSSchemaV24.WorkItem>())
+            let allItems = try context.fetch(FetchDescriptor<WorkItemService.WorkItem>())
             XCTAssertEqual(allItems.count, 1)
             XCTAssertEqual(allItems.first?.id, workItemID)
             XCTAssertEqual(allItems.first?.progress, 40)

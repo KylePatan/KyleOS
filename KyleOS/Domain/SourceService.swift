@@ -7,8 +7,8 @@ import SwiftData
 /// copying it" — `attachFile` routes through the existing `FileReferenceService`/bookmark
 /// infrastructure rather than duplicating file-handling logic.
 enum SourceService {
-    typealias Source = KyleOSSchemaV24.Source
-    typealias FileReference = KyleOSSchemaV24.FileReference
+    typealias Source = KyleOSSchemaV25.Source
+    typealias FileReference = KyleOSSchemaV25.FileReference
 
     @discardableResult
     static func createSource(

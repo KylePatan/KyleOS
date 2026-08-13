@@ -18,9 +18,9 @@ import SwiftData
 /// ScriptTextView (PRD §6.7's "visible element selector" fallback, made literal rather than a
 /// blind Tab-to-cycle), so there's no `nextTypeInCycle` here anymore.
 enum ScriptBlockService {
-    typealias ScriptBlock = KyleOSSchemaV24.ScriptBlock
-    typealias ScriptElementType = KyleOSSchemaV24.ScriptElementType
-    typealias Document = KyleOSSchemaV24.Document
+    typealias ScriptBlock = KyleOSSchemaV25.ScriptBlock
+    typealias ScriptElementType = KyleOSSchemaV25.ScriptElementType
+    typealias Document = KyleOSSchemaV25.Document
 
     /// What Enter after a block of `type` should start next, absent any other signal.
     static func suggestedNextType(afterEnterFrom type: ScriptElementType) -> ScriptElementType {
@@ -77,7 +77,7 @@ enum ScriptBlockService {
         return suggestions
     }
 
-    private typealias SceneElementType = KyleOSSchemaV24.SceneLocationType
+    private typealias SceneElementType = KyleOSSchemaV25.SceneLocationType
 
     /// Syncs a document's entire block array in one operation — the simplest correct way to
     /// persist edits from a free-form NSTextStorage (see ScriptEditorView) back to structured

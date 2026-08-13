@@ -69,7 +69,7 @@ final class DeadlinePersistenceTests: XCTestCase {
         context.delete(project)
         try context.save()
 
-        let remaining = try context.fetch(FetchDescriptor<KyleOSSchemaV24.Deadline>())
+        let remaining = try context.fetch(FetchDescriptor<DeadlineService.Deadline>())
         XCTAssertEqual(remaining.count, 0, "Deleting a Project must cascade-delete its Deadline")
     }
 
@@ -155,7 +155,7 @@ final class DeadlinePersistenceTests: XCTestCase {
         context.delete(deadline)
         try context.save()
 
-        let survivingEvents = try context.fetch(FetchDescriptor<KyleOSSchemaV24.CalendarEvent>())
+        let survivingEvents = try context.fetch(FetchDescriptor<CalendarEventService.CalendarEvent>())
         let survivor = survivingEvents.first { $0.id == eventID }
         XCTAssertNotNil(survivor, "Deleting a Deadline must not delete its logged Calendar Event")
         XCTAssertNil(survivor?.deadline)

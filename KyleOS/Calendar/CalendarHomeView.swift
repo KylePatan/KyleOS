@@ -47,6 +47,18 @@ struct CalendarHomeView: View {
         .sheet(isPresented: $isAddingEvent) {
             CalendarEventFormSheet(mode: .add(defaultDate: selectedDay))
         }
+        .onAppear { ensureDayJobBlocksForDisplayedMonth() }
+        .onChange(of: displayedMonth) { ensureDayJobBlocksForDisplayedMonth() }
+    }
+
+    /// PRD §11.4: generates Day Job blocks lazily for whatever month is actually being viewed —
+    /// no background pre-generation. Home's own read-only MonthCalendarView deliberately does
+    /// NOT call this (it must stay side-effect-free), so Day Job blocks only appear there once
+    /// the Calendar workspace has generated them for that month at least once.
+    private func ensureDayJobBlocksForDisplayedMonth() {
+        guard let interval = calendar.dateInterval(of: .month, for: displayedMonth) else { return }
+        try? DayJobScheduleService.ensureBlocks(from: interval.start, to: interval.end, context: context)
+        try? context.save()
     }
 
     private var header: some View {
@@ -145,14 +157,25 @@ struct CalendarHomeView: View {
             }
             .buttonStyle(.borderless)
             Button(role: .destructive) {
-                CalendarEventService.delete(event, context: context)
-                try? context.save()
+                deleteEvent(event)
             } label: {
                 Image(systemName: "trash")
             }
             .buttonStyle(.borderless)
         }
         .font(.callout)
+    }
+
+    /// Deleting a `.dayJob` block specifically means "override this day off" (PRD §11.4) — must
+    /// not silently regenerate the next time this month is viewed. Every other event type just
+    /// deletes normally.
+    private func deleteEvent(_ event: CalendarEventService.CalendarEvent) {
+        if event.eventType == .dayJob {
+            try? DayJobScheduleService.markDayOff(event.startAt, context: context)
+        } else {
+            CalendarEventService.delete(event, context: context)
+        }
+        try? context.save()
     }
 
     private var shortWeekdaySymbols: [String] {

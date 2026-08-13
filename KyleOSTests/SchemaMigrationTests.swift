@@ -1264,4 +1264,49 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(shoot.callSheet?.id, callSheet.id)
         }
     }
+
+    func testStoreWrittenUnderV24OpensCleanlyAsV25WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV24Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        // Write a store using ONLY the V24 schema shape — DayJobOverride does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV24.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV24.Project(title: "Untitled Pilot")
+            projectID = project.id
+            context.insert(project)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            guard let project = projects.first(where: { $0.id == projectID }) else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            XCTAssertEqual(project.title, "Untitled Pilot")
+
+            // The new entity must actually be usable post-migration, not just present.
+            try DayJobScheduleService.ensureBlocks(from: .now, to: Date(timeIntervalSinceNow: 86400 * 7), context: context)
+            try context.save()
+
+            let events = try CalendarEventService.events(from: .now, to: Date(timeIntervalSinceNow: 86400 * 7), in: context)
+            XCTAssertFalse(events.isEmpty, "Day Job blocks should have generated for the coming week")
+        }
+    }
 }
