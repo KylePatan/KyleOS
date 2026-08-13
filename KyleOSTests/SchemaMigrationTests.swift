@@ -186,17 +186,16 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(workItems.first?.id, workItemID)
 
             // The new entities must actually be usable post-migration, not just present.
+            // A hard Deadline automatically appears on Calendar (PRD §11.3) — no need to create
+            // the CalendarEvent manually.
             let deadline = DeadlineService.setDeadline(
                 for: project, label: "Submission Deadline", dueAt: .now, context: context
-            )
-            let event = CalendarEventService.createEvent(
-                type: .hardDeadline, startAt: .now, endAt: .now, project: project, deadline: deadline, context: context
             )
             try context.save()
 
             XCTAssertEqual(project.deadline?.id, deadline.id)
             let events = try CalendarEventService.events(from: .distantPast, to: .distantFuture, in: context)
-            XCTAssertEqual(events.map(\.id), [event.id])
+            XCTAssertEqual(events.map(\.id), deadline.calendarEvents.map(\.id))
         }
     }
 

@@ -73,6 +73,94 @@ final class DeadlinePersistenceTests: XCTestCase {
         XCTAssertEqual(remaining.count, 0, "Deleting a Project must cascade-delete its Deadline")
     }
 
+    func testHardDeadlineAutomaticallyAppearsOnCalendar() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let dueDate = Date(timeIntervalSinceNow: 60 * 60 * 24 * 30)
+        let deadline = DeadlineService.setDeadline(
+            for: project, label: "Submission Deadline", dueAt: dueDate, isHard: true, context: context
+        )
+        try context.save()
+
+        XCTAssertEqual(deadline.calendarEvents.count, 1)
+        let event = try XCTUnwrap(deadline.calendarEvents.first)
+        XCTAssertEqual(event.eventType, .hardDeadline)
+        XCTAssertTrue(event.isHardCommitment)
+        XCTAssertEqual(event.startAt.timeIntervalSince1970, dueDate.timeIntervalSince1970, accuracy: 1)
+    }
+
+    func testSoftDeadlineDoesNotCreateACalendarEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let deadline = DeadlineService.setDeadline(
+            for: project, label: "Soft Target", dueAt: .now, isHard: false, context: context
+        )
+        try context.save()
+
+        XCTAssertTrue(deadline.calendarEvents.isEmpty)
+    }
+
+    func testReschedulingADeadlineMovesItsLinkedCalendarEventEvenIfLocked() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let deadline = DeadlineService.setDeadline(for: project, label: "Submission Deadline", dueAt: .now, context: context)
+        try context.save()
+        let event = try XCTUnwrap(deadline.calendarEvents.first)
+        CalendarEventService.setLocked(event, true)
+
+        let newDate = Date(timeIntervalSinceNow: 60 * 60 * 24 * 60)
+        DeadlineService.reschedule(deadline, to: newDate)
+        try context.save()
+
+        XCTAssertEqual(event.startAt.timeIntervalSince1970, newDate.timeIntervalSince1970, accuracy: 1, "A deliberate Deadline reschedule must move its Calendar Event even when locked")
+    }
+
+    func testConfirmingADeadlineLocksItsCalendarEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let deadline = DeadlineService.setDeadline(for: project, label: "Submission Deadline", dueAt: .now, context: context)
+        try context.save()
+        let event = try XCTUnwrap(deadline.calendarEvents.first)
+        XCTAssertFalse(event.isLocked)
+
+        DeadlineService.confirm(deadline)
+        try context.save()
+        XCTAssertTrue(event.isLocked)
+
+        DeadlineService.unconfirm(deadline)
+        try context.save()
+        XCTAssertFalse(event.isLocked)
+    }
+
+    func testDeletingADeadlineOrphansRatherThanDeletesItsCalendarEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        let deadline = DeadlineService.setDeadline(for: workItem, label: "Draft Due", dueAt: .now, context: context)
+        try context.save()
+        let eventID = try XCTUnwrap(deadline.calendarEvents.first).id
+
+        context.delete(deadline)
+        try context.save()
+
+        let survivingEvents = try context.fetch(FetchDescriptor<KyleOSSchemaV24.CalendarEvent>())
+        let survivor = survivingEvents.first { $0.id == eventID }
+        XCTAssertNotNil(survivor, "Deleting a Deadline must not delete its logged Calendar Event")
+        XCTAssertNil(survivor?.deadline)
+    }
+
     func testUpcomingSortsByDueDateAndExcludesPast() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
