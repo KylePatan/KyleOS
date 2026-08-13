@@ -6,8 +6,8 @@ import SwiftData
 /// "loose jokes may also be allowed when useful" is a documented later refinement, not decided
 /// here (CLAUDE.md §13).
 enum HeadlineSetService {
-    typealias HeadlineSet = KyleOSSchemaV23.HeadlineSet
-    typealias Chunk = KyleOSSchemaV23.Chunk
+    typealias HeadlineSet = KyleOSSchemaV24.HeadlineSet
+    typealias Chunk = KyleOSSchemaV24.Chunk
 
     @discardableResult
     static func createHeadlineSet(title: String, targetDurationMinutes: Int = 60, context: ModelContext) -> HeadlineSet {

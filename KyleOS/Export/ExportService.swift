@@ -37,6 +37,57 @@ enum ExportService {
         try render(result, to: url)
     }
 
+    /// PRD §9.4/§9.5: "Kyle OS should be able to export the Script and Call Sheet as normal PDF
+    /// files suitable for dragging into an email." Takes plain fields rather than the CallSheet
+    /// model itself, keeping this file's only domain dependency the existing ScriptBlockService
+    /// one — Export stays a clean architectural boundary (CLAUDE.md §4), not coupled to
+    /// SketchProductionService. Blank fields are omitted rather than printed as empty lines.
+    static func exportCallSheetPDF(
+        projectTitle: String,
+        callTime: Date,
+        wrapTime: Date,
+        location: String,
+        address: String,
+        castAndCharacters: String,
+        crewAndRoles: String,
+        wardrobe: String,
+        props: String,
+        equipment: String,
+        parkingAccess: String,
+        contactInformation: String,
+        sceneNotes: String,
+        additionalNotes: String,
+        to url: URL
+    ) throws {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .full
+        dateFormatter.timeStyle = .short
+
+        let result = NSMutableAttributedString(
+            string: "CALL SHEET\n\(projectTitle)\n\n",
+            attributes: [.font: NSFont.boldSystemFont(ofSize: 18)]
+        )
+        func appendField(_ label: String, _ value: String) {
+            guard !value.isEmpty else { return }
+            result.append(NSAttributedString(string: "\(label): ", attributes: [.font: NSFont.boldSystemFont(ofSize: 12)]))
+            result.append(NSAttributedString(string: "\(value)\n", attributes: [.font: NSFont.systemFont(ofSize: 12)]))
+        }
+        appendField("Call Time", dateFormatter.string(from: callTime))
+        appendField("Wrap Time", dateFormatter.string(from: wrapTime))
+        appendField("Location", location)
+        appendField("Address", address)
+        appendField("Cast / Characters", castAndCharacters)
+        appendField("Crew / Roles", crewAndRoles)
+        appendField("Wardrobe", wardrobe)
+        appendField("Props", props)
+        appendField("Equipment", equipment)
+        appendField("Parking / Access", parkingAccess)
+        appendField("Contact Information", contactInformation)
+        appendField("Scene Notes", sceneNotes)
+        appendField("Additional Notes", additionalNotes)
+        try render(result, to: url)
+    }
+
     private static func render(_ content: NSAttributedString, to url: URL) throws {
         let pageSize = NSSize(width: 612, height: 792)
         let textView = NSTextView(frame: NSRect(origin: .zero, size: pageSize))

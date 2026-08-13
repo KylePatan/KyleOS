@@ -78,4 +78,57 @@ final class ExportServiceTests: XCTestCase {
         let content = String(data: data, encoding: .isoLatin1) ?? ""
         XCTAssertTrue(content.contains("/Type/Page") || content.contains("/Type /Page"), "Expected at least one PDF page object")
     }
+
+    func testExportCallSheetPDFCreatesAValidPDFFile() throws {
+        let url = makeTempPDFURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        try ExportService.exportCallSheetPDF(
+            projectTitle: "Airport Sketch",
+            callTime: Date(timeIntervalSince1970: 1_700_000_000),
+            wrapTime: Date(timeIntervalSince1970: 1_700_028_800),
+            location: "Downtown Studio",
+            address: "123 Main St",
+            castAndCharacters: "Jane Doe as The Traveler",
+            crewAndRoles: "Alex Kim (DP)",
+            wardrobe: "Business casual",
+            props: "Coffee cup",
+            equipment: "Boom mic",
+            parkingAccess: "Street parking",
+            contactInformation: "Producer: 555-1234",
+            sceneNotes: "Scenes 1-3",
+            additionalNotes: "Golden hour first",
+            to: url
+        )
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+        let data = try Data(contentsOf: url)
+        XCTAssertFalse(data.isEmpty)
+        XCTAssertEqual(data.prefix(4), Data("%PDF".utf8))
+    }
+
+    func testExportCallSheetPDFHandlesAllBlankFieldsWithoutThrowing() throws {
+        let url = makeTempPDFURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        try ExportService.exportCallSheetPDF(
+            projectTitle: "Untitled Sketch",
+            callTime: .now,
+            wrapTime: .now,
+            location: "",
+            address: "",
+            castAndCharacters: "",
+            crewAndRoles: "",
+            wardrobe: "",
+            props: "",
+            equipment: "",
+            parkingAccess: "",
+            contactInformation: "",
+            sceneNotes: "",
+            additionalNotes: "",
+            to: url
+        )
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+    }
 }

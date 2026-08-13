@@ -8,7 +8,7 @@ struct InterruptedSessionPrompt: View {
     @Environment(\.modelContext) private var context
     @Environment(FocusTimerController.self) private var timerController
 
-    let state: KyleOSSchemaV23.ActiveTimerState
+    let state: KyleOSSchemaV24.ActiveTimerState
     let onResolved: () -> Void
 
     var body: some View {

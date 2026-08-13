@@ -1211,4 +1211,58 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertNotNil(shoot.calendarEvent)
         }
     }
+
+    func testStoreWrittenUnderV23OpensCleanlyAsV24WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV23Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        // Write a store using ONLY the V23 schema shape — FilmShoot has no callSheet field,
+        // CallSheet does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV23.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV23.Project(title: "Airport Sketch", projectType: .sketch, status: .finished)
+            projectID = project.id
+            context.insert(project)
+            let production = KyleOSSchemaV23.SketchProduction(status: .filmingScheduled)
+            production.project = project
+            context.insert(production)
+            let shoot = KyleOSSchemaV23.FilmShoot(callTime: .now, estimatedWrapTime: .now.addingTimeInterval(3600))
+            shoot.sketchProduction = production
+            context.insert(shoot)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = SketchProductionService.finishedSketchProjects(in: context)
+            guard let project = projects.first(where: { $0.id == projectID }) else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            guard let shoot = project.sketchProduction?.filmShoot else {
+                return XCTFail("Expected the pre-migration film shoot to survive")
+            }
+            XCTAssertNil(shoot.callSheet, "New optional relationship should default to nil, not crash or fabricate data")
+
+            // The new entity must actually be usable post-migration, not just present.
+            let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+            try context.save()
+
+            XCTAssertEqual(shoot.callSheet?.id, callSheet.id)
+        }
+    }
 }

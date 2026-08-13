@@ -249,4 +249,138 @@ final class SketchProductionServiceTests: XCTestCase {
         let remainingEvents = try context.fetch(FetchDescriptor<CalendarEventService.CalendarEvent>())
         XCTAssertFalse(remainingEvents.contains { $0.id == eventID })
     }
+
+    // MARK: - Call Sheet (PRD §9.4)
+
+    private func makeScheduledShoot(context: ModelContext) -> (ProjectService.Project, SketchProductionService.FilmShoot) {
+        let project = makeFinishedSketch(context: context)
+        let shoot = SketchProductionService.scheduleFilm(for: project, callTime: .now, estimatedWrapTime: .now.addingTimeInterval(8 * 3600), context: context)
+        SketchProductionService.updateLocation(shoot, location: "Downtown Studio", address: "123 Main St", context: context)
+        SketchProductionService.updateCastAndCrew(shoot, cast: "Jane Doe", crew: "Alex Kim (DP)", context: context)
+        return (project, shoot)
+    }
+
+    func testGenerateCallSheetSeedsFieldsFromFilmShoot() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+
+        let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+
+        XCTAssertEqual(callSheet.projectTitle, project.title)
+        XCTAssertEqual(callSheet.callTime, shoot.callTime)
+        XCTAssertEqual(callSheet.wrapTime, shoot.estimatedWrapTime)
+        XCTAssertEqual(callSheet.location, "Downtown Studio")
+        XCTAssertEqual(callSheet.address, "123 Main St")
+        XCTAssertEqual(callSheet.castAndCharacters, "Jane Doe")
+        XCTAssertEqual(callSheet.crewAndRoles, "Alex Kim (DP)")
+        XCTAssertEqual(callSheet.contactInformation, "", "Fields with no FilmShoot counterpart must start empty")
+        XCTAssertEqual(callSheet.sceneNotes, "")
+    }
+
+    func testGenerateCallSheetReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+        let first = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+
+        let second = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+
+        XCTAssertEqual(first.id, second.id)
+    }
+
+    func testEditingCallSheetDoesNotWriteBackToFilmShoot() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+        let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+
+        SketchProductionService.updateCallSheetSchedule(callSheet, callTime: callSheet.callTime, wrapTime: callSheet.wrapTime, location: "Different Location", address: callSheet.address)
+        try context.save()
+
+        XCTAssertEqual(callSheet.location, "Different Location")
+        XCTAssertEqual(shoot.location, "Downtown Studio", "Editing the Call Sheet must not write back to the FilmShoot")
+    }
+
+    func testReschedulingFilmShootDoesNotRewriteAnAlreadyGeneratedCallSheet() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+        let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+
+        SketchProductionService.updateLocation(shoot, location: "New Location", address: shoot.address, context: context)
+        try context.save()
+
+        XCTAssertEqual(shoot.location, "New Location")
+        XCTAssertEqual(callSheet.location, "Downtown Studio", "Rescheduling FilmShoot must not silently rewrite an already-generated Call Sheet")
+    }
+
+    func testUpdateCallSheetPeoplePersists() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+        let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+
+        SketchProductionService.updateCallSheetPeople(callSheet, castAndCharacters: "Jane Doe as The Traveler", crewAndRoles: "Alex Kim (DP)", contactInformation: "Producer: 555-1234")
+        try context.save()
+
+        XCTAssertEqual(callSheet.castAndCharacters, "Jane Doe as The Traveler")
+        XCTAssertEqual(callSheet.contactInformation, "Producer: 555-1234")
+    }
+
+    func testUpdateCallSheetLogisticsPersists() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+        let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+
+        SketchProductionService.updateCallSheetLogistics(callSheet, wardrobe: "Casual", props: "Coffee cup", equipment: "Boom mic", parkingAccess: "Street parking")
+        try context.save()
+
+        XCTAssertEqual(callSheet.wardrobe, "Casual")
+        XCTAssertEqual(callSheet.equipment, "Boom mic")
+    }
+
+    func testUpdateCallSheetNotesPersists() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+        let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+
+        SketchProductionService.updateCallSheetNotes(callSheet, sceneNotes: "Scenes 1-3", additionalNotes: "Golden hour first")
+        try context.save()
+
+        XCTAssertEqual(callSheet.sceneNotes, "Scenes 1-3")
+        XCTAssertEqual(callSheet.additionalNotes, "Golden hour first")
+    }
+
+    func testDeletingFilmShootCascadeDeletesItsCallSheet() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let (project, shoot) = makeScheduledShoot(context: context)
+        try context.save()
+        let callSheet = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
+        try context.save()
+        let callSheetID = callSheet.id
+
+        context.delete(project)
+        try context.save()
+
+        let remaining = try context.fetch(FetchDescriptor<SketchProductionService.CallSheet>())
+        XCTAssertFalse(remaining.contains { $0.id == callSheetID })
+    }
 }

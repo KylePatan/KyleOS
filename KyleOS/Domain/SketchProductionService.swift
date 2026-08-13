@@ -7,10 +7,11 @@ import SwiftData
 /// `finishedSketchProjects` just filters the existing `Project` fields that already carry this
 /// (`WritingProjectType.sketch`, `ProjectStatus.finished`, both since V8).
 enum SketchProductionService {
-    typealias Project = KyleOSSchemaV23.Project
-    typealias SketchProduction = KyleOSSchemaV23.SketchProduction
-    typealias SketchProductionStatus = KyleOSSchemaV23.SketchProductionStatus
-    typealias FilmShoot = KyleOSSchemaV23.FilmShoot
+    typealias Project = KyleOSSchemaV24.Project
+    typealias SketchProduction = KyleOSSchemaV24.SketchProduction
+    typealias SketchProductionStatus = KyleOSSchemaV24.SketchProductionStatus
+    typealias FilmShoot = KyleOSSchemaV24.FilmShoot
+    typealias CallSheet = KyleOSSchemaV24.CallSheet
 
     /// Read-only, never creates a `SketchProduction` row — merely viewing the board must not
     /// write anything. `nil` reads as the natural starting state, the same Optional-with-
@@ -141,5 +142,63 @@ enum SketchProductionService {
             )
             shoot.calendarEvent = event
         }
+    }
+
+    // MARK: - Call Sheet (PRD §9.4)
+
+    /// "Generating an editable Call Sheet populated from project data." Seeds every overlapping
+    /// field from the current FilmShoot values — a snapshot, not a live mirror (see this
+    /// schema's own doc comment): editing the Call Sheet afterward never writes back to
+    /// FilmShoot, and rescheduling FilmShoot never silently rewrites an already-generated Call
+    /// Sheet. Find-or-creates — calling this again just returns the existing one unchanged.
+    @discardableResult
+    static func generateCallSheet(for shoot: FilmShoot, projectTitle: String, context: ModelContext) -> CallSheet {
+        if let existing = shoot.callSheet { return existing }
+        let callSheet = CallSheet(
+            projectTitle: projectTitle,
+            callTime: shoot.callTime,
+            wrapTime: shoot.estimatedWrapTime,
+            location: shoot.location,
+            address: shoot.address,
+            castAndCharacters: shoot.cast,
+            crewAndRoles: shoot.crew,
+            wardrobe: shoot.wardrobe,
+            props: shoot.props,
+            equipment: shoot.equipmentNotes,
+            parkingAccess: shoot.parkingAccessInstructions,
+            additionalNotes: shoot.generalNotes
+        )
+        callSheet.filmShoot = shoot
+        context.insert(callSheet)
+        return callSheet
+    }
+
+    static func updateCallSheetSchedule(_ callSheet: CallSheet, callTime: Date, wrapTime: Date, location: String, address: String) {
+        callSheet.callTime = callTime
+        callSheet.wrapTime = wrapTime
+        callSheet.location = location
+        callSheet.address = address
+        callSheet.updatedAt = .now
+    }
+
+    static func updateCallSheetPeople(_ callSheet: CallSheet, castAndCharacters: String, crewAndRoles: String, contactInformation: String) {
+        callSheet.castAndCharacters = castAndCharacters
+        callSheet.crewAndRoles = crewAndRoles
+        callSheet.contactInformation = contactInformation
+        callSheet.updatedAt = .now
+    }
+
+    static func updateCallSheetLogistics(_ callSheet: CallSheet, wardrobe: String, props: String, equipment: String, parkingAccess: String) {
+        callSheet.wardrobe = wardrobe
+        callSheet.props = props
+        callSheet.equipment = equipment
+        callSheet.parkingAccess = parkingAccess
+        callSheet.updatedAt = .now
+    }
+
+    static func updateCallSheetNotes(_ callSheet: CallSheet, sceneNotes: String, additionalNotes: String) {
+        callSheet.sceneNotes = sceneNotes
+        callSheet.additionalNotes = additionalNotes
+        callSheet.updatedAt = .now
     }
 }
