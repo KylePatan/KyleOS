@@ -860,7 +860,7 @@ final class SchemaMigrationTests: XCTestCase {
             )
             let context = ModelContext(container)
 
-            let events = try context.fetch(FetchDescriptor<KyleOSSchemaV16.CalendarEvent>())
+            let events = try context.fetch(FetchDescriptor<CalendarEventService.CalendarEvent>())
             XCTAssertEqual(events.count, 1)
             guard let event = events.first(where: { $0.id == eventID }) else {
                 return XCTFail("Expected the pre-migration calendar event to survive")
@@ -873,6 +873,53 @@ final class SchemaMigrationTests: XCTestCase {
 
             XCTAssertNotNil(gig.calendarEvent)
             XCTAssertEqual(gig.calendarEvent?.eventType, .standUpGig)
+        }
+    }
+
+    func testStoreWrittenUnderV16OpensCleanlyAsV17WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV16Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let jokeID: UUID
+        // Write a store using ONLY the V16 schema shape — Joke/Chunk have no setListAppearances,
+        // GigSetListItem does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV16.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let joke = KyleOSSchemaV16.Joke(text: "Pre-V17 joke", order: 0)
+            jokeID = joke.id
+            context.insert(joke)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let jokes = try context.fetch(FetchDescriptor<JokeService.Joke>())
+            XCTAssertEqual(jokes.count, 1)
+            guard let joke = jokes.first(where: { $0.id == jokeID }) else {
+                return XCTFail("Expected the pre-migration joke to survive")
+            }
+            XCTAssertTrue(joke.setListAppearances.isEmpty, "New relationship array should default to empty, not crash or fabricate data")
+
+            // The new entity must actually be usable post-migration, not just present.
+            let gig = GigService.createGig(venue: "The Comedy Cellar", startAt: .now, context: context)
+            GigSetListService.addJoke(joke, to: gig, context: context)
+            try context.save()
+
+            XCTAssertEqual(GigSetListService.items(in: gig).map { $0.joke?.id }, [jokeID])
         }
     }
 }

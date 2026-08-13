@@ -15,6 +15,7 @@
 		082D48916634694CA25E04B8 /* ChunkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A343326ABA806B7ED4EE3C44 /* ChunkServiceTests.swift */; };
 		0832C630D3538FB41F166A6E /* FocusTimerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7EA9D04BAF8F260ABCB478 /* FocusTimerController.swift */; };
 		0CC9DBEDD583A50ECB4D2F71 /* DocumentsDevView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55AAF6B60E824D48A2EA9D4 /* DocumentsDevView.swift */; };
+		0D049C85D7308F2E05E3C986 /* GigSetListServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38C3303FCAF9339CEE93C68 /* GigSetListServiceTests.swift */; };
 		12A2398EC9AF8FEED6F29653 /* TodayItemCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */; };
 		12A8B2FBB431ED4C58C0575C /* FileReferenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB76812141269FB271CEAC48 /* FileReferenceService.swift */; };
 		13BA1AFF32FC2D756B9A4B79 /* ActiveTimerStateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */; };
@@ -63,6 +64,7 @@
 		6E82854BA860A44FC52ADF4B /* PlannedSessionPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3BA434554B01740CD3773 /* PlannedSessionPersistenceTests.swift */; };
 		742723E6DAA4881509D6D5DB /* GigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86091E84E246C15E1863ECBB /* GigService.swift */; };
 		76E23352368414D205FF292E /* KyleOSSchemaV8.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D985C2961227F5700E44113 /* KyleOSSchemaV8.swift */; };
+		7F4BD19852D7856AFFE46624 /* GigSetListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E4BA411603A3DD68D511B7B /* GigSetListService.swift */; };
 		804A079A2D9516979DA922C8 /* WritingProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C398E983030FD58708ACD3 /* WritingProjectDetailView.swift */; };
 		80EAE83E7EE0097A2D6CF202 /* CreativeCapacityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D7849258563EBED16DAA991 /* CreativeCapacityWidget.swift */; };
 		81EB55285C7B381763B6EFC4 /* DraftService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1758113B2ED3EDEEF682144C /* DraftService.swift */; };
@@ -78,6 +80,7 @@
 		9D69A4A5F9F7CDE2AD6A942E /* ActServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B9D005FDD6D676804D7607 /* ActServiceTests.swift */; };
 		A254830013CF9068F9392E5C /* ScriptBlockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA536F325A3D3ACF08E50BCB /* ScriptBlockService.swift */; };
 		A5B10545D2035CB9E2499AF5 /* SidebarSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07B579165EA51ACC58D342 /* SidebarSelection.swift */; };
+		ACA5A09C72C62104E171C3B4 /* KyleOSSchemaV17.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A748D5CB451E94B6E24D834 /* KyleOSSchemaV17.swift */; };
 		ADE256727B597B171F59EB5E /* TimerRecoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */; };
 		B06008B8DC9529C5D92122C2 /* TimeFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF53CB376ECB46AE2DF923C8 /* TimeFormatting.swift */; };
 		B498690C544430236DFBB06E /* KyleOSSchemaV12.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86AEF41218D3FB37D4DCD24A /* KyleOSSchemaV12.swift */; };
@@ -146,6 +149,7 @@
 		1B255480A25BCDAF317BBD6F /* KyleOSSchemaV4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV4.swift; sourceTree = "<group>"; };
 		1CDF3891632379E2253D5659 /* FileReferenceResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferenceResolverTests.swift; sourceTree = "<group>"; };
 		1D7849258563EBED16DAA991 /* CreativeCapacityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreativeCapacityWidget.swift; sourceTree = "<group>"; };
+		1E4BA411603A3DD68D511B7B /* GigSetListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GigSetListService.swift; sourceTree = "<group>"; };
 		1EA4A2F04B9FCD47C8A68AF1 /* ChunkListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChunkListView.swift; sourceTree = "<group>"; };
 		1F2D18652770DF0748E0E0B6 /* GigDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GigDetailView.swift; sourceTree = "<group>"; };
 		20C969DBFA6EDB51C379E79F /* JokeBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JokeBoardView.swift; sourceTree = "<group>"; };
@@ -155,6 +159,7 @@
 		27D6194C1261A3FE3D72A7E0 /* HomeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeServiceTests.swift; sourceTree = "<group>"; };
 		28E2E29688E5B60623EE4EC9 /* WorkItemPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkItemPersistenceTests.swift; sourceTree = "<group>"; };
 		2A701BEF36396910E6ADA359 /* ActiveTimerBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveTimerBanner.swift; sourceTree = "<group>"; };
+		2A748D5CB451E94B6E24D834 /* KyleOSSchemaV17.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV17.swift; sourceTree = "<group>"; };
 		2E4C4089E7FC5E791FCD907E /* KyleOSSchemaV10.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV10.swift; sourceTree = "<group>"; };
 		2F6D90F7A3C6A6A11FB8B049 /* GigListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GigListView.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -209,6 +214,7 @@
 		A9B05BC00F9041DA41AA5E74 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
 		AB5781A1BEB14219FA2CC9B6 /* KyleOSSchemaV16.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV16.swift; sourceTree = "<group>"; };
 		B3481CB5346116A1D3BAD6F3 /* WorkSessionPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionPersistenceTests.swift; sourceTree = "<group>"; };
+		B38C3303FCAF9339CEE93C68 /* GigSetListServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GigSetListServiceTests.swift; sourceTree = "<group>"; };
 		B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneServiceTests.swift; sourceTree = "<group>"; };
 		B57EF212EF2CA4D50F3310F5 /* SceneService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneService.swift; sourceTree = "<group>"; };
 		B8838F5790C0503AC9836FE8 /* KyleOSSchemaV9.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV9.swift; sourceTree = "<group>"; };
@@ -320,6 +326,7 @@
 				1CDF3891632379E2253D5659 /* FileReferenceResolverTests.swift */,
 				F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */,
 				5DB0F68AB96FFDF41920A64F /* GigServiceTests.swift */,
+				B38C3303FCAF9339CEE93C68 /* GigSetListServiceTests.swift */,
 				781934EE652133130E41CD12 /* HeadlineSetServiceTests.swift */,
 				27D6194C1261A3FE3D72A7E0 /* HomeServiceTests.swift */,
 				F63FAD47486D7938941B1EAE /* JokeServiceTests.swift */,
@@ -366,6 +373,7 @@
 				8B7D1D7BB58ABBC9F506FADE /* KyleOSSchemaV14.swift */,
 				DF2BA7F9F4820A38C7132875 /* KyleOSSchemaV15.swift */,
 				AB5781A1BEB14219FA2CC9B6 /* KyleOSSchemaV16.swift */,
+				2A748D5CB451E94B6E24D834 /* KyleOSSchemaV17.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -429,6 +437,7 @@
 				CBE110981FB0F1F3ED6CDECD /* DocumentService.swift */,
 				1758113B2ED3EDEEF682144C /* DraftService.swift */,
 				86091E84E246C15E1863ECBB /* GigService.swift */,
+				1E4BA411603A3DD68D511B7B /* GigSetListService.swift */,
 				809ECBF98C3214380C53186A /* HeadlineSetService.swift */,
 				89B76BD0DA4E4676163DF711 /* HomeService.swift */,
 				E02CA4026D19A121892F2FB4 /* JokeService.swift */,
@@ -595,6 +604,7 @@
 				B9FC67F714FAEC4F64B4E9B8 /* FileReferenceResolverTests.swift in Sources */,
 				56C54A78A73CFBB8F6C8F4AE /* FocusTimerControllerTests.swift in Sources */,
 				C9E96A1AA690937F94AFB36C /* GigServiceTests.swift in Sources */,
+				0D049C85D7308F2E05E3C986 /* GigSetListServiceTests.swift in Sources */,
 				4F549DD9DBF6200C9B21F2CA /* HeadlineSetServiceTests.swift in Sources */,
 				611611949E3B2EC9139C40ED /* HomeServiceTests.swift in Sources */,
 				1FF02EF22480DAAFC3822B24 /* JokeServiceTests.swift in Sources */,
@@ -643,6 +653,7 @@
 				D60F9895CF29DFF634EA48E6 /* GigDetailView.swift in Sources */,
 				4B3F645A29DCE8288131A11E /* GigListView.swift in Sources */,
 				742723E6DAA4881509D6D5DB /* GigService.swift in Sources */,
+				7F4BD19852D7856AFFE46624 /* GigSetListService.swift in Sources */,
 				E9C9247F9E54839AAA1535E6 /* HeadlineSetDetailView.swift in Sources */,
 				914C7F66ED89430E89A2756F /* HeadlineSetListView.swift in Sources */,
 				D658C7B2EE4C404ADAFF0B3A /* HeadlineSetService.swift in Sources */,
@@ -661,6 +672,7 @@
 				E3C1CDF96B14C6575A70D4B1 /* KyleOSSchemaV14.swift in Sources */,
 				0563882F5E5EFE36B6108D4E /* KyleOSSchemaV15.swift in Sources */,
 				23BF84EE1A9C948F49E12B63 /* KyleOSSchemaV16.swift in Sources */,
+				ACA5A09C72C62104E171C3B4 /* KyleOSSchemaV17.swift in Sources */,
 				F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */,
 				3DE0507395F04E08EA2620EA /* KyleOSSchemaV3.swift in Sources */,
 				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,

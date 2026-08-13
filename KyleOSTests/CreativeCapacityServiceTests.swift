@@ -16,7 +16,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         XCTAssertEqual(summary.remainingHours, 2.5)
     }
 
-    func testStandUpGigTodayAddsTheBonusHours() throws {
+    func testStandUpGigTodayReducesBaselineByTheNightReductionHours() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
@@ -28,10 +28,10 @@ final class CreativeCapacityServiceTests: XCTestCase {
 
         let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [gigEvent], plannedSessions: [], now: now)
 
-        XCTAssertEqual(summary.baselineHours, 3.5, "2.5h baseline + 1h stand-up night bonus")
+        XCTAssertEqual(summary.baselineHours, 1.5, "2.5h baseline - 1h stand-up night reduction, per §7.8")
     }
 
-    func testGigOnADifferentDayDoesNotAddTheBonus() throws {
+    func testGigOnADifferentDayDoesNotReduceBaseline() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
@@ -45,6 +45,22 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [gigEvent], plannedSessions: [], now: now)
 
         XCTAssertEqual(summary.baselineHours, 2.5)
+    }
+
+    func testBaselineNeverGoesNegativeWhenTheReductionExceedsIt() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 0.5, standUpNightBonusHours: 1.0)
+        let now = Date()
+
+        let gigEvent = CalendarEventService.createEvent(
+            type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [gigEvent], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 0)
     }
 
     func testScheduledPlannedSessionsTodayReduceRemaining() throws {
