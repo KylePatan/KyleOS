@@ -9,9 +9,9 @@ import SwiftData
 /// `logCompletedSession` once a live start/pause/resume/stop flow finishes; this step only adds
 /// the data model and the persistence primitive it will use.
 enum WorkSessionService {
-    typealias WorkSession = KyleOSSchemaV13.WorkSession
-    typealias WorkSessionEntryType = KyleOSSchemaV13.WorkSessionEntryType
-    typealias WorkItem = KyleOSSchemaV13.WorkItem
+    typealias WorkSession = KyleOSSchemaV14.WorkSession
+    typealias WorkSessionEntryType = KyleOSSchemaV14.WorkSessionEntryType
+    typealias WorkItem = KyleOSSchemaV14.WorkItem
 
     @discardableResult
     static func logCompletedSession(

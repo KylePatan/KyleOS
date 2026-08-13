@@ -722,4 +722,55 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(JokeService.jokes(withStatus: .ideas, in: context).map(\.id), [joke.id])
         }
     }
+
+    func testStoreWrittenUnderV13OpensCleanlyAsV14WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV13Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let jokeID: UUID
+        // Write a store using ONLY the V13 schema shape — Joke has no chunk/orderWithinChunk,
+        // Chunk does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV13.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let joke = KyleOSSchemaV13.Joke(text: "Pre-V14 joke.", order: 0)
+            jokeID = joke.id
+            context.insert(joke)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let jokes = JokeService.jokes(withStatus: .ideas, in: context)
+            XCTAssertEqual(jokes.count, 1)
+            XCTAssertEqual(jokes.first?.id, jokeID)
+            guard let joke = jokes.first else {
+                return XCTFail("Expected the pre-migration joke to survive")
+            }
+            XCTAssertNil(joke.chunk, "New optional field should default to nil, not crash or fabricate data")
+            XCTAssertNil(joke.orderWithinChunk)
+            XCTAssertEqual(joke.displayOrderWithinChunk, 0)
+
+            // The new entity must actually be usable post-migration, not just present.
+            let chunk = ChunkService.createChunk(title: "Travel Bit", context: context)
+            ChunkService.addJoke(joke, to: chunk)
+            try context.save()
+
+            XCTAssertEqual(ChunkService.jokes(in: chunk).map(\.id), [jokeID])
+            XCTAssertEqual(joke.chunk?.id, chunk.id)
+        }
+    }
 }

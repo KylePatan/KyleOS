@@ -36,7 +36,6 @@ struct JokeBoardView: View {
             }
         }
         .padding()
-        .navigationTitle("Stand Up")
     }
 
     /// PRD §7.3: "+ Joke Idea should require only the idea text."

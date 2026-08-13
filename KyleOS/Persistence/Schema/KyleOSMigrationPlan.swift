@@ -7,11 +7,11 @@ import SwiftData
 /// Never resolve a future model change by deleting the user's store (CLAUDE.md §5).
 enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self]
+        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self, KyleOSSchemaV14.self]
     }
 
     static var stages: [MigrationStage] {
-        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13]
+        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13, migrateV13toV14]
     }
 
     /// V2 only adds a new entity (Document) and a relationship pointing at it — no existing
@@ -104,5 +104,13 @@ enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static let migrateV12toV13 = MigrationStage.lightweight(
         fromVersion: KyleOSSchemaV12.self,
         toVersion: KyleOSSchemaV13.self
+    )
+
+    /// V14 adds Chunk (with a new relationship from Chunk to the existing Joke model) plus two
+    /// new fields on Joke (chunk, orderWithinChunk) — both genuinely Optional, the safe shape,
+    /// not V8's mistake.
+    static let migrateV13toV14 = MigrationStage.lightweight(
+        fromVersion: KyleOSSchemaV13.self,
+        toVersion: KyleOSSchemaV14.self
     )
 }
