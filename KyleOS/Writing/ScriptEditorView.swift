@@ -62,6 +62,12 @@ private enum ScriptFormatting {
         ]
     }
 
+    /// PRD §6.7's screenplay convention: scene headings, character cues, and transitions are
+    /// conventionally all-caps.
+    static func autoUppercases(_ type: ScriptBlockService.ScriptElementType) -> Bool {
+        type == .sceneHeading || type == .character || type == .transition
+    }
+
     static func type(at location: Int, in storage: NSTextStorage) -> ScriptBlockService.ScriptElementType {
         guard storage.length > 0 else { return .action }
         let safeLocation = min(location, storage.length - 1)
@@ -92,6 +98,25 @@ final class ScriptTextView: NSTextView {
         let nextType = ScriptBlockService.nextTypeInCycle(after: currentType)
         applyTypeToCurrentParagraph(nextType)
         typingAttributes = ScriptFormatting.attributes(for: nextType)
+    }
+
+    /// Auto-uppercases scene headings/character cues/transitions while typing — screenplay
+    /// convention, PRD §6.7. Reads the type from `typingAttributes` (kept in sync by
+    /// insertNewline/insertTab above, and by NSTextView's own default click-to-reposition
+    /// behavior) rather than re-deriving from storage, since newly-typed text has no storage
+    /// attributes yet.
+    override func insertText(_ string: Any, replacementRange: NSRange) {
+        guard let text = string as? String, !text.isEmpty else {
+            super.insertText(string, replacementRange: replacementRange)
+            return
+        }
+        let rawType = typingAttributes[.scriptElementType] as? String
+        let type = rawType.flatMap(ScriptBlockService.ScriptElementType.init) ?? .action
+        guard ScriptFormatting.autoUppercases(type) else {
+            super.insertText(string, replacementRange: replacementRange)
+            return
+        }
+        super.insertText(text.uppercased(), replacementRange: replacementRange)
     }
 
     private func applyTypeToCurrentParagraph(_ type: ScriptBlockService.ScriptElementType) {
