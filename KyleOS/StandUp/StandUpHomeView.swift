@@ -1,12 +1,14 @@
 import SwiftUI
 
-/// V0.3 Stand Up (PRD §7): Joke Board (§7.2-§7.4) and Chunks (§7.5-§7.6) exist so far. Headline
-/// Set, Gigs, Set Lists, and Stand-Up Work Sessions (§7.7-§7.11) are later increments — same
-/// "start with the container/board, add hierarchy/detail after" sequencing Writing used.
+/// V0.3 Stand Up (PRD §7): Joke Board (§7.2-§7.4), Chunks (§7.5-§7.6), and Headline Set (§7.7)
+/// exist so far. Gigs, Set Lists, and Stand-Up Work Sessions (§7.8-§7.11) are later
+/// increments — same "start with the container/board, add hierarchy/detail after" sequencing
+/// Writing used.
 struct StandUpHomeView: View {
     private enum Tab: String, CaseIterable, Identifiable {
         case jokeBoard = "Joke Board"
         case chunks = "Chunks"
+        case headlineSet = "Headline Set"
         var id: String { rawValue }
     }
 
@@ -22,11 +24,12 @@ struct StandUpHomeView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding()
-            .frame(maxWidth: 300)
+            .frame(maxWidth: 420)
 
             switch selectedTab {
             case .jokeBoard: JokeBoardView()
             case .chunks: ChunkListView()
+            case .headlineSet: HeadlineSetListView()
             }
         }
         .navigationTitle("Stand Up")

@@ -30,7 +30,7 @@ final class SettingsPersistenceTests: XCTestCase {
         try context.save()
 
         XCTAssertEqual(first.id, second.id)
-        let allSettings = try context.fetch(FetchDescriptor<KyleOSSchemaV14.AppSettings>())
+        let allSettings = try context.fetch(FetchDescriptor<KyleOSSchemaV15.AppSettings>())
         XCTAssertEqual(allSettings.count, 1)
     }
 

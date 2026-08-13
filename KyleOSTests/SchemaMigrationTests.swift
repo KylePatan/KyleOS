@@ -773,4 +773,55 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(joke.chunk?.id, chunk.id)
         }
     }
+
+    func testStoreWrittenUnderV14OpensCleanlyAsV15WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV14Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let chunkID: UUID
+        // Write a store using ONLY the V14 schema shape — Chunk has no headlineSet/
+        // orderInHeadlineSet, HeadlineSet does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV14.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let chunk = KyleOSSchemaV14.Chunk(title: "Pre-V15 Chunk")
+            chunkID = chunk.id
+            context.insert(chunk)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let chunks = HeadlineSetService.looseChunks(in: context)
+            XCTAssertEqual(chunks.count, 1)
+            XCTAssertEqual(chunks.first?.id, chunkID)
+            guard let chunk = chunks.first else {
+                return XCTFail("Expected the pre-migration chunk to survive")
+            }
+            XCTAssertNil(chunk.headlineSet, "New optional field should default to nil, not crash or fabricate data")
+            XCTAssertNil(chunk.orderInHeadlineSet)
+            XCTAssertEqual(chunk.displayOrderInHeadlineSet, 0)
+
+            // The new entity must actually be usable post-migration, not just present.
+            let set = HeadlineSetService.createHeadlineSet(title: "Fall Tour Set", context: context)
+            HeadlineSetService.addChunk(chunk, to: set)
+            try context.save()
+
+            XCTAssertEqual(HeadlineSetService.chunks(in: set).map(\.id), [chunkID])
+            XCTAssertEqual(chunk.headlineSet?.id, set.id)
+        }
+    }
 }
