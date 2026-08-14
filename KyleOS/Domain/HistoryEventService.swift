@@ -7,11 +7,13 @@ import SwiftData
 /// type, and String is the simplest common representation for a log that's read back as display
 /// text, not re-parsed into a typed enum.
 enum HistoryEventService {
-    typealias HistoryEvent = KyleOSSchemaV29.HistoryEvent
-    typealias HistoryEventKind = KyleOSSchemaV29.HistoryEventKind
-    typealias WorkItem = KyleOSSchemaV29.WorkItem
-    typealias Clip = KyleOSSchemaV29.Clip
-    typealias Project = KyleOSSchemaV29.Project
+    typealias HistoryEvent = KyleOSSchemaV30.HistoryEvent
+    typealias HistoryEventKind = KyleOSSchemaV30.HistoryEventKind
+    typealias WorkItem = KyleOSSchemaV30.WorkItem
+    typealias Clip = KyleOSSchemaV30.Clip
+    typealias Project = KyleOSSchemaV30.Project
+    typealias Joke = KyleOSSchemaV30.Joke
+    typealias Chunk = KyleOSSchemaV30.Chunk
 
     @discardableResult
     static func recordStatusChange(
@@ -20,11 +22,13 @@ enum HistoryEventService {
         workItem: WorkItem? = nil,
         clip: Clip? = nil,
         sketchProject: Project? = nil,
+        joke: Joke? = nil,
+        chunk: Chunk? = nil,
         context: ModelContext
     ) -> HistoryEvent {
         let event = HistoryEvent(
             kind: .statusChanged, oldValue: oldValue, newValue: newValue,
-            workItem: workItem, clip: clip, sketchProject: sketchProject
+            workItem: workItem, clip: clip, sketchProject: sketchProject, joke: joke, chunk: chunk
         )
         context.insert(event)
         return event
@@ -62,6 +66,26 @@ enum HistoryEventService {
         return try context.fetch(
             FetchDescriptor<HistoryEvent>(
                 predicate: #Predicate { $0.sketchProject?.id == projectID },
+                sortBy: [SortDescriptor(\.occurredAt)]
+            )
+        )
+    }
+
+    static func events(for joke: Joke, in context: ModelContext) throws -> [HistoryEvent] {
+        let jokeID = joke.id
+        return try context.fetch(
+            FetchDescriptor<HistoryEvent>(
+                predicate: #Predicate { $0.joke?.id == jokeID },
+                sortBy: [SortDescriptor(\.occurredAt)]
+            )
+        )
+    }
+
+    static func events(for chunk: Chunk, in context: ModelContext) throws -> [HistoryEvent] {
+        let chunkID = chunk.id
+        return try context.fetch(
+            FetchDescriptor<HistoryEvent>(
+                predicate: #Predicate { $0.chunk?.id == chunkID },
                 sortBy: [SortDescriptor(\.occurredAt)]
             )
         )

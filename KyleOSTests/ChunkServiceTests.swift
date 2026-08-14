@@ -107,6 +107,34 @@ final class ChunkServiceTests: XCTestCase {
         XCTAssertEqual(ChunkService.jokes(in: chunkB).map(\.id), [jokeOne.id])
     }
 
+    func testChangeStatusUpdatesStatusAndRecordsHistory() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let chunk = ChunkService.createChunk(title: "Travel Bit", context: context)
+        try context.save()
+
+        ChunkService.changeStatus(chunk, to: .new, context: context)
+        try context.save()
+
+        XCTAssertEqual(chunk.status, .new)
+        let events = try HistoryEventService.events(for: chunk, in: context)
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.oldValue, "Joke Ideas")
+        XCTAssertEqual(events.first?.newValue, "New")
+    }
+
+    func testChangeStatusToTheSameStatusIsANoOp() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let chunk = ChunkService.createChunk(title: "Travel Bit", context: context)
+        try context.save()
+
+        ChunkService.changeStatus(chunk, to: .ideas, context: context)
+        try context.save()
+
+        XCTAssertTrue(try HistoryEventService.events(for: chunk, in: context).isEmpty)
+    }
+
     func testDeletingAChunkDoesNotDeleteItsMemberJokes() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

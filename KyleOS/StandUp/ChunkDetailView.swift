@@ -53,7 +53,7 @@ struct ChunkDetailView: View {
                 }
             Picker("Status", selection: Binding(
                 get: { chunk.status },
-                set: { chunk.status = $0; chunk.updatedAt = .now; try? context.save() }
+                set: { ChunkService.changeStatus(chunk, to: $0, context: context); try? context.save() }
             )) {
                 ForEach(JokeService.JokeStatus.allCases, id: \.self) { status in
                     Text(status.rawValue).tag(status)

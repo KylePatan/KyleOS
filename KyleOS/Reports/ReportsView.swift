@@ -3,12 +3,13 @@ import SwiftData
 
 /// PRD §13: the Reports workspace. Covers §13.2 (Default Summary, "This Week" by default),
 /// §13.4's Workspace time breakdown, §13.6 (Planned vs Actual), §13.7 (Estimate Accuracy), §13.8
-/// (Active/Stalled Work), Recent Activity (§14.19's status/progress history log), §13.10/§13.11
-/// (Clips/Sketch Reports, including precise status-transition counts and Sketch Writing-to-Post
-/// turnaround), and §13.12 (Posting Reports: cadence, Ready & Waiting, Missed Posts, Clips vs
-/// Sketches) — see `ReportService`'s own doc comment for what's still deliberately not built (a
-/// per-Project aggregate progress-over-time view, and §13.9 Stand-Up Reports, which needs
-/// Joke/Chunk status history that doesn't exist yet).
+/// (Active/Stalled Work), Recent Activity (§14.19's status/progress history log), §13.9 (Stand-Up
+/// Reports: Creative Hours, Joke ideas created, Jokes moved to New/Done, Chunks created, Headline
+/// Set runtime vs target, Gigs performed, time by material), §13.10/§13.11 (Clips/Sketch Reports,
+/// including precise status-transition counts and Sketch Writing-to-Post turnaround), and §13.12
+/// (Posting Reports: cadence, Ready & Waiting, Missed Posts, Clips vs Sketches) — see
+/// `ReportService`'s own doc comment for what's still deliberately not built (a per-Project
+/// aggregate progress-over-time view, and "Ready buffer trends").
 struct ReportsView: View {
     @Environment(\.modelContext) private var context
 
@@ -28,6 +29,9 @@ struct ReportsView: View {
     @State private var sketchesEditingSeconds = 0
     @State private var sketchTurnaround: [ReportService.SketchTurnaroundEntry] = []
     @State private var postingReport: ReportService.PostingReport?
+    @State private var standUpReport: ReportService.StandUpReport?
+    @State private var headlineSetProgress: [ReportService.HeadlineSetProgressEntry] = []
+    @State private var timeByMaterial: [ReportService.MaterialTimeEntry] = []
 
     private var interval: DateInterval {
         ReportService.interval(for: rangeOption, customStart: customStart, customEnd: customEnd)
@@ -54,6 +58,9 @@ struct ReportsView: View {
                 }
                 if !recentActivity.isEmpty {
                     recentActivitySection
+                }
+                if let standUpReport {
+                    standUpReportSection(standUpReport)
                 }
                 if let clipsReport {
                     clipsReportSection(clipsReport)
@@ -207,6 +214,47 @@ struct ReportsView: View {
         .frame(maxWidth: 700, alignment: .leading)
     }
 
+    /// PRD §13.9: "Stand-Up Creative Hours; Joke ideas created; Jokes moved to New/Done; Chunks
+    /// created; Headline Set runtime vs target; Gigs performed; Time spent on individual material."
+    private func standUpReportSection(_ report: ReportService.StandUpReport) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Stand Up").font(.headline)
+            HStack(spacing: 24) {
+                stat(label: "Creative Time", value: TimeFormatting.shortDuration(report.creativeSeconds))
+                stat(label: "Joke Ideas Created", value: "\(report.jokeIdeasCreatedCount)")
+                stat(label: "Moved to New", value: "\(report.jokesMovedToNewCount)")
+                stat(label: "Moved to Done", value: "\(report.jokesMovedToDoneCount)")
+                stat(label: "Chunks Created", value: "\(report.chunksCreatedCount)")
+                stat(label: "Gigs Performed", value: "\(report.gigsPerformedCount)")
+            }
+            if !headlineSetProgress.isEmpty {
+                Text("Headline Set Runtime vs Target").font(.subheadline)
+                ForEach(headlineSetProgress) { entry in
+                    HStack {
+                        Text(entry.title)
+                        Spacer()
+                        Text("\(TimeFormatting.shortDuration(entry.currentSeconds)) / \(TimeFormatting.shortDuration(entry.targetSeconds))")
+                            .foregroundStyle(.secondary)
+                    }
+                    .font(.callout)
+                }
+            }
+            if !timeByMaterial.isEmpty {
+                Text("Time by Material").font(.subheadline)
+                ForEach(timeByMaterial) { entry in
+                    HStack {
+                        Text(entry.title)
+                        Spacer()
+                        Text(TimeFormatting.shortDuration(entry.seconds))
+                            .foregroundStyle(.secondary)
+                    }
+                    .font(.callout)
+                }
+            }
+        }
+        .frame(maxWidth: 700, alignment: .leading)
+    }
+
     /// PRD §13.10: "Clips identified, edited, ready, posted; Editing/subtitle time; Average
     /// production time per clip; Ready buffer; Source recordings that generated the most usable
     /// clips."
@@ -300,6 +348,9 @@ struct ReportsView: View {
         sketchesEditingSeconds = (try? ReportService.sketchesEditingSeconds(in: currentInterval, context: context)) ?? 0
         sketchTurnaround = (try? ReportService.sketchTurnaround(in: currentInterval, context: context)) ?? []
         postingReport = try? ReportService.postingReport(in: currentInterval, context: context)
+        standUpReport = try? ReportService.standUpReport(in: currentInterval, context: context)
+        headlineSetProgress = ReportService.headlineSetProgress(context: context)
+        timeByMaterial = (try? ReportService.timeByMaterial(in: currentInterval, context: context)) ?? []
     }
 }
 

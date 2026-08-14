@@ -785,4 +785,134 @@ final class ReportServiceTests: XCTestCase {
 
         XCTAssertEqual(report.missedPlannedPostsCount, 1)
     }
+
+    // MARK: - §13.9 Stand-Up Reports
+
+    func testStandUpReportCountsCreativeSecondsOnlyForStandUpWorkspace() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let workItem = try WorkItemService.generalStandUpWorkItem(context: context)
+        let now = Date()
+        WorkSessionService.logCompletedSession(
+            for: workItem, startAt: now, endAt: now.addingTimeInterval(600),
+            activeDurationSeconds: 600, progressBefore: 0, progressAfter: 0, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.standUpReport(in: interval, context: context)
+
+        XCTAssertEqual(report.creativeSeconds, 600)
+    }
+
+    func testStandUpReportCountsJokeIdeasCreatedWithinRange() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        JokeService.quickCapture(text: "Airline food, but for cats.", context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.standUpReport(in: interval, context: context)
+
+        XCTAssertEqual(report.jokeIdeasCreatedCount, 1)
+    }
+
+    func testStandUpReportCountsJokesMovedToNewAndDoneAsTransitionsNotSnapshots() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let jokeA = JokeService.quickCapture(text: "One.", context: context)
+        let jokeB = JokeService.quickCapture(text: "Two.", context: context)
+        try context.save()
+
+        JokeService.move(jokeA, to: .new, in: context)
+        JokeService.move(jokeB, to: .new, in: context)
+        JokeService.move(jokeB, to: .done, in: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.standUpReport(in: interval, context: context)
+
+        XCTAssertEqual(report.jokesMovedToNewCount, 2)
+        XCTAssertEqual(report.jokesMovedToDoneCount, 1)
+    }
+
+    func testStandUpReportCountsChunksCreatedWithinRange() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        ChunkService.createChunk(title: "Travel Bit", context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.standUpReport(in: interval, context: context)
+
+        XCTAssertEqual(report.chunksCreatedCount, 1)
+    }
+
+    func testStandUpReportCountsGigsPerformedWithinRange() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        GigService.createGig(venue: "The Comedy Cellar", startAt: Date(), context: context)
+        GigService.createGig(venue: "Future Gig", startAt: Date(timeIntervalSinceNow: 86400 * 30), context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.standUpReport(in: interval, context: context)
+
+        XCTAssertEqual(report.gigsPerformedCount, 1)
+    }
+
+    func testHeadlineSetProgressReportsCurrentRuntimeAgainstTarget() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let set = HeadlineSetService.createHeadlineSet(title: "Fall Tour Set", targetDurationMinutes: 45, context: context)
+        let chunk = ChunkService.createChunk(title: "Travel Bit", context: context)
+        chunk.runtimeSeconds = 300
+        try context.save()
+        HeadlineSetService.addChunk(chunk, to: set)
+        try context.save()
+
+        let entries = ReportService.headlineSetProgress(context: context)
+
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries.first?.currentSeconds, 300)
+        XCTAssertEqual(entries.first?.targetSeconds, 45 * 60)
+    }
+
+    func testTimeByMaterialAttributesSessionsToTheirJokeOrChunk() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food, but for cats.", context: context)
+        try context.save()
+        let workItem = try WorkItemService.standUpWorkItem(for: joke, context: context)
+        let now = Date()
+        WorkSessionService.logCompletedSession(
+            for: workItem, startAt: now, endAt: now.addingTimeInterval(300),
+            activeDurationSeconds: 300, progressBefore: 0, progressAfter: 0, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let entries = try ReportService.timeByMaterial(in: interval, context: context)
+
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries.first?.title, "Airline food, but for cats.")
+        XCTAssertEqual(entries.first?.seconds, 300)
+    }
+
+    func testTimeByMaterialExcludesGeneralStandUpSessions() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let workItem = try WorkItemService.generalStandUpWorkItem(context: context)
+        let now = Date()
+        WorkSessionService.logCompletedSession(
+            for: workItem, startAt: now, endAt: now.addingTimeInterval(300),
+            activeDurationSeconds: 300, progressBefore: 0, progressAfter: 0, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let entries = try ReportService.timeByMaterial(in: interval, context: context)
+
+        XCTAssertTrue(entries.isEmpty)
+    }
 }

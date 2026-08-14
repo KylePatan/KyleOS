@@ -10,34 +10,35 @@ import SwiftData
 /// Projects, status history, posting records, gigs, shoots, and Calendar capacity." Covers §13.2
 /// (Default Summary), the Workspace dimension of §13.4, §13.6 (Planned vs Actual), §13.7
 /// (Estimate Accuracy), §13.8 (Active/Stalled Work), §13.5/history-backed reporting via
-/// `HistoryEvent` (V29) — `recentActivity` and `progressHistory` — §13.10/§13.11 (Clips/Sketch
-/// Reports), which lean on the same `HistoryEvent` log for precise status-transition counts (not
-/// live snapshots) and Sketch "Writing-to-post turnaround" (Project ->`.finished` history event to
-/// `PostingItem.actualPostedDate`) — and now §13.12 (Posting Reports), built entirely from
-/// `PostingItem`/`AppSettings.postsPerWeekTarget`, no `HistoryEvent` needed.
+/// `HistoryEvent` — `recentActivity` and `progressHistory` — §13.9 (Stand-Up Reports, using the
+/// V30 Joke/Chunk history extension), §13.10/§13.11 (Clips/Sketch Reports, which lean on the same
+/// `HistoryEvent` log for precise status-transition counts, not live snapshots, and Sketch
+/// "Writing-to-post turnaround"), and §13.12 (Posting Reports, no `HistoryEvent` needed).
 ///
 /// Deliberately NOT building the full per-Project aggregate progress-over-time view — a Project
 /// can have several Work Items, and the PRD doesn't specify how their individual progress numbers
 /// should combine into one project-level series (sum? weighted by estimate? most-recently-active
-/// item only?). Also NOT building §13.9 Stand-Up Reports yet — "Jokes moved to New/Done" needs
-/// Joke/Chunk status history, which was deliberately scoped out of V29 (see that schema file's own
-/// doc comment) and still doesn't exist. Both are real open questions/gaps worth resolving
-/// deliberately, not guessing at.
+/// item only?) — and NOT building "Ready buffer trends" (needs periodic snapshots or
+/// reconstruction from the history log, neither of which exists yet). Both are real open
+/// questions worth resolving deliberately, not guessing at.
 enum ReportService {
-    typealias WorkSession = KyleOSSchemaV29.WorkSession
-    typealias WorkItem = KyleOSSchemaV29.WorkItem
-    typealias Workspace = KyleOSSchemaV29.Workspace
-    typealias PostingItem = KyleOSSchemaV29.PostingItem
-    typealias PlannedSession = KyleOSSchemaV29.PlannedSession
-    typealias PlannedSessionStatus = KyleOSSchemaV29.PlannedSessionStatus
-    typealias HistoryEvent = KyleOSSchemaV29.HistoryEvent
-    typealias HistoryEventKind = KyleOSSchemaV29.HistoryEventKind
-    typealias Clip = KyleOSSchemaV29.Clip
-    typealias ClipStatus = KyleOSSchemaV29.ClipStatus
-    typealias Project = KyleOSSchemaV29.Project
-    typealias ProjectStatus = KyleOSSchemaV29.ProjectStatus
-    typealias SketchProductionStatus = KyleOSSchemaV29.SketchProductionStatus
-    typealias AppSettings = KyleOSSchemaV29.AppSettings
+    typealias WorkSession = KyleOSSchemaV30.WorkSession
+    typealias WorkItem = KyleOSSchemaV30.WorkItem
+    typealias Workspace = KyleOSSchemaV30.Workspace
+    typealias PostingItem = KyleOSSchemaV30.PostingItem
+    typealias PlannedSession = KyleOSSchemaV30.PlannedSession
+    typealias PlannedSessionStatus = KyleOSSchemaV30.PlannedSessionStatus
+    typealias HistoryEvent = KyleOSSchemaV30.HistoryEvent
+    typealias HistoryEventKind = KyleOSSchemaV30.HistoryEventKind
+    typealias Clip = KyleOSSchemaV30.Clip
+    typealias ClipStatus = KyleOSSchemaV30.ClipStatus
+    typealias Project = KyleOSSchemaV30.Project
+    typealias ProjectStatus = KyleOSSchemaV30.ProjectStatus
+    typealias SketchProductionStatus = KyleOSSchemaV30.SketchProductionStatus
+    typealias AppSettings = KyleOSSchemaV30.AppSettings
+    typealias Joke = KyleOSSchemaV30.Joke
+    typealias Chunk = KyleOSSchemaV30.Chunk
+    typealias JokeStatus = KyleOSSchemaV30.JokeStatus
 
     enum DateRangeOption: String, CaseIterable, Identifiable {
         case thisWeek = "This Week"
@@ -432,6 +433,109 @@ enum ReportService {
             readyPiecesWaitingCount: readyPiecesWaitingCount,
             missedPlannedPostsCount: missedPlannedPostsCount
         )
+    }
+
+    // MARK: - §13.9 Stand-Up Reports
+
+    /// PRD §13.9: "Stand-Up Creative Hours; Joke ideas created; Jokes moved to New/Done; Chunks
+    /// created; Gigs performed." "Headline Set runtime vs target" and "Time spent on individual
+    /// material" are separate, list-shaped functions below (`headlineSetProgress`/
+    /// `timeByMaterial`) rather than fields on this struct — both return one entry per
+    /// HeadlineSet/piece of material, not a single number.
+    struct StandUpReport: Equatable {
+        let creativeSeconds: Int
+        let jokeIdeasCreatedCount: Int
+        let jokesMovedToNewCount: Int
+        let jokesMovedToDoneCount: Int
+        let chunksCreatedCount: Int
+        let gigsPerformedCount: Int
+    }
+
+    static func standUpReport(in interval: DateInterval, context: ModelContext) throws -> StandUpReport {
+        let creativeSeconds = try workSessions(in: interval, context: context)
+            .filter { $0.workItem?.workspace == .standUp }
+            .reduce(0) { $0 + $1.activeDurationSeconds }
+
+        let jokeIdeasCreatedCount = try context.fetch(FetchDescriptor<Joke>())
+            .filter { interval.contains($0.createdAt) }
+            .count
+
+        // "Jokes moved to New/Done" counts transitions *into* that status within the range, the
+        // same `HistoryEvent`-backed precision as `clipStatusTransitions`/`sketchStatusTransitions`
+        // — not a live count of Jokes currently sitting in New/Done.
+        let jokeEvents = try historyEvents(in: interval, context: context).filter { $0.joke != nil }
+        let jokesMovedToNewCount = jokeEvents.filter { $0.newValue == JokeStatus.new.rawValue }.count
+        let jokesMovedToDoneCount = jokeEvents.filter { $0.newValue == JokeStatus.done.rawValue }.count
+
+        let chunksCreatedCount = try context.fetch(FetchDescriptor<Chunk>())
+            .filter { interval.contains($0.createdAt) }
+            .count
+
+        let gigsPerformedCount = GigService.gigs(in: context)
+            .filter { interval.contains($0.startAt) }
+            .count
+
+        return StandUpReport(
+            creativeSeconds: creativeSeconds,
+            jokeIdeasCreatedCount: jokeIdeasCreatedCount,
+            jokesMovedToNewCount: jokesMovedToNewCount,
+            jokesMovedToDoneCount: jokesMovedToDoneCount,
+            chunksCreatedCount: chunksCreatedCount,
+            gigsPerformedCount: gigsPerformedCount
+        )
+    }
+
+    /// "Headline Set runtime vs target." A live snapshot (not date-ranged — a Headline Set's
+    /// runtime is a current state, not something that happened within a period), reusing
+    /// `HeadlineSetService`'s own already-shipped rollup rather than recomputing it.
+    struct HeadlineSetProgressEntry: Identifiable {
+        let headlineSetID: PersistentIdentifier
+        let title: String
+        let currentSeconds: Int
+        let targetSeconds: Int
+        var id: PersistentIdentifier { headlineSetID }
+    }
+
+    static func headlineSetProgress(context: ModelContext) -> [HeadlineSetProgressEntry] {
+        HeadlineSetService.headlineSets(in: context).map { set in
+            HeadlineSetProgressEntry(
+                headlineSetID: set.persistentModelID,
+                title: set.title,
+                currentSeconds: HeadlineSetService.totalRuntimeSeconds(for: set),
+                targetSeconds: HeadlineSetService.targetDurationSeconds(for: set)
+            )
+        }
+    }
+
+    /// "Time spent on individual material" — Work Session time attributed to each Joke/Chunk
+    /// within the range, via the WorkItem each session belongs to. A "general" Stand-Up session
+    /// (no linked Joke/Chunk) contributes to `standUpReport`'s `creativeSeconds` total but has no
+    /// single piece of material to attribute here — an honest simplification, not a gap (same
+    /// reasoning as `Summary.projectsWorkedOnCount` excluding Stand-Up work).
+    struct MaterialTimeEntry: Identifiable {
+        let id: PersistentIdentifier
+        let title: String
+        let seconds: Int
+    }
+
+    static func timeByMaterial(in interval: DateInterval, context: ModelContext) throws -> [MaterialTimeEntry] {
+        let sessions = try workSessions(in: interval, context: context)
+        var jokeTotals: [PersistentIdentifier: (title: String, seconds: Int)] = [:]
+        var chunkTotals: [PersistentIdentifier: (title: String, seconds: Int)] = [:]
+
+        for session in sessions {
+            if let joke = session.workItem?.joke {
+                let title = joke.title.isEmpty ? joke.text : joke.title
+                jokeTotals[joke.persistentModelID, default: (title, 0)].seconds += session.activeDurationSeconds
+            }
+            if let chunk = session.workItem?.chunk {
+                chunkTotals[chunk.persistentModelID, default: (chunk.title, 0)].seconds += session.activeDurationSeconds
+            }
+        }
+
+        let entries = jokeTotals.map { MaterialTimeEntry(id: $0.key, title: $0.value.title, seconds: $0.value.seconds) }
+            + chunkTotals.map { MaterialTimeEntry(id: $0.key, title: $0.value.title, seconds: $0.value.seconds) }
+        return entries.sorted { $0.seconds > $1.seconds }
     }
 
     private static func historyEvents(in interval: DateInterval, context: ModelContext) throws -> [HistoryEvent] {

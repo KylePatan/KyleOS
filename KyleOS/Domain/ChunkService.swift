@@ -3,8 +3,9 @@ import SwiftData
 
 /// Reusable domain actions for Chunks (PRD §7.5-§7.6), kept out of views per CLAUDE.md §4.
 enum ChunkService {
-    typealias Chunk = KyleOSSchemaV29.Chunk
-    typealias Joke = KyleOSSchemaV29.Joke
+    typealias Chunk = KyleOSSchemaV30.Chunk
+    typealias Joke = KyleOSSchemaV30.Joke
+    typealias JokeStatus = KyleOSSchemaV30.JokeStatus
 
     @discardableResult
     static func createChunk(title: String, context: ModelContext) -> Chunk {
@@ -16,6 +17,19 @@ enum ChunkService {
     static func rename(_ chunk: Chunk, to title: String) {
         chunk.title = title
         chunk.updatedAt = .now
+    }
+
+    /// Reuses `JokeStatus` per the model's own documented simplification (the PRD gives Chunk a
+    /// "development status" without distinct stage names from a Joke's). Previously set directly
+    /// by `ChunkDetailView`'s Picker binding; routed through the Service layer now (CLAUDE.md §4)
+    /// so the change can log to `HistoryEventService` (V30) like every other status-changing
+    /// function.
+    static func changeStatus(_ chunk: Chunk, to status: JokeStatus, context: ModelContext) {
+        guard chunk.status != status else { return }
+        let oldStatus = chunk.status
+        chunk.status = status
+        chunk.updatedAt = .now
+        HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: status.rawValue, chunk: chunk, context: context)
     }
 
     static func updateNotes(_ chunk: Chunk, notes: String) {

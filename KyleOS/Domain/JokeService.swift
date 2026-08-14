@@ -5,8 +5,8 @@ import SwiftData
 /// §4. `order` positions a Joke within its current status column — the same "plain ascending
 /// index, renumber on delete/move" pattern ActService/SceneService already established.
 enum JokeService {
-    typealias Joke = KyleOSSchemaV29.Joke
-    typealias JokeStatus = KyleOSSchemaV29.JokeStatus
+    typealias Joke = KyleOSSchemaV30.Joke
+    typealias JokeStatus = KyleOSSchemaV30.JokeStatus
 
     /// PRD §7.3: "+ Joke Idea should require only the idea text. A short title and additional
     /// detail can be added later."
@@ -39,7 +39,9 @@ enum JokeService {
 
     /// PRD §7.2: "Jokes are draggable between stages... Moving them updates status
     /// automatically." Appends to the end of the destination column and renumbers the source
-    /// column contiguously, the same pattern SceneService.move uses for Acts.
+    /// column contiguously, the same pattern SceneService.move uses for Acts. Logs to
+    /// `HistoryEventService` (V30) — this is the sole path that changes a Joke's status, so it's
+    /// the one place that needs the call, same as every other `changeStatus`-shaped function.
     static func move(_ joke: Joke, to newStatus: JokeStatus, in context: ModelContext) {
         guard joke.status != newStatus else { return }
         let oldStatus = joke.status
@@ -48,6 +50,7 @@ enum JokeService {
         joke.order = priorCountInNewStatus
         joke.updatedAt = .now
         renumber(jokes(withStatus: oldStatus, in: context))
+        HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: newStatus.rawValue, joke: joke, context: context)
     }
 
     /// PRD §7.2: "...and reorderable within stages."

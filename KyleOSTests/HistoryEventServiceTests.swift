@@ -149,6 +149,48 @@ final class HistoryEventServiceTests: XCTestCase {
         XCTAssertEqual(events.first?.newValue, "Filming Scheduled")
     }
 
+    func testJokeMoveRecordsAHistoryEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food, but for cats.", context: context)
+        try context.save()
+
+        JokeService.move(joke, to: .new, in: context)
+        try context.save()
+
+        let events = try HistoryEventService.events(for: joke, in: context)
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.oldValue, "Joke Ideas")
+        XCTAssertEqual(events.first?.newValue, "New")
+    }
+
+    func testJokeMoveToTheSameStatusDoesNotRecordAnEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food, but for cats.", context: context)
+        try context.save()
+
+        JokeService.move(joke, to: .ideas, in: context)
+        try context.save()
+
+        XCTAssertTrue(try HistoryEventService.events(for: joke, in: context).isEmpty)
+    }
+
+    func testDeletingAJokeCascadeDeletesItsHistoryEvents() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "Airline food, but for cats.", context: context)
+        try context.save()
+        JokeService.move(joke, to: .new, in: context)
+        try context.save()
+
+        context.delete(joke)
+        try context.save()
+
+        let remaining = try context.fetch(FetchDescriptor<HistoryEventService.HistoryEvent>())
+        XCTAssertTrue(remaining.isEmpty)
+    }
+
     func testDeletingAWorkItemCascadeDeletesItsHistoryEvents() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

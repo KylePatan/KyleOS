@@ -7,9 +7,9 @@ import SwiftData
 /// `GigSetListService`'s "exactly one of joke/chunk" enforcement (the schema itself can't express
 /// an exclusive-or, so the service layer does).
 enum PostingItemService {
-    typealias PostingItem = KyleOSSchemaV29.PostingItem
-    typealias Clip = KyleOSSchemaV29.Clip
-    typealias Project = KyleOSSchemaV29.Project
+    typealias PostingItem = KyleOSSchemaV30.PostingItem
+    typealias Clip = KyleOSSchemaV30.Clip
+    typealias Project = KyleOSSchemaV30.Project
 
     /// PRD §10.2's five display states. Deliberately not a stored field — computed fresh from the
     /// content's own ready/posted state (already fully answered by `ClipStatus`/

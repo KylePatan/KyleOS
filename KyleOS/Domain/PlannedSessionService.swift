@@ -5,11 +5,11 @@ import SwiftData
 /// This is scheduling data storage only — no Scheduling Engine logic (V0.7, Decision Gate B)
 /// decides placement here.
 enum PlannedSessionService {
-    typealias PlannedSession = KyleOSSchemaV29.PlannedSession
-    typealias PlannedSessionStatus = KyleOSSchemaV29.PlannedSessionStatus
-    typealias SessionOrigin = KyleOSSchemaV29.SessionOrigin
-    typealias WorkItem = KyleOSSchemaV29.WorkItem
-    typealias CalendarEvent = KyleOSSchemaV29.CalendarEvent
+    typealias PlannedSession = KyleOSSchemaV30.PlannedSession
+    typealias PlannedSessionStatus = KyleOSSchemaV30.PlannedSessionStatus
+    typealias SessionOrigin = KyleOSSchemaV30.SessionOrigin
+    typealias WorkItem = KyleOSSchemaV30.WorkItem
+    typealias CalendarEvent = KyleOSSchemaV30.CalendarEvent
 
     @discardableResult
     static func schedule(
