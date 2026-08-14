@@ -26,9 +26,14 @@ enum ProjectService {
         project.updatedAt = .now
     }
 
-    static func setStatus(_ project: Project, to status: ProjectStatus) {
+    /// PRD §14.19: status changes create a history record — enables §13.11's "Writing-to-post
+    /// turnaround" (the Project's own transition to `.finished` is "writing done").
+    static func setStatus(_ project: Project, to status: ProjectStatus, context: ModelContext) {
+        let oldStatus = project.displayStatus
         project.status = status
         project.updatedAt = .now
+        guard oldStatus != status else { return }
+        HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: status.rawValue, sketchProject: project, context: context)
     }
 
     /// PRD §6.17: "Reopening a writing project should restore... last open document." Called

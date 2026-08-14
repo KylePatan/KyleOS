@@ -482,4 +482,197 @@ final class ReportServiceTests: XCTestCase {
 
         XCTAssertTrue(history.isEmpty)
     }
+
+    // MARK: - §13.10 Clips Reports
+
+    func testClipStatusTransitionsCountsTransitionsIntoEachStatus() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+
+        ClipService.changeStatus(clip, to: .currentlyEditing, context: context)
+        ClipService.changeStatus(clip, to: .ready, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let transitions = try ReportService.clipStatusTransitions(in: interval, context: context)
+
+        XCTAssertEqual(transitions.first { $0.status == .currentlyEditing }?.count, 1)
+        XCTAssertEqual(transitions.first { $0.status == .ready }?.count, 1)
+        XCTAssertEqual(transitions.first { $0.status == .posted }?.count, 0)
+    }
+
+    func testClipStatusTransitionsDoesNotDoubleCountAStaticClip() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        ClipService.changeStatus(clip, to: .ready, context: context)
+        try context.save()
+
+        // The transition happened before this report's range — a clip sitting in Ready the
+        // whole period shouldn't be counted as if it just became Ready.
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: 3600), end: Date(timeIntervalSinceNow: 7200))
+        let transitions = try ReportService.clipStatusTransitions(in: interval, context: context)
+
+        XCTAssertEqual(transitions.first { $0.status == .ready }?.count, 0)
+    }
+
+    func testClipsReportComputesEditingTimeAndAverage() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clipA = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        let clipB = ClipService.createClip(title: "Travel Bit", in: source, context: context)
+        try context.save()
+        let workItemA = try WorkItemService.clipWorkItem(for: clipA, context: context)
+        let workItemB = try WorkItemService.clipWorkItem(for: clipB, context: context)
+        let now = Date()
+        WorkSessionService.logCompletedSession(
+            for: workItemA, startAt: now, endAt: now.addingTimeInterval(1800),
+            activeDurationSeconds: 1800, progressBefore: 0, progressAfter: 50, entryType: .timer, context: context
+        )
+        WorkSessionService.logCompletedSession(
+            for: workItemB, startAt: now, endAt: now.addingTimeInterval(600),
+            activeDurationSeconds: 600, progressBefore: 0, progressAfter: 50, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.clipsReport(in: interval, context: context)
+
+        XCTAssertEqual(report.editingSeconds, 2400)
+        XCTAssertEqual(report.clipsWorkedOnCount, 2)
+        XCTAssertEqual(report.averageProductionSeconds, 1200)
+    }
+
+    func testClipsReportExcludesNonClipWorkSessions() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        let now = Date()
+        WorkSessionService.logCompletedSession(
+            for: workItem, startAt: now, endAt: now.addingTimeInterval(1800),
+            activeDurationSeconds: 1800, progressBefore: 0, progressAfter: 50, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.clipsReport(in: interval, context: context)
+
+        XCTAssertEqual(report.editingSeconds, 0, "Writing time must not count toward Clips editing time")
+    }
+
+    func testClipsReportIncludesLiveBufferSnapshots() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let readyClip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        ClipService.changeStatus(readyClip, to: .ready, context: context)
+        let backlogClip = ClipService.createClip(title: "Travel Bit", in: source, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.clipsReport(in: interval, context: context)
+
+        XCTAssertEqual(report.readyBufferCount, 1)
+        XCTAssertEqual(report.productionBacklogCount, 1)
+        _ = backlogClip
+    }
+
+    func testTopSourcesByClipCountRanksDescending() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let sourceA = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let sourceB = SourceService.createSource(title: "April Comedy Slam", context: context)
+        ClipService.createClip(title: "Bit 1", in: sourceA, context: context)
+        ClipService.createClip(title: "Bit 2", in: sourceA, context: context)
+        ClipService.createClip(title: "Bit 3", in: sourceB, context: context)
+        try context.save()
+
+        let ranked = ReportService.topSourcesByClipCount(context: context)
+
+        XCTAssertEqual(ranked.first?.sourceTitle, "March Comedy Slam")
+        XCTAssertEqual(ranked.first?.clipCount, 2)
+    }
+
+    // MARK: - §13.11 Sketch Reports
+
+    func testSketchStatusTransitionsCountsTransitionsIntoEachStatus() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+
+        SketchProductionService.changeStatus(for: project, to: .filmingScheduled, context: context)
+        SketchProductionService.changeStatus(for: project, to: .filmed, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let transitions = try ReportService.sketchStatusTransitions(in: interval, context: context)
+
+        XCTAssertEqual(transitions.first { $0.status == .filmingScheduled }?.count, 1)
+        XCTAssertEqual(transitions.first { $0.status == .filmed }?.count, 1)
+        XCTAssertEqual(transitions.first { $0.status == .posted }?.count, 0)
+    }
+
+    func testSketchesEditingSecondsOnlyCountsSketchesWorkspace() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+        let workItem = try WorkItemService.sketchEditingWorkItem(for: project, context: context)
+        let now = Date()
+        WorkSessionService.logCompletedSession(
+            for: workItem, startAt: now, endAt: now.addingTimeInterval(900),
+            activeDurationSeconds: 900, progressBefore: 0, progressAfter: 50, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let seconds = try ReportService.sketchesEditingSeconds(in: interval, context: context)
+
+        XCTAssertEqual(seconds, 900)
+    }
+
+    func testSketchTurnaroundComputesDaysBetweenWritingFinishedAndPosted() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, in: context)
+        try context.save()
+
+        ProjectService.setStatus(project, to: .finished, context: context)
+        try context.save()
+
+        SketchProductionService.changeStatus(for: project, to: .posted, context: context)
+        let postItem = PostingItemService.findOrCreate(for: project, context: context)
+        let postedAt = Date(timeIntervalSinceNow: 86400 * 3)
+        postItem.actualPostedDate = postedAt
+        try context.save()
+
+        let interval = DateInterval(start: .now, end: Date(timeIntervalSinceNow: 86400 * 10))
+        let turnaround = try ReportService.sketchTurnaround(in: interval, context: context)
+
+        XCTAssertEqual(turnaround.count, 1)
+        XCTAssertEqual(turnaround.first?.title, "Airport Sketch")
+        XCTAssertGreaterThanOrEqual(turnaround.first?.turnaroundDays ?? -1, 2)
+    }
+
+    func testSketchTurnaroundExcludesSketchesMissingEitherTimestamp() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+        // Never posted — no PostingItem.actualPostedDate.
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -86400 * 30), end: Date(timeIntervalSinceNow: 86400 * 30))
+        let turnaround = try ReportService.sketchTurnaround(in: interval, context: context)
+
+        XCTAssertTrue(turnaround.isEmpty)
+    }
 }

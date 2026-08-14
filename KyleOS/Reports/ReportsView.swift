@@ -3,10 +3,11 @@ import SwiftData
 
 /// PRD §13: the Reports workspace. Covers §13.2 (Default Summary, "This Week" by default),
 /// §13.4's Workspace time breakdown, §13.6 (Planned vs Actual), §13.7 (Estimate Accuracy), §13.8
-/// (Active/Stalled Work), and a first history-backed slice — Recent Activity, a chronological log
-/// of status/progress changes (PRD §14.19) — see `ReportService`'s own doc comment for what's
-/// still deliberately not built (a per-Project aggregate progress-over-time view; the ambiguity
-/// is in how several Work Items' progress should combine, not a missing model).
+/// (Active/Stalled Work), Recent Activity (§14.19's status/progress history log), and §13.10/
+/// §13.11 (Clips/Sketch Reports, including precise status-transition counts and Sketch
+/// Writing-to-Post turnaround) — see `ReportService`'s own doc comment for what's still
+/// deliberately not built (a per-Project aggregate progress-over-time view, and §13.9 Stand-Up
+/// Reports, which needs Joke/Chunk status history that doesn't exist yet).
 struct ReportsView: View {
     @Environment(\.modelContext) private var context
 
@@ -19,6 +20,12 @@ struct ReportsView: View {
     @State private var estimateAccuracy: [ReportService.EstimateAccuracyEntry] = []
     @State private var stalledWorkItems: [ReportService.StalledWorkItemEntry] = []
     @State private var recentActivity: [ReportService.HistoryEntry] = []
+    @State private var clipTransitions: [(status: ReportService.ClipStatus, count: Int)] = []
+    @State private var clipsReport: ReportService.ClipsReport?
+    @State private var topSources: [(sourceTitle: String, clipCount: Int)] = []
+    @State private var sketchTransitions: [(status: ReportService.SketchProductionStatus, count: Int)] = []
+    @State private var sketchesEditingSeconds = 0
+    @State private var sketchTurnaround: [ReportService.SketchTurnaroundEntry] = []
 
     private var interval: DateInterval {
         ReportService.interval(for: rangeOption, customStart: customStart, customEnd: customEnd)
@@ -45,6 +52,12 @@ struct ReportsView: View {
                 }
                 if !recentActivity.isEmpty {
                     recentActivitySection
+                }
+                if let clipsReport {
+                    clipsReportSection(clipsReport)
+                }
+                if !sketchTransitions.isEmpty || sketchesEditingSeconds > 0 {
+                    sketchesReportSection
                 }
             }
             .padding()
@@ -189,6 +202,67 @@ struct ReportsView: View {
         .frame(maxWidth: 700, alignment: .leading)
     }
 
+    /// PRD §13.10: "Clips identified, edited, ready, posted; Editing/subtitle time; Average
+    /// production time per clip; Ready buffer; Source recordings that generated the most usable
+    /// clips."
+    private func clipsReportSection(_ report: ReportService.ClipsReport) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Clips").font(.headline)
+            HStack(spacing: 24) {
+                stat(label: "Editing Time", value: TimeFormatting.shortDuration(report.editingSeconds))
+                stat(label: "Avg per Clip", value: TimeFormatting.shortDuration(report.averageProductionSeconds))
+                stat(label: "Ready Buffer", value: "\(report.readyBufferCount)")
+                stat(label: "Scheduled", value: "\(report.scheduledCount)")
+                stat(label: "Backlog", value: "\(report.productionBacklogCount)")
+            }
+            if !clipTransitions.isEmpty {
+                HStack(spacing: 16) {
+                    ForEach(clipTransitions.filter { $0.count > 0 }, id: \.status) { entry in
+                        Text("\(entry.status.rawValue): \(entry.count)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            if !topSources.isEmpty {
+                Text("Top Sources: " + topSources.map { "\($0.sourceTitle) (\($0.clipCount))" }.joined(separator: ", "))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    /// PRD §13.11: "Sketches written/filmed/edited/posted; Writing-to-post turnaround; Editing
+    /// time; Production time; Full project lifecycle time."
+    private var sketchesReportSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Sketches").font(.headline)
+            stat(label: "Editing Time", value: TimeFormatting.shortDuration(sketchesEditingSeconds))
+            if !sketchTransitions.isEmpty {
+                HStack(spacing: 16) {
+                    ForEach(sketchTransitions.filter { $0.count > 0 }, id: \.status) { entry in
+                        Text("\(entry.status.rawValue): \(entry.count)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            if !sketchTurnaround.isEmpty {
+                Text("Writing-to-Post Turnaround").font(.subheadline)
+                ForEach(sketchTurnaround) { entry in
+                    HStack {
+                        Text(entry.title)
+                        Spacer()
+                        Text("\(entry.turnaroundDays)d")
+                            .foregroundStyle(.secondary)
+                    }
+                    .font(.callout)
+                }
+            }
+        }
+        .frame(maxWidth: 700, alignment: .leading)
+    }
+
     private func reload() {
         let currentInterval = interval
         summary = try? ReportService.summary(in: currentInterval, context: context)
@@ -198,6 +272,12 @@ struct ReportsView: View {
         let cutoff = Calendar.current.date(byAdding: .day, value: -14, to: .now) ?? .now
         stalledWorkItems = (try? ReportService.stalledWorkItems(notWorkedOnSince: cutoff, context: context)) ?? []
         recentActivity = (try? ReportService.recentActivity(in: currentInterval, context: context)) ?? []
+        clipTransitions = (try? ReportService.clipStatusTransitions(in: currentInterval, context: context)) ?? []
+        clipsReport = try? ReportService.clipsReport(in: currentInterval, context: context)
+        topSources = ReportService.topSourcesByClipCount(context: context)
+        sketchTransitions = (try? ReportService.sketchStatusTransitions(in: currentInterval, context: context)) ?? []
+        sketchesEditingSeconds = (try? ReportService.sketchesEditingSeconds(in: currentInterval, context: context)) ?? 0
+        sketchTurnaround = (try? ReportService.sketchTurnaround(in: currentInterval, context: context)) ?? []
     }
 }
 

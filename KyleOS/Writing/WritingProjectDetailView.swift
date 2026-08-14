@@ -54,7 +54,7 @@ struct WritingProjectDetailView: View {
                 Spacer()
                 Picker("Status", selection: Binding(
                     get: { project.displayStatus },
-                    set: { ProjectService.setStatus(project, to: $0); try? context.save() }
+                    set: { ProjectService.setStatus(project, to: $0, context: context); try? context.save() }
                 )) {
                     ForEach(ProjectService.ProjectStatus.allCases, id: \.self) { status in
                         Text(status.rawValue).tag(status)

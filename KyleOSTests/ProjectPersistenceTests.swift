@@ -151,7 +151,7 @@ final class ProjectPersistenceTests: XCTestCase {
         try context.save()
         XCTAssertEqual(project.displayStatus, .idea)
 
-        ProjectService.setStatus(project, to: .finished)
+        ProjectService.setStatus(project, to: .finished, context: context)
         try context.save()
 
         XCTAssertEqual(project.status, .finished)

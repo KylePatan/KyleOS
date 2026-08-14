@@ -9,15 +9,19 @@ import SwiftData
 /// §13.14: "Reports should require almost no separate data entry... calculate from Work Sessions,
 /// Projects, status history, posting records, gigs, shoots, and Calendar capacity." Covers §13.2
 /// (Default Summary), the Workspace dimension of §13.4, §13.6 (Planned vs Actual), §13.7
-/// (Estimate Accuracy), §13.8 (Active/Stalled Work), and now a first slice of §13.5/history-backed
-/// reporting via `HistoryEvent` (V29) — `recentActivity` (a chronological log of status/progress
-/// changes) and `progressHistory` (a single Work Item's progress-over-time series, the atomic
-/// building block §13.5's "Project detail report" would roll up from). Deliberately NOT building
-/// the full per-Project aggregate progress-over-time view this stage — a Project can have several
-/// Work Items, and the PRD doesn't specify how their individual progress numbers should combine
-/// into one project-level series (sum? weighted by estimate? most-recently-active item only?).
-/// That's a real open question worth resolving deliberately, not guessing at, so it's left for
-/// whenever a per-Project Reports detail screen actually gets built.
+/// (Estimate Accuracy), §13.8 (Active/Stalled Work), §13.5/history-backed reporting via
+/// `HistoryEvent` (V29) — `recentActivity` and `progressHistory` — and now §13.10/§13.11 (Clips/
+/// Sketch Reports), which lean on the same `HistoryEvent` log for precise status-transition
+/// counts (not live snapshots) and Sketch "Writing-to-post turnaround" (Project ->`.finished`
+/// history event to `PostingItem.actualPostedDate`).
+///
+/// Deliberately NOT building the full per-Project aggregate progress-over-time view — a Project
+/// can have several Work Items, and the PRD doesn't specify how their individual progress numbers
+/// should combine into one project-level series (sum? weighted by estimate? most-recently-active
+/// item only?). Also NOT building §13.9 Stand-Up Reports yet — "Jokes moved to New/Done" needs
+/// Joke/Chunk status history, which was deliberately scoped out of V29 (see that schema file's own
+/// doc comment) and still doesn't exist. Both are real open questions/gaps worth resolving
+/// deliberately, not guessing at.
 enum ReportService {
     typealias WorkSession = KyleOSSchemaV29.WorkSession
     typealias WorkItem = KyleOSSchemaV29.WorkItem
@@ -27,6 +31,11 @@ enum ReportService {
     typealias PlannedSessionStatus = KyleOSSchemaV29.PlannedSessionStatus
     typealias HistoryEvent = KyleOSSchemaV29.HistoryEvent
     typealias HistoryEventKind = KyleOSSchemaV29.HistoryEventKind
+    typealias Clip = KyleOSSchemaV29.Clip
+    typealias ClipStatus = KyleOSSchemaV29.ClipStatus
+    typealias Project = KyleOSSchemaV29.Project
+    typealias ProjectStatus = KyleOSSchemaV29.ProjectStatus
+    typealias SketchProductionStatus = KyleOSSchemaV29.SketchProductionStatus
 
     enum DateRangeOption: String, CaseIterable, Identifiable {
         case thisWeek = "This Week"
@@ -254,6 +263,131 @@ enum ReportService {
                 guard let progress = Int(event.newValue) else { return nil }
                 return (date: event.occurredAt, progress: progress)
             }
+    }
+
+    // MARK: - §13.10 Clips Reports
+
+    /// PRD §13.10: "Clips identified, edited, ready, posted..." Counts, per status, how many
+    /// Clips *transitioned into* that status within the range — precise, since Clip status
+    /// changes have been logged via `HistoryEvent` since V29 — not a live snapshot of current
+    /// status (which would double-count a clip that's sat in one lane all month, and miss one
+    /// that moved through several lanes within the range).
+    static func clipStatusTransitions(in interval: DateInterval, context: ModelContext) throws -> [(status: ClipStatus, count: Int)] {
+        let events = try historyEvents(in: interval, context: context).filter { $0.clip != nil }
+        var counts: [String: Int] = [:]
+        for event in events {
+            counts[event.newValue, default: 0] += 1
+        }
+        return ClipStatus.allCases.map { (status: $0, count: counts[$0.rawValue] ?? 0) }
+    }
+
+    struct ClipsReport: Equatable {
+        let editingSeconds: Int
+        let clipsWorkedOnCount: Int
+        var averageProductionSeconds: Int { clipsWorkedOnCount > 0 ? editingSeconds / clipsWorkedOnCount : 0 }
+        let readyBufferCount: Int
+        let scheduledCount: Int
+        let productionBacklogCount: Int
+    }
+
+    /// "Editing/subtitle time" and "Average production time per clip" (time spent ÷ distinct
+    /// clips worked on in range). "Ready buffer"/"Scheduled"/"Production Backlog" are current
+    /// live snapshots (not date-ranged — matching how the existing Ready Queue widget already
+    /// shows them; a buffer is inherently a point-in-time inventory level, not a period total).
+    static func clipsReport(in interval: DateInterval, context: ModelContext) throws -> ClipsReport {
+        let sessions = try workSessions(in: interval, context: context).filter { $0.workItem?.clip != nil }
+        let editingSeconds = sessions.reduce(0) { $0 + $1.activeDurationSeconds }
+        let clipIDs = Set(sessions.compactMap { $0.workItem?.clip?.id })
+
+        return ClipsReport(
+            editingSeconds: editingSeconds,
+            clipsWorkedOnCount: clipIDs.count,
+            readyBufferCount: ClipService.readyContentBuffer(in: context).count,
+            scheduledCount: ClipService.scheduledPosts(in: context).count,
+            productionBacklogCount: ClipService.productionBacklog(in: context).count
+        )
+    }
+
+    /// "Source recordings that generated the most usable clips" — a lifetime tally, not
+    /// date-ranged (a source's clip count doesn't reset each week).
+    static func topSourcesByClipCount(context: ModelContext, limit: Int = 5) -> [(sourceTitle: String, clipCount: Int)] {
+        let clips = ClipService.allClips(in: context)
+        var counts: [String: Int] = [:]
+        for clip in clips {
+            guard let title = clip.source?.title else { continue }
+            counts[title, default: 0] += 1
+        }
+        return counts
+            .map { (sourceTitle: $0.key, clipCount: $0.value) }
+            .sorted { $0.clipCount > $1.clipCount }
+            .prefix(limit)
+            .map { $0 }
+    }
+
+    // MARK: - §13.11 Sketch Reports
+
+    /// PRD §13.11: "Sketches written/filmed/edited/posted..." Same "count transitions into this
+    /// status within the range" precision as `clipStatusTransitions`, using the Project-linked
+    /// history `SketchProductionService.changeStatus` has recorded since V29.
+    static func sketchStatusTransitions(in interval: DateInterval, context: ModelContext) throws -> [(status: SketchProductionStatus, count: Int)] {
+        let events = try historyEvents(in: interval, context: context).filter { $0.sketchProject != nil }
+        var counts: [String: Int] = [:]
+        for event in events {
+            counts[event.newValue, default: 0] += 1
+        }
+        return SketchProductionStatus.allCases.map { (status: $0, count: counts[$0.rawValue] ?? 0) }
+    }
+
+    /// PRD §13.11: "Editing time." Sketches' whole production pipeline shares one Workspace, so
+    /// this is the same figure `workspaceBreakdown(.sketches)` would show — reported directly
+    /// here too since a reader of the Sketch Reports section shouldn't have to cross-reference
+    /// the Workspace breakdown to find it. "Production time" as a distinct number isn't reported
+    /// separately: nothing tracks shoot-day time as a Work Session (FilmShoot has no timer), so a
+    /// second number here would just repeat this one under a different label.
+    static func sketchesEditingSeconds(in interval: DateInterval, context: ModelContext) throws -> Int {
+        try workSessions(in: interval, context: context)
+            .filter { $0.workItem?.workspace == .sketches }
+            .reduce(0) { $0 + $1.activeDurationSeconds }
+    }
+
+    /// PRD §13.11: "Writing-to-post turnaround... Full project lifecycle time." Only computable
+    /// for a Sketch that has both a recorded "writing finished" transition (`Project.status` ->
+    /// `.finished`, tracked since this same increment wired `ProjectService.setStatus`) and an
+    /// actual posted date (`PostingItem.actualPostedDate`) — sketches missing either are simply
+    /// excluded, not shown with a fabricated/zero duration. Scoped to sketches posted within the
+    /// report's range (turnaround is meaningless outside the context of "posted when").
+    struct SketchTurnaroundEntry: Identifiable {
+        let projectID: PersistentIdentifier
+        let title: String
+        let writingFinishedAt: Date
+        let postedAt: Date
+        var id: PersistentIdentifier { projectID }
+        var turnaroundDays: Int {
+            Calendar.current.dateComponents([.day], from: writingFinishedAt, to: postedAt).day ?? 0
+        }
+    }
+
+    static func sketchTurnaround(in interval: DateInterval, context: ModelContext) throws -> [SketchTurnaroundEntry] {
+        var entries: [SketchTurnaroundEntry] = []
+        for project in SketchProductionService.finishedSketchProjects(in: context) {
+            guard let postedAt = project.postingItem?.actualPostedDate, interval.contains(postedAt) else { continue }
+            let finishedEvent = try HistoryEventService.events(for: project, in: context)
+                .first { $0.kind == .statusChanged && $0.newValue == ProjectStatus.finished.rawValue }
+            guard let writingFinishedAt = finishedEvent?.occurredAt else { continue }
+            entries.append(SketchTurnaroundEntry(
+                projectID: project.persistentModelID, title: project.title,
+                writingFinishedAt: writingFinishedAt, postedAt: postedAt
+            ))
+        }
+        return entries.sorted { $0.postedAt > $1.postedAt }
+    }
+
+    private static func historyEvents(in interval: DateInterval, context: ModelContext) throws -> [HistoryEvent] {
+        let start = interval.start
+        let end = interval.end
+        return try context.fetch(
+            FetchDescriptor<HistoryEvent>(predicate: #Predicate { $0.occurredAt >= start && $0.occurredAt < end })
+        )
     }
 
     private static func workSessions(in interval: DateInterval, context: ModelContext) throws -> [WorkSession] {
