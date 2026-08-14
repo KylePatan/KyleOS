@@ -4,14 +4,14 @@ import SwiftData
 /// Reusable domain actions for Work Items — Create/Complete/Change Status per PRD §15.1 — kept
 /// out of views per CLAUDE.md §4.
 enum WorkItemService {
-    typealias WorkItem = KyleOSSchemaV28.WorkItem
-    typealias Workspace = KyleOSSchemaV28.Workspace
-    typealias WorkItemStatus = KyleOSSchemaV28.WorkItemStatus
-    typealias Project = KyleOSSchemaV28.Project
-    typealias Document = KyleOSSchemaV28.Document
-    typealias Joke = KyleOSSchemaV28.Joke
-    typealias Chunk = KyleOSSchemaV28.Chunk
-    typealias Clip = KyleOSSchemaV28.Clip
+    typealias WorkItem = KyleOSSchemaV29.WorkItem
+    typealias Workspace = KyleOSSchemaV29.Workspace
+    typealias WorkItemStatus = KyleOSSchemaV29.WorkItemStatus
+    typealias Project = KyleOSSchemaV29.Project
+    typealias Document = KyleOSSchemaV29.Document
+    typealias Joke = KyleOSSchemaV29.Joke
+    typealias Chunk = KyleOSSchemaV29.Chunk
+    typealias Clip = KyleOSSchemaV29.Clip
 
     /// Generic fallback when no WorkTypeDefault matches `workTypeName` — better than a hard
     /// crash, but real usage should mostly hit the WorkTypeDefault-seeded path below.
@@ -65,27 +65,48 @@ enum WorkItemService {
         workItem.updatedAt = .now
     }
 
-    static func changeStatus(_ workItem: WorkItem, to status: WorkItemStatus) {
+    /// PRD §14.19: status changes create a history record — enables progress-over-time/turnaround
+    /// reporting (`ReportService`).
+    static func changeStatus(_ workItem: WorkItem, to status: WorkItemStatus, context: ModelContext) {
+        let oldStatus = workItem.status
         workItem.status = status
         workItem.updatedAt = .now
+        guard oldStatus != status else { return }
+        HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: status.rawValue, workItem: workItem, context: context)
     }
 
     /// Progress is user/session-driven, not automatically tied to status — completing a Work
     /// Item is a deliberate separate action (`complete(_:)`), matching PRD §15.1 naming
     /// "Create/Complete Work Item" as its own shared action rather than an implicit side effect.
-    static func updateProgress(_ workItem: WorkItem, progress: Int) {
+    static func updateProgress(_ workItem: WorkItem, progress: Int, context: ModelContext) {
+        let oldProgress = workItem.progress
+        let oldStatus = workItem.status
         workItem.progress = min(max(progress, 0), 100)
         if workItem.status == .notStarted, workItem.progress > 0 {
             workItem.status = .inProgress
         }
         workItem.updatedAt = .now
+        if oldProgress != workItem.progress {
+            HistoryEventService.recordProgressChange(from: oldProgress, to: workItem.progress, workItem: workItem, context: context)
+        }
+        if oldStatus != workItem.status {
+            HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: workItem.status.rawValue, workItem: workItem, context: context)
+        }
     }
 
-    static func complete(_ workItem: WorkItem) {
+    static func complete(_ workItem: WorkItem, context: ModelContext) {
+        let oldStatus = workItem.status
+        let oldProgress = workItem.progress
         workItem.status = .completed
         workItem.progress = 100
         workItem.completedAt = .now
         workItem.updatedAt = .now
+        if oldStatus != .completed {
+            HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: WorkItemStatus.completed.rawValue, workItem: workItem, context: context)
+        }
+        if oldProgress != 100 {
+            HistoryEventService.recordProgressChange(from: oldProgress, to: 100, workItem: workItem, context: context)
+        }
     }
 
     static func setPriority(_ workItem: WorkItem, to priority: Int) {

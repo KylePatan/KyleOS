@@ -82,10 +82,10 @@ final class PostingItemServiceTests: XCTestCase {
 
         XCTAssertEqual(PostingItemService.displayStatus(for: clip), .notReady, "A freshly created Clip starts To Isolate, not Ready")
 
-        ClipService.changeStatus(clip, to: .ready)
+        ClipService.changeStatus(clip, to: .ready, context: context)
         XCTAssertEqual(PostingItemService.displayStatus(for: clip), .ready)
 
-        ClipService.changeStatus(clip, to: .posted)
+        ClipService.changeStatus(clip, to: .posted, context: context)
         XCTAssertEqual(PostingItemService.displayStatus(for: clip), .posted)
     }
 
@@ -112,7 +112,7 @@ final class PostingItemServiceTests: XCTestCase {
         let context = ModelContext(container)
         let source = SourceService.createSource(title: "March Comedy Slam", context: context)
         let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
-        ClipService.changeStatus(clip, to: .ready)
+        ClipService.changeStatus(clip, to: .ready, context: context)
         try context.save()
         let item = PostingItemService.findOrCreate(for: clip, context: context)
 

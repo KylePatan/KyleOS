@@ -4,11 +4,11 @@ import SwiftData
 /// Reusable domain actions for Clips (PRD §8.3-§8.4), kept out of views per CLAUDE.md §4. "One
 /// Source can contain many Clip records."
 enum ClipService {
-    typealias Clip = KyleOSSchemaV28.Clip
-    typealias Source = KyleOSSchemaV28.Source
-    typealias ClipStatus = KyleOSSchemaV28.ClipStatus
-    typealias Joke = KyleOSSchemaV28.Joke
-    typealias Chunk = KyleOSSchemaV28.Chunk
+    typealias Clip = KyleOSSchemaV29.Clip
+    typealias Source = KyleOSSchemaV29.Source
+    typealias ClipStatus = KyleOSSchemaV29.ClipStatus
+    typealias Joke = KyleOSSchemaV29.Joke
+    typealias Chunk = KyleOSSchemaV29.Chunk
 
     /// PRD §8.4: "A board can visually simplify these to To Isolate, Editing, Needs Subtitles,
     /// Ready, Posted." The full 7-state `ClipStatus` remains the real stored value (needed for
@@ -69,9 +69,14 @@ enum ClipService {
         clip.updatedAt = .now
     }
 
-    static func changeStatus(_ clip: Clip, to status: ClipStatus) {
+    /// PRD §14.19: status changes create a history record — enables turnaround reporting
+    /// (`ReportService`).
+    static func changeStatus(_ clip: Clip, to status: ClipStatus, context: ModelContext) {
+        let oldStatus = clip.status
         clip.status = status
         clip.updatedAt = .now
+        guard oldStatus != status else { return }
+        HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: status.rawValue, clip: clip, context: context)
     }
 
     static func updateProgress(_ clip: Clip, progress: Int) {

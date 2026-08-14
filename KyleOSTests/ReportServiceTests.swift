@@ -134,7 +134,7 @@ final class ReportServiceTests: XCTestCase {
         let workItem = try WorkItemService.createWorkItem(
             title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
         )
-        WorkItemService.complete(workItem)
+        WorkItemService.complete(workItem, context: context)
         try context.save()
 
         let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
@@ -148,7 +148,7 @@ final class ReportServiceTests: XCTestCase {
         let context = ModelContext(container)
         let source = SourceService.createSource(title: "March Comedy Slam", context: context)
         let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
-        ClipService.changeStatus(clip, to: .ready)
+        ClipService.changeStatus(clip, to: .ready, context: context)
         try context.save()
         let item = PostingItemService.findOrCreate(for: clip, context: context)
         PostingItemService.markPosted(item, context: context)
@@ -283,7 +283,7 @@ final class ReportServiceTests: XCTestCase {
             for: workItem, startAt: now, endAt: now.addingTimeInterval(7200),
             activeDurationSeconds: 7200, progressBefore: 0, progressAfter: 100, entryType: .timer, context: context
         )
-        WorkItemService.complete(workItem)
+        WorkItemService.complete(workItem, context: context)
         try context.save()
 
         let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
@@ -361,7 +361,7 @@ final class ReportServiceTests: XCTestCase {
         let workItem = try WorkItemService.createWorkItem(
             title: "Old Finished Thing", workspace: .writing, workTypeName: "Outline", in: project, context: context
         )
-        WorkItemService.complete(workItem)
+        WorkItemService.complete(workItem, context: context)
         try context.save()
 
         let cutoff = Date(timeIntervalSinceNow: -86400 * 14)
@@ -384,5 +384,102 @@ final class ReportServiceTests: XCTestCase {
         let stalled = try ReportService.stalledWorkItems(notWorkedOnSince: cutoff, context: context)
 
         XCTAssertTrue(stalled.isEmpty, "A brand-new item with no sessions yet isn't stalled just because it hasn't started")
+    }
+
+    // MARK: - recentActivity(in:context:)
+
+    func testRecentActivityListsStatusAndProgressChangesWithinRange() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        try context.save()
+        WorkItemService.updateProgress(workItem, progress: 40, context: context)
+        WorkItemService.changeStatus(workItem, to: .inProgress, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let activity = try ReportService.recentActivity(in: interval, context: context)
+
+        XCTAssertEqual(activity.count, 2)
+        XCTAssertTrue(activity.allSatisfy { $0.subjectTitle == "Outline" })
+    }
+
+    func testRecentActivityIsSortedMostRecentFirst() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        try context.save()
+        // Move off Not Started first so these two calls don't also interleave an implicit status
+        // promotion event into the timeline being asserted on.
+        WorkItemService.changeStatus(workItem, to: .inProgress, context: context)
+        try context.save()
+        WorkItemService.updateProgress(workItem, progress: 25, context: context)
+        WorkItemService.updateProgress(workItem, progress: 75, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let activity = try ReportService.recentActivity(in: interval, context: context)
+            .filter { $0.kind == .progressChanged }
+
+        XCTAssertEqual(activity.map(\.newValue), ["75", "25"])
+    }
+
+    func testRecentActivityExcludesEventsOutsideRange() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        try context.save()
+        WorkItemService.updateProgress(workItem, progress: 40, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: 3600), end: Date(timeIntervalSinceNow: 7200))
+        let activity = try ReportService.recentActivity(in: interval, context: context)
+
+        XCTAssertTrue(activity.isEmpty)
+    }
+
+    // MARK: - progressHistory(for:in:)
+
+    func testProgressHistoryReturnsChronologicalSeries() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        try context.save()
+        WorkItemService.updateProgress(workItem, progress: 10, context: context)
+        WorkItemService.updateProgress(workItem, progress: 50, context: context)
+        WorkItemService.updateProgress(workItem, progress: 90, context: context)
+        try context.save()
+
+        let history = try ReportService.progressHistory(for: workItem, in: context)
+
+        XCTAssertEqual(history.map(\.progress), [10, 50, 90])
+    }
+
+    func testProgressHistoryExcludesStatusOnlyChanges() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let workItem = try WorkItemService.createWorkItem(
+            title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
+        )
+        try context.save()
+        WorkItemService.changeStatus(workItem, to: .inProgress, context: context)
+        try context.save()
+
+        let history = try ReportService.progressHistory(for: workItem, in: context)
+
+        XCTAssertTrue(history.isEmpty)
     }
 }

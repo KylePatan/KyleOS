@@ -119,7 +119,7 @@ struct ClipDetailView: View {
             Picker("Status", selection: Binding(
                 get: { clip.status },
                 set: {
-                    ClipService.changeStatus(clip, to: $0)
+                    ClipService.changeStatus(clip, to: $0, context: context)
                     try? context.save()
                 }
             )) {

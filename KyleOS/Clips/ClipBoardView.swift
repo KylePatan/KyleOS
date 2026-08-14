@@ -77,7 +77,7 @@ private struct ClipCard: View {
             Menu("Move to") {
                 ForEach(otherLanes, id: \.self) { lane in
                     Button(lane.rawValue) {
-                        ClipService.changeStatus(clip, to: primaryStatus(for: lane))
+                        ClipService.changeStatus(clip, to: primaryStatus(for: lane), context: context)
                         try? context.save()
                     }
                 }

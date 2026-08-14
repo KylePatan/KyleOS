@@ -7,11 +7,11 @@ import SwiftData
 /// `finishedSketchProjects` just filters the existing `Project` fields that already carry this
 /// (`WritingProjectType.sketch`, `ProjectStatus.finished`, both since V8).
 enum SketchProductionService {
-    typealias Project = KyleOSSchemaV28.Project
-    typealias SketchProduction = KyleOSSchemaV28.SketchProduction
-    typealias SketchProductionStatus = KyleOSSchemaV28.SketchProductionStatus
-    typealias FilmShoot = KyleOSSchemaV28.FilmShoot
-    typealias CallSheet = KyleOSSchemaV28.CallSheet
+    typealias Project = KyleOSSchemaV29.Project
+    typealias SketchProduction = KyleOSSchemaV29.SketchProduction
+    typealias SketchProductionStatus = KyleOSSchemaV29.SketchProductionStatus
+    typealias FilmShoot = KyleOSSchemaV29.FilmShoot
+    typealias CallSheet = KyleOSSchemaV29.CallSheet
 
     /// Read-only, never creates a `SketchProduction` row — merely viewing the board must not
     /// write anything. `nil` reads as the natural starting state, the same Optional-with-
@@ -33,10 +33,17 @@ enum SketchProductionService {
         return production
     }
 
+    /// PRD §14.19: status changes create a history record — enables §13.11's "Writing-to-post
+    /// turnaround" reporting. Recorded against the Project (via `sketchProject`), since that's
+    /// the stable identity Reports queries by — `SketchProduction` itself is an implementation
+    /// detail the Project owns, not something Reports needs to know about separately.
     static func changeStatus(for project: Project, to status: SketchProductionStatus, context: ModelContext) {
         let production = findOrCreateProduction(for: project, context: context)
+        let oldStatus = production.status
         production.status = status
         production.updatedAt = .now
+        guard oldStatus != status else { return }
+        HistoryEventService.recordStatusChange(from: oldStatus.rawValue, to: status.rawValue, sketchProject: project, context: context)
     }
 
     static func setPostDate(for project: Project, date: Date?, context: ModelContext) {

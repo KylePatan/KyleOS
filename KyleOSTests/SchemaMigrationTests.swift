@@ -1454,4 +1454,55 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertFalse(suggestions.isEmpty, "The new field's value should be usable by PostingCadenceService immediately")
         }
     }
+
+    func testStoreWrittenUnderV28OpensCleanlyAsV29WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV28Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let workItemID: UUID
+        // Write a store using ONLY the V28 schema shape — HistoryEvent does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV28.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV28.Project(title: "Untitled Pilot")
+            context.insert(project)
+            let workItem = KyleOSSchemaV28.WorkItem(
+                title: "Outline", workspace: .writing, workTypeName: "Outline", project: project
+            )
+            workItemID = workItem.id
+            context.insert(workItem)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let workItems = try context.fetch(FetchDescriptor<WorkItemService.WorkItem>())
+            guard let workItem = workItems.first(where: { $0.id == workItemID }) else {
+                return XCTFail("Expected the pre-migration work item to survive")
+            }
+            XCTAssertTrue(workItem.historyEvents.isEmpty, "New relationship should default to empty, not crash or fabricate data")
+
+            // The new entity must actually be usable post-migration, not just present. A fresh
+            // Not Started item moving to progress > 0 also logs an implicit status promotion.
+            WorkItemService.updateProgress(workItem, progress: 50, context: context)
+            try context.save()
+
+            let events = try HistoryEventService.events(for: workItem, in: context)
+            XCTAssertEqual(events.count, 2)
+            XCTAssertEqual(events.first?.newValue, "50")
+        }
+    }
 }

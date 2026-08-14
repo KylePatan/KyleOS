@@ -250,7 +250,7 @@ final class WorkItemPersistenceTests: XCTestCase {
         )
         try context.save()
 
-        WorkItemService.updateProgress(workItem, progress: 100)
+        WorkItemService.updateProgress(workItem, progress: 100, context: context)
         try context.save()
 
         XCTAssertEqual(workItem.progress, 100)
@@ -267,10 +267,10 @@ final class WorkItemPersistenceTests: XCTestCase {
             title: "Outline pass 1", workspace: .writing, workTypeName: "Outline", in: project, context: context
         )
 
-        WorkItemService.updateProgress(workItem, progress: 150)
+        WorkItemService.updateProgress(workItem, progress: 150, context: context)
         XCTAssertEqual(workItem.progress, 100)
 
-        WorkItemService.updateProgress(workItem, progress: -20)
+        WorkItemService.updateProgress(workItem, progress: -20, context: context)
         XCTAssertEqual(workItem.progress, 0)
     }
 
@@ -284,7 +284,7 @@ final class WorkItemPersistenceTests: XCTestCase {
         )
         try context.save()
 
-        WorkItemService.complete(workItem)
+        WorkItemService.complete(workItem, context: context)
         try context.save()
 
         XCTAssertEqual(workItem.status, .completed)
@@ -351,7 +351,7 @@ final class WorkItemPersistenceTests: XCTestCase {
             let workItem = try WorkItemService.createWorkItem(
                 title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
             )
-            WorkItemService.updateProgress(workItem, progress: 40)
+            WorkItemService.updateProgress(workItem, progress: 40, context: context)
             workItemID = workItem.id
             try context.save()
         }

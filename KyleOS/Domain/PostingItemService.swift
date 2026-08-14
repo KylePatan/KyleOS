@@ -7,9 +7,9 @@ import SwiftData
 /// `GigSetListService`'s "exactly one of joke/chunk" enforcement (the schema itself can't express
 /// an exclusive-or, so the service layer does).
 enum PostingItemService {
-    typealias PostingItem = KyleOSSchemaV28.PostingItem
-    typealias Clip = KyleOSSchemaV28.Clip
-    typealias Project = KyleOSSchemaV28.Project
+    typealias PostingItem = KyleOSSchemaV29.PostingItem
+    typealias Clip = KyleOSSchemaV29.Clip
+    typealias Project = KyleOSSchemaV29.Project
 
     /// PRD §10.2's five display states. Deliberately not a stored field — computed fresh from the
     /// content's own ready/posted state (already fully answered by `ClipStatus`/
@@ -107,7 +107,7 @@ enum PostingItemService {
     /// source of truth `displayStatus` reads) and records the distinct actual-posted timestamp.
     static func markPosted(_ item: PostingItem, context: ModelContext, now: Date = .now) {
         if let clip = item.clip {
-            ClipService.changeStatus(clip, to: .posted)
+            ClipService.changeStatus(clip, to: .posted, context: context)
         }
         if let project = item.sketchProject {
             SketchProductionService.changeStatus(for: project, to: .posted, context: context)

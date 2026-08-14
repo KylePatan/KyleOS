@@ -2,9 +2,11 @@ import SwiftUI
 import SwiftData
 
 /// PRD §13: the Reports workspace. Covers §13.2 (Default Summary, "This Week" by default),
-/// §13.4's Workspace time breakdown, §13.6 (Planned vs Actual), §13.7 (Estimate Accuracy), and
-/// §13.8 (Active/Stalled Work) — see `ReportService`'s own doc comment for what still depends on
-/// a Status/Progress History model that doesn't exist yet and is deliberately deferred.
+/// §13.4's Workspace time breakdown, §13.6 (Planned vs Actual), §13.7 (Estimate Accuracy), §13.8
+/// (Active/Stalled Work), and a first history-backed slice — Recent Activity, a chronological log
+/// of status/progress changes (PRD §14.19) — see `ReportService`'s own doc comment for what's
+/// still deliberately not built (a per-Project aggregate progress-over-time view; the ambiguity
+/// is in how several Work Items' progress should combine, not a missing model).
 struct ReportsView: View {
     @Environment(\.modelContext) private var context
 
@@ -16,6 +18,7 @@ struct ReportsView: View {
     @State private var plannedVsActual: ReportService.PlannedVsActual?
     @State private var estimateAccuracy: [ReportService.EstimateAccuracyEntry] = []
     @State private var stalledWorkItems: [ReportService.StalledWorkItemEntry] = []
+    @State private var recentActivity: [ReportService.HistoryEntry] = []
 
     private var interval: DateInterval {
         ReportService.interval(for: rangeOption, customStart: customStart, customEnd: customEnd)
@@ -39,6 +42,9 @@ struct ReportsView: View {
                 }
                 if !stalledWorkItems.isEmpty {
                     stalledWorkSection
+                }
+                if !recentActivity.isEmpty {
+                    recentActivitySection
                 }
             }
             .padding()
@@ -162,6 +168,27 @@ struct ReportsView: View {
         .frame(maxWidth: 500, alignment: .leading)
     }
 
+    /// PRD §14.19: "Important status changes and progress changes should create history records."
+    private var recentActivitySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Recent Activity").font(.headline)
+            ForEach(recentActivity) { entry in
+                HStack {
+                    Text(entry.subjectTitle)
+                    Text(entry.kind.rawValue).font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                    Text("\(entry.oldValue) → \(entry.newValue)")
+                        .foregroundStyle(.secondary)
+                    Text(entry.occurredAt, format: .dateTime.month().day().hour().minute())
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .font(.callout)
+            }
+        }
+        .frame(maxWidth: 700, alignment: .leading)
+    }
+
     private func reload() {
         let currentInterval = interval
         summary = try? ReportService.summary(in: currentInterval, context: context)
@@ -170,6 +197,7 @@ struct ReportsView: View {
         estimateAccuracy = (try? ReportService.estimateAccuracy(in: currentInterval, context: context)) ?? []
         let cutoff = Calendar.current.date(byAdding: .day, value: -14, to: .now) ?? .now
         stalledWorkItems = (try? ReportService.stalledWorkItems(notWorkedOnSince: cutoff, context: context)) ?? []
+        recentActivity = (try? ReportService.recentActivity(in: currentInterval, context: context)) ?? []
     }
 }
 

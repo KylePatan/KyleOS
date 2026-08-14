@@ -24,7 +24,7 @@ final class HomeServiceTests: XCTestCase {
         let completed = try WorkItemService.createWorkItem(
             title: "Already done", workspace: .writing, workTypeName: "Outline", in: project, priority: 5, context: context
         )
-        WorkItemService.complete(completed)
+        WorkItemService.complete(completed, context: context)
 
         DeadlineService.setDeadline(for: soonDeadline, label: "Soon", dueAt: Date(timeIntervalSinceNow: 86400), context: context)
         DeadlineService.setDeadline(for: laterDeadline, label: "Later", dueAt: Date(timeIntervalSinceNow: 86400 * 10), context: context)
@@ -129,7 +129,7 @@ final class HomeServiceTests: XCTestCase {
         let completed = try WorkItemService.createWorkItem(
             title: "Done", workspace: .writing, workTypeName: "Outline", in: project, priority: 5, context: context
         )
-        WorkItemService.complete(completed)
+        WorkItemService.complete(completed, context: context)
         try context.save()
 
         let items = HomeService.allUnfinishedItems(from: [low, high, completed])

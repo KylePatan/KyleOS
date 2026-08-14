@@ -9,18 +9,24 @@ import SwiftData
 /// §13.14: "Reports should require almost no separate data entry... calculate from Work Sessions,
 /// Projects, status history, posting records, gigs, shoots, and Calendar capacity." Covers §13.2
 /// (Default Summary), the Workspace dimension of §13.4, §13.6 (Planned vs Actual), §13.7
-/// (Estimate Accuracy), and §13.8 (Active/Stalled Work) — everything computable from data that
-/// already exists, no schema change. Deliberately still deferred: anything needing a genuine
-/// point-in-time history (§13.5's progress-over-time, precise turnaround times, "Ready buffer
-/// trends") — no Status/Progress History model exists anywhere in the schema yet (confirmed by
-/// search), so those need a real new model, not just a new function here.
+/// (Estimate Accuracy), §13.8 (Active/Stalled Work), and now a first slice of §13.5/history-backed
+/// reporting via `HistoryEvent` (V29) — `recentActivity` (a chronological log of status/progress
+/// changes) and `progressHistory` (a single Work Item's progress-over-time series, the atomic
+/// building block §13.5's "Project detail report" would roll up from). Deliberately NOT building
+/// the full per-Project aggregate progress-over-time view this stage — a Project can have several
+/// Work Items, and the PRD doesn't specify how their individual progress numbers should combine
+/// into one project-level series (sum? weighted by estimate? most-recently-active item only?).
+/// That's a real open question worth resolving deliberately, not guessing at, so it's left for
+/// whenever a per-Project Reports detail screen actually gets built.
 enum ReportService {
-    typealias WorkSession = KyleOSSchemaV28.WorkSession
-    typealias WorkItem = KyleOSSchemaV28.WorkItem
-    typealias Workspace = KyleOSSchemaV28.Workspace
-    typealias PostingItem = KyleOSSchemaV28.PostingItem
-    typealias PlannedSession = KyleOSSchemaV28.PlannedSession
-    typealias PlannedSessionStatus = KyleOSSchemaV28.PlannedSessionStatus
+    typealias WorkSession = KyleOSSchemaV29.WorkSession
+    typealias WorkItem = KyleOSSchemaV29.WorkItem
+    typealias Workspace = KyleOSSchemaV29.Workspace
+    typealias PostingItem = KyleOSSchemaV29.PostingItem
+    typealias PlannedSession = KyleOSSchemaV29.PlannedSession
+    typealias PlannedSessionStatus = KyleOSSchemaV29.PlannedSessionStatus
+    typealias HistoryEvent = KyleOSSchemaV29.HistoryEvent
+    typealias HistoryEventKind = KyleOSSchemaV29.HistoryEventKind
 
     enum DateRangeOption: String, CaseIterable, Identifiable {
         case thisWeek = "This Week"
@@ -201,6 +207,53 @@ enum ReportService {
                 return StalledWorkItemEntry(workItemID: item.persistentModelID, title: item.title, lastActivityAt: lastActivityAt)
             }
             .sorted { $0.lastActivityAt < $1.lastActivityAt }
+    }
+
+    /// PRD §14.19: "Important status changes and progress changes should create history records
+    /// with timestamps." A chronological audit log across all three tracked subjects (Work Item,
+    /// Clip, Sketch Project) within the report's date range — most recent first.
+    struct HistoryEntry: Identifiable {
+        let id: PersistentIdentifier
+        let subjectTitle: String
+        let kind: HistoryEventKind
+        let oldValue: String
+        let newValue: String
+        let occurredAt: Date
+    }
+
+    static func recentActivity(in interval: DateInterval, context: ModelContext) throws -> [HistoryEntry] {
+        let start = interval.start
+        let end = interval.end
+        let events = try context.fetch(
+            FetchDescriptor<HistoryEvent>(
+                predicate: #Predicate { $0.occurredAt >= start && $0.occurredAt < end },
+                sortBy: [SortDescriptor(\.occurredAt, order: .reverse)]
+            )
+        )
+        return events.compactMap { event in
+            let subjectTitle = event.workItem?.title ?? event.clip?.title ?? event.sketchProject?.title
+            guard let subjectTitle else { return nil }
+            return HistoryEntry(
+                id: event.persistentModelID,
+                subjectTitle: subjectTitle,
+                kind: event.kind,
+                oldValue: event.oldValue,
+                newValue: event.newValue,
+                occurredAt: event.occurredAt
+            )
+        }
+    }
+
+    /// PRD §13.5's "progress-over-time history," at the level it's unambiguous: a single Work
+    /// Item's own progress values over time. Sorted chronologically (oldest first), unlike
+    /// `recentActivity` — a series is naturally read start-to-end.
+    static func progressHistory(for workItem: WorkItem, in context: ModelContext) throws -> [(date: Date, progress: Int)] {
+        try HistoryEventService.events(for: workItem, in: context)
+            .filter { $0.kind == .progressChanged }
+            .compactMap { event in
+                guard let progress = Int(event.newValue) else { return nil }
+                return (date: event.occurredAt, progress: progress)
+            }
     }
 
     private static func workSessions(in interval: DateInterval, context: ModelContext) throws -> [WorkSession] {
