@@ -15,12 +15,13 @@ import SwiftData
 /// `HistoryEvent` log for precise status-transition counts, not live snapshots, and Sketch
 /// "Writing-to-post turnaround"), and §13.12 (Posting Reports, no `HistoryEvent` needed).
 ///
-/// Deliberately NOT building the full per-Project aggregate progress-over-time view — a Project
-/// can have several Work Items, and the PRD doesn't specify how their individual progress numbers
-/// should combine into one project-level series (sum? weighted by estimate? most-recently-active
-/// item only?) — and NOT building "Ready buffer trends" (needs periodic snapshots or
-/// reconstruction from the history log, neither of which exists yet). Both are real open
-/// questions worth resolving deliberately, not guessing at.
+/// §13's remaining two roadmap items — per-Project progress-over-time and Ready buffer trends —
+/// were open questions with no PRD-specified formula; Kyle resolved both directly (2026-08-14).
+/// Per-Project progress: sum of hours logged across the Project's Work Items, plus which Work
+/// Item was most recently active ("that's what the user is focusing on") — see
+/// `projectProgress`. Ready buffer trends: reconstructed from the `HistoryEvent` log rather than
+/// periodic snapshots (no snapshot mechanism exists, and the log already has everything needed)
+/// — see `readyBufferTrend`. With these two, every §13.x/roadmap Reports item is built.
 enum ReportService {
     typealias WorkSession = KyleOSSchemaV30.WorkSession
     typealias WorkItem = KyleOSSchemaV30.WorkItem
@@ -536,6 +537,116 @@ enum ReportService {
         let entries = jokeTotals.map { MaterialTimeEntry(id: $0.key, title: $0.value.title, seconds: $0.value.seconds) }
             + chunkTotals.map { MaterialTimeEntry(id: $0.key, title: $0.value.title, seconds: $0.value.seconds) }
         return entries.sorted { $0.seconds > $1.seconds }
+    }
+
+    // MARK: - Project Progress
+
+    /// PRD §13's "Project progress" roadmap item. Kyle's resolution (2026-08-14) for how several
+    /// Work Items should combine into one project-level figure: sum of hours logged across all of
+    /// them, plus which one was most recently active ("that's what the user is focusing on") —
+    /// deliberately not a blended progress-percentage curve. All-time, not date-ranged, matching
+    /// PRD §4.3's own framing of project time as cumulative. Only Projects with any logged time
+    /// are included — an untouched Project has nothing to report yet.
+    struct ProjectProgressEntry: Identifiable {
+        let projectID: PersistentIdentifier
+        let title: String
+        let totalHours: Double
+        let mostRecentItemTitle: String?
+        var id: PersistentIdentifier { projectID }
+    }
+
+    static func projectProgress(context: ModelContext) throws -> [ProjectProgressEntry] {
+        try context.fetch(FetchDescriptor<Project>())
+            .filter { !$0.isArchived }
+            .compactMap { project -> ProjectProgressEntry? in
+                let workItems = project.workItems
+                let totalSeconds = workItems.reduce(0) { $0 + $1.workSessions.reduce(0) { $0 + $1.activeDurationSeconds } }
+                guard totalSeconds > 0 else { return nil }
+                let mostRecent = workItems.max { lhs, rhs in
+                    let lhsActivity = lhs.workSessions.map(\.startAt).max() ?? lhs.createdAt
+                    let rhsActivity = rhs.workSessions.map(\.startAt).max() ?? rhs.createdAt
+                    return lhsActivity < rhsActivity
+                }
+                return ProjectProgressEntry(
+                    projectID: project.persistentModelID,
+                    title: project.title,
+                    totalHours: Double(totalSeconds) / 3600,
+                    mostRecentItemTitle: mostRecent?.title
+                )
+            }
+            .sorted { $0.totalHours > $1.totalHours }
+    }
+
+    // MARK: - Ready Buffer Trends
+
+    /// PRD §13's "Ready buffer trends" roadmap item. Reconstructed from the `HistoryEvent` log
+    /// (no periodic-snapshot mechanism exists, or is planned) — one point per day in the range,
+    /// showing the Ready-buffer count as of the end of that day. `postDate`/platform aren't
+    /// history-tracked, so "buffer" here uses each Clip's *current* postDate presence combined
+    /// with its *reconstructed* status as of that day — a reasonable approximation, not a fully
+    /// precise historical postDate reconstruction (building that would need postDate changes
+    /// logged to history too, which they aren't).
+    struct ReadyBufferTrendPoint {
+        let date: Date
+        let clipsCount: Int
+        let sketchesCount: Int
+    }
+
+    static func readyBufferTrend(in interval: DateInterval, context: ModelContext) throws -> [ReadyBufferTrendPoint] {
+        let calendar = Calendar.current
+        let clips = ClipService.allClips(in: context)
+        let sketchProjects = SketchProductionService.finishedSketchProjects(in: context)
+
+        var clipEventsByID: [PersistentIdentifier: [HistoryEvent]] = [:]
+        for clip in clips {
+            clipEventsByID[clip.persistentModelID] = try HistoryEventService.events(for: clip, in: context)
+                .filter { $0.kind == .statusChanged }
+        }
+        var sketchEventsByID: [PersistentIdentifier: [HistoryEvent]] = [:]
+        for project in sketchProjects {
+            sketchEventsByID[project.persistentModelID] = try HistoryEventService.events(for: project, in: context)
+                .filter { $0.kind == .statusChanged }
+        }
+
+        var points: [ReadyBufferTrendPoint] = []
+        var day = calendar.startOfDay(for: interval.start)
+        let end = interval.end
+        while day < end {
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: day) ?? end
+            let asOf = min(endOfDay, end)
+
+            let clipsCount = clips.filter { clip in
+                guard clip.createdAt <= asOf, clip.postDate == nil else { return false }
+                let events = clipEventsByID[clip.persistentModelID] ?? []
+                let statusValue = statusAsOf(asOf, currentValue: clip.status.rawValue, events: events)
+                return statusValue.flatMap { ClipStatus(rawValue: $0) }.map { ClipService.boardLane(for: $0) == .ready } ?? false
+            }.count
+
+            let sketchesCount = sketchProjects.filter { project in
+                guard project.createdAt <= asOf else { return false }
+                let events = sketchEventsByID[project.persistentModelID] ?? []
+                let currentStatus = SketchProductionService.status(for: project)
+                let statusValue = statusAsOf(asOf, currentValue: currentStatus.rawValue, events: events)
+                return statusValue == SketchProductionStatus.ready.rawValue
+            }.count
+
+            points.append(ReadyBufferTrendPoint(date: day, clipsCount: clipsCount, sketchesCount: sketchesCount))
+            day = endOfDay
+        }
+        return points
+    }
+
+    /// Reconstructs a subject's status value as of `date` from its ascending-sorted
+    /// `.statusChanged` history: the most recent transition at/before `date`, or — if `date`
+    /// predates every recorded transition — the earliest transition's `oldValue` (its status
+    /// immediately before the first known change, which by construction was its status since
+    /// creation). A subject with no history at all has never changed, so its current value holds.
+    private static func statusAsOf(_ date: Date, currentValue: String, events: [HistoryEvent]) -> String? {
+        guard let firstEvent = events.first else { return currentValue }
+        if let mostRecent = events.last(where: { $0.occurredAt <= date }) {
+            return mostRecent.newValue
+        }
+        return firstEvent.oldValue
     }
 
     private static func historyEvents(in interval: DateInterval, context: ModelContext) throws -> [HistoryEvent] {

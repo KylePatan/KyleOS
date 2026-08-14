@@ -6,10 +6,11 @@ import SwiftData
 /// (Active/Stalled Work), Recent Activity (§14.19's status/progress history log), §13.9 (Stand-Up
 /// Reports: Creative Hours, Joke ideas created, Jokes moved to New/Done, Chunks created, Headline
 /// Set runtime vs target, Gigs performed, time by material), §13.10/§13.11 (Clips/Sketch Reports,
-/// including precise status-transition counts and Sketch Writing-to-Post turnaround), and §13.12
-/// (Posting Reports: cadence, Ready & Waiting, Missed Posts, Clips vs Sketches) — see
-/// `ReportService`'s own doc comment for what's still deliberately not built (a per-Project
-/// aggregate progress-over-time view, and "Ready buffer trends").
+/// including precise status-transition counts and Sketch Writing-to-Post turnaround), §13.12
+/// (Posting Reports: cadence, Ready & Waiting, Missed Posts, Clips vs Sketches), Project Progress
+/// (sum of hours per Project + its most-recently-active Work Item), and Ready Buffer Trends
+/// (reconstructed from the HistoryEvent log) — see `ReportService`'s own doc comment for the
+/// reasoning behind the last two.
 struct ReportsView: View {
     @Environment(\.modelContext) private var context
 
@@ -32,6 +33,8 @@ struct ReportsView: View {
     @State private var standUpReport: ReportService.StandUpReport?
     @State private var headlineSetProgress: [ReportService.HeadlineSetProgressEntry] = []
     @State private var timeByMaterial: [ReportService.MaterialTimeEntry] = []
+    @State private var projectProgress: [ReportService.ProjectProgressEntry] = []
+    @State private var readyBufferTrend: [ReportService.ReadyBufferTrendPoint] = []
 
     private var interval: DateInterval {
         ReportService.interval(for: rangeOption, customStart: customStart, customEnd: customEnd)
@@ -70,6 +73,12 @@ struct ReportsView: View {
                 }
                 if let postingReport {
                     postingReportSection(postingReport)
+                }
+                if !projectProgress.isEmpty {
+                    projectProgressSection
+                }
+                if !readyBufferTrend.isEmpty {
+                    readyBufferTrendSection
                 }
             }
             .padding()
@@ -332,6 +341,49 @@ struct ReportsView: View {
         }
     }
 
+    /// "Project progress" — sum of hours per Project, plus which Work Item is most recently
+    /// active. All-time, not date-ranged (project time is cumulative, per PRD §4.3).
+    private var projectProgressSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Project Progress").font(.headline)
+            ForEach(projectProgress) { entry in
+                HStack {
+                    Text(entry.title)
+                    Spacer()
+                    if let mostRecentItemTitle = entry.mostRecentItemTitle {
+                        Text("Focus: \(mostRecentItemTitle)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(String(format: "%.1fh", entry.totalHours))
+                        .foregroundStyle(.secondary)
+                }
+                .font(.callout)
+            }
+        }
+        .frame(maxWidth: 700, alignment: .leading)
+    }
+
+    /// "Ready buffer trends" — the Ready-buffer Clip/Sketch count as of the end of each day in
+    /// the selected range, reconstructed from history rather than a live snapshot.
+    private var readyBufferTrendSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Ready Buffer Trend").font(.headline)
+            ForEach(Array(readyBufferTrend.enumerated()), id: \.offset) { _, point in
+                HStack {
+                    Text(point.date, format: .dateTime.month().day())
+                    Spacer()
+                    Text("Clips: \(point.clipsCount)")
+                        .foregroundStyle(.secondary)
+                    Text("Sketches: \(point.sketchesCount)")
+                        .foregroundStyle(.secondary)
+                }
+                .font(.callout)
+            }
+        }
+        .frame(maxWidth: 500, alignment: .leading)
+    }
+
     private func reload() {
         let currentInterval = interval
         summary = try? ReportService.summary(in: currentInterval, context: context)
@@ -351,6 +403,8 @@ struct ReportsView: View {
         standUpReport = try? ReportService.standUpReport(in: currentInterval, context: context)
         headlineSetProgress = ReportService.headlineSetProgress(context: context)
         timeByMaterial = (try? ReportService.timeByMaterial(in: currentInterval, context: context)) ?? []
+        projectProgress = (try? ReportService.projectProgress(context: context)) ?? []
+        readyBufferTrend = (try? ReportService.readyBufferTrend(in: currentInterval, context: context)) ?? []
     }
 }
 

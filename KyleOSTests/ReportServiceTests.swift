@@ -915,4 +915,110 @@ final class ReportServiceTests: XCTestCase {
 
         XCTAssertTrue(entries.isEmpty)
     }
+
+    // MARK: - Project Progress
+
+    func testProjectProgressSumsHoursAcrossAllWorkItemsInTheProject() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let outline = try WorkItemService.createWorkItem(title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context)
+        let draft = try WorkItemService.createWorkItem(title: "First Draft", workspace: .writing, workTypeName: "Draft", in: project, context: context)
+        let now = Date()
+        WorkSessionService.logCompletedSession(
+            for: outline, startAt: now, endAt: now.addingTimeInterval(1800),
+            activeDurationSeconds: 1800, progressBefore: 0, progressAfter: 50, entryType: .timer, context: context
+        )
+        WorkSessionService.logCompletedSession(
+            for: draft, startAt: now, endAt: now.addingTimeInterval(1800),
+            activeDurationSeconds: 1800, progressBefore: 0, progressAfter: 20, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let entries = try ReportService.projectProgress(context: context)
+
+        XCTAssertEqual(entries.first?.title, "Untitled Pilot")
+        XCTAssertEqual(entries.first?.totalHours ?? 0, 1.0, accuracy: 0.01)
+    }
+
+    func testProjectProgressSurfacesTheMostRecentlyActiveWorkItem() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let outline = try WorkItemService.createWorkItem(title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context)
+        let draft = try WorkItemService.createWorkItem(title: "First Draft", workspace: .writing, workTypeName: "Draft", in: project, context: context)
+        WorkSessionService.logCompletedSession(
+            for: outline, startAt: Date(timeIntervalSinceNow: -86400 * 5), endAt: Date(timeIntervalSinceNow: -86400 * 5 + 900),
+            activeDurationSeconds: 900, progressBefore: 0, progressAfter: 50, entryType: .timer, context: context
+        )
+        WorkSessionService.logCompletedSession(
+            for: draft, startAt: Date(timeIntervalSinceNow: -3600), endAt: Date(timeIntervalSinceNow: -1800),
+            activeDurationSeconds: 1800, progressBefore: 0, progressAfter: 20, entryType: .timer, context: context
+        )
+        try context.save()
+
+        let entries = try ReportService.projectProgress(context: context)
+
+        XCTAssertEqual(entries.first?.mostRecentItemTitle, "First Draft")
+    }
+
+    func testProjectProgressExcludesProjectsWithNoLoggedTime() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        ProjectService.createProject(title: "Untouched Idea", in: context)
+        try context.save()
+
+        let entries = try ReportService.projectProgress(context: context)
+
+        XCTAssertTrue(entries.isEmpty)
+    }
+
+    // MARK: - Ready Buffer Trends
+
+    func testReadyBufferTrendCountsAClipOnlyFromTheDayItBecameReady() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Set", context: context)
+        let clip = ClipService.createClip(title: "Bit One", in: source, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -86400 * 2), end: Date(timeIntervalSinceNow: 86400))
+        ClipService.changeStatus(clip, to: .ready, context: context)
+        try context.save()
+
+        let points = try ReportService.readyBufferTrend(in: interval, context: context)
+
+        XCTAssertEqual(points.last?.clipsCount, 1, "Today (after the change) should count it")
+        XCTAssertEqual(points.first?.clipsCount, 0, "Two days ago (before the change) should not")
+    }
+
+    func testReadyBufferTrendExcludesClipsWithAConfirmedPostDate() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Set", context: context)
+        let clip = ClipService.createClip(title: "Bit One", in: source, context: context)
+        ClipService.changeStatus(clip, to: .ready, context: context)
+        ClipService.setPostDate(clip, date: Date(timeIntervalSinceNow: 86400 * 3))
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let points = try ReportService.readyBufferTrend(in: interval, context: context)
+
+        XCTAssertEqual(points.last?.clipsCount, 0, "Ready-with-a-postDate is scheduled, not buffer")
+    }
+
+    func testReadyBufferTrendCountsReadySketchesSeparatelyFromClips() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+        SketchProductionService.changeStatus(for: project, to: .ready, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let points = try ReportService.readyBufferTrend(in: interval, context: context)
+
+        XCTAssertEqual(points.last?.sketchesCount, 1)
+        XCTAssertEqual(points.last?.clipsCount, 0)
+    }
 }
