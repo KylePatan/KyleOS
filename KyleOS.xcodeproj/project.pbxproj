@@ -79,6 +79,7 @@
 		76E23352368414D205FF292E /* KyleOSSchemaV8.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D985C2961227F5700E44113 /* KyleOSSchemaV8.swift */; };
 		78E30C4137C762D803D0F8C9 /* KyleOSSchemaV21.swift in Sources */ = {isa = PBXBuildFile; fileRef = 184D0A3872C61E432D3C248C /* KyleOSSchemaV21.swift */; };
 		7B14DFBC7E949FC7EFF75655 /* PostingItemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2E928930FA7344278B44A1 /* PostingItemService.swift */; };
+		7E1E0866F4B1D060933D6697 /* SchedulingTieBreakPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02002FD6C8910B81AD5533DE /* SchedulingTieBreakPrompt.swift */; };
 		7F0C24BD14ADF5E119A4D448 /* PostingItemServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD604A387FAEC5D6DFB6CE5 /* PostingItemServiceTests.swift */; };
 		7F4BD19852D7856AFFE46624 /* GigSetListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E4BA411603A3DD68D511B7B /* GigSetListService.swift */; };
 		804A079A2D9516979DA922C8 /* WritingProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C398E983030FD58708ACD3 /* WritingProjectDetailView.swift */; };
@@ -126,6 +127,7 @@
 		C0C06664776E9BA5A1EBD793 /* ProseEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927D2BFE0A22A5B5FCFF5CA0 /* ProseEditorView.swift */; };
 		C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B3013E975D2B4C19DAFE6A /* AutosaveController.swift */; };
 		C3E5F99E55962D2B78796C36 /* ReportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DA5EF5526C3ECFAFC0267B /* ReportService.swift */; };
+		C5220CBC5615EC5C4000BC1D /* SchedulingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B0298776F8F167308C66EA /* SchedulingService.swift */; };
 		C5B1E662BE16444ED83FD3DF /* KyleOSSchemaV10.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4C4089E7FC5E791FCD907E /* KyleOSSchemaV10.swift */; };
 		C5F7ADB03EAAEEAFD09A7786 /* KyleOSSchemaV9.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8838F5790C0503AC9836FE8 /* KyleOSSchemaV9.swift */; };
 		C635A98EEA34C0B3DB58FA9C /* ClipsRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B441DE452B43B07B54175ED /* ClipsRoute.swift */; };
@@ -134,6 +136,7 @@
 		C9E96A1AA690937F94AFB36C /* GigServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB0F68AB96FFDF41920A64F /* GigServiceTests.swift */; };
 		CBF29CB4B86FD6A3015AEC1B /* KyleOSSchemaV30.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9368643C09DEDACEF89EDD /* KyleOSSchemaV30.swift */; };
 		D3E04B6C451A896E257D3E33 /* KyleOSSchemaV7.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */; };
+		D3EBFCB7A730CA0B8F441798 /* SchedulingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1CFD6CFD49CE0B0FCA2ADF /* SchedulingServiceTests.swift */; };
 		D60F9895CF29DFF634EA48E6 /* GigDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2D18652770DF0748E0E0B6 /* GigDetailView.swift */; };
 		D658C7B2EE4C404ADAFF0B3A /* HeadlineSetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 809ECBF98C3214380C53186A /* HeadlineSetService.swift */; };
 		D9C432D80F6A9A270C76F2A9 /* SceneService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57EF212EF2CA4D50F3310F5 /* SceneService.swift */; };
@@ -176,6 +179,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		02002FD6C8910B81AD5533DE /* SchedulingTieBreakPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulingTieBreakPrompt.swift; sourceTree = "<group>"; };
 		044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPersistenceTests.swift; sourceTree = "<group>"; };
 		04CEAF1BC80CBABF2F934384 /* DayJobScheduleServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayJobScheduleServiceTests.swift; sourceTree = "<group>"; };
 		05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDestination.swift; sourceTree = "<group>"; };
@@ -284,6 +288,7 @@
 		A5D3FED139B90EBB99C21F3F /* HistoryEventServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEventServiceTests.swift; sourceTree = "<group>"; };
 		A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventService.swift; sourceTree = "<group>"; };
 		A9B05BC00F9041DA41AA5E74 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
+		AA1CFD6CFD49CE0B0FCA2ADF /* SchedulingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulingServiceTests.swift; sourceTree = "<group>"; };
 		AB5781A1BEB14219FA2CC9B6 /* KyleOSSchemaV16.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV16.swift; sourceTree = "<group>"; };
 		AFEEAAE6BBFC2E2481BE562B /* CalendarEventFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventFormSheet.swift; sourceTree = "<group>"; };
 		B2D44DB2BF28C0C08EC21611 /* SketchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchDetailView.swift; sourceTree = "<group>"; };
@@ -330,6 +335,7 @@
 		F0A8A25DAE7708ADE9306A73 /* PostingCadenceServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostingCadenceServiceTests.swift; sourceTree = "<group>"; };
 		F189C9D30A7D51AA679CB71F /* FocusTimerControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerControllerTests.swift; sourceTree = "<group>"; };
 		F63FAD47486D7938941B1EAE /* JokeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JokeServiceTests.swift; sourceTree = "<group>"; };
+		F8B0298776F8F167308C66EA /* SchedulingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulingService.swift; sourceTree = "<group>"; };
 		F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionService.swift; sourceTree = "<group>"; };
 		F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV2.swift; sourceTree = "<group>"; };
 		FA536F325A3D3ACF08E50BCB /* ScriptBlockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptBlockService.swift; sourceTree = "<group>"; };
@@ -442,6 +448,7 @@
 				B8FD1115F8D5213BADF90347 /* ProjectPersistenceTests.swift */,
 				C5518B0ABF4051A20FB63917 /* ReportServiceTests.swift */,
 				B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */,
+				AA1CFD6CFD49CE0B0FCA2ADF /* SchedulingServiceTests.swift */,
 				C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */,
 				0BDD98234E1607C97ADCA2D0 /* ScriptBlockServiceTests.swift */,
 				044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */,
@@ -592,6 +599,7 @@
 				BC08B1D8915E0171514F5A14 /* ProjectService.swift */,
 				38DA5EF5526C3ECFAFC0267B /* ReportService.swift */,
 				B57EF212EF2CA4D50F3310F5 /* SceneService.swift */,
+				F8B0298776F8F167308C66EA /* SchedulingService.swift */,
 				FA536F325A3D3ACF08E50BCB /* ScriptBlockService.swift */,
 				CF80E0FBA836CD54DB5FE5B7 /* SettingsService.swift */,
 				25AB6E3B8BAFED8E629DBD01 /* SketchProductionService.swift */,
@@ -639,6 +647,7 @@
 				DE75F1E6EC6B94BD983113C2 /* MonthCalendarView.swift */,
 				5CBC9B50147624D1F4FEDFAE /* PostItView.swift */,
 				522D786A6B687BD929FB976C /* QuickAddButton.swift */,
+				02002FD6C8910B81AD5533DE /* SchedulingTieBreakPrompt.swift */,
 				DF53CB376ECB46AE2DF923C8 /* TimeFormatting.swift */,
 				23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */,
 			);
@@ -776,6 +785,7 @@
 				852BCD04B279CAA3026AE16E /* ProjectPersistenceTests.swift in Sources */,
 				B9F32ECB0225123358903AA1 /* ReportServiceTests.swift in Sources */,
 				FDC29563036BDA9019F9DD08 /* SceneServiceTests.swift in Sources */,
+				D3EBFCB7A730CA0B8F441798 /* SchedulingServiceTests.swift in Sources */,
 				193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */,
 				252B55FA286040385CE319DF /* ScriptBlockServiceTests.swift in Sources */,
 				020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */,
@@ -888,6 +898,8 @@
 				680ED53C1E3989CD253F4950 /* RootView.swift in Sources */,
 				62EDCD61FE258B4E58A006D2 /* SceneListView.swift in Sources */,
 				D9C432D80F6A9A270C76F2A9 /* SceneService.swift in Sources */,
+				C5220CBC5615EC5C4000BC1D /* SchedulingService.swift in Sources */,
+				7E1E0866F4B1D060933D6697 /* SchedulingTieBreakPrompt.swift in Sources */,
 				A254830013CF9068F9392E5C /* ScriptBlockService.swift in Sources */,
 				EAC937CC66F67ACE94CFFFFC /* ScriptEditorView.swift in Sources */,
 				EE1121035BD1D6358A302B79 /* SettingsService.swift in Sources */,

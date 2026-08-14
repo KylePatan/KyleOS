@@ -37,19 +37,18 @@ The decision should prioritize writing reliability, autosave safety, keyboard fl
 
 ### Decision Gate B — Scheduling Engine Weighting
 
-**Must be resolved during:** V0.7 — Scheduling Engine, after Kyle OS contains real Work Items, Calendar data, and several weeks of realistic usage where possible.
+**RESOLVED 2026-08-14.** Kyle answered directly rather than waiting out the "several weeks of realistic usage" framing below — the design is a deterministic rule system (not ML/statistically calibrated), so it doesn't need historical usage data to be implementable, testable, and explainable; usage can still inform future tuning of the specific constants.
 
-Questions to answer:
+Kyle's answers, as given:
 
-- Should the first scheduler use an ordered deterministic rule system, numeric weighting, or a hybrid?
-- How much relative influence should hard-deadline urgency, manual priority, dependencies, remaining effort, Creative Capacity, progress, preferred session length, and context switching have?
-- What tie-breakers should apply when multiple tasks are equally viable?
-- How aggressively should flexible work cascade when new priority work is inserted?
-- How much safety buffer should be preserved before deadlines?
-- When should Kyle OS concentrate heavily on one urgent project versus continue progressing several projects?
-- How should historical actual-vs-estimated performance influence recommendations without silently changing user preferences?
+- **Deadline urgency dominates everything else.** "I think that deadlines should be number 1 priority. If something is due tomorrow - that needs to be done."
+- **Quick-win boost.** "But if there is something with less work to be done and can get closed that night - that gives some weight to its priority."
+- **Anti-starvation is the overarching goal.** "The key about the weighting is to make sure that nothing gets lost in the cracks and in the end, all creative projects eventually get finished." (Implemented as a staleness boost that rises the longer an item sits untouched.)
+- **Tie-breakers are a user prompt, not an automatic rule.** "If there are two things that are scored basically exactly. There should be a prompt to ask which one should be worked on - and the user gets to choose as the tie-breaker."
+- **Cascade should be aggressive, not protective of the original plan.** "Schedule changes (especially blocked off things) should re-shuffle the already-planned creative work. And if there are no hours to do the creative work - so be it. It should be more aggressive because it's dealing with time we don't have anymore."
+- **Moderate safety buffers, and favor session focus over spread.** "I think there should be moderate safety buffers. Leave some slack and make it useful for humans - because usually they won't want to work on 4 separate projects in a given session."
 
-The initial engine should remain deterministic, explainable, manually overridable, and testable.
+Implementation: `KyleOS/Domain/SchedulingService.swift` (ranking/scoring, dependency-blocking, tie detection) — increment 1, PRD §4.2. Cascade rescheduling (§4.6) reflowing already-planned sessions when Calendar capacity shrinks is increment 2, not yet built. The initial engine remains deterministic, explainable, manually overridable, and testable, per the bar this gate always set.
 
 ### Decision Gate C — Final Visual Design
 
@@ -113,7 +112,7 @@ Other smaller open choices already identified in this PRD should be answered whe
 
 **Writing V0.2: Product requirements are strong, but technical editor choices should be made before implementation.**
 
-**Scheduling V0.7: Product logic is defined, but implementation should wait for real application data and usage patterns.**
+**Scheduling V0.7: Decision Gate B resolved 2026-08-14 (Kyle's direct answers, see above); implementation underway (increment 1 of 2 shipped).**
 
 The PRD is therefore at the correct level for the current stage: detailed enough to start engineering, but still flexible enough to evolve based on actual use.
 

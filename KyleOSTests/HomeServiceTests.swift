@@ -4,57 +4,6 @@ import SwiftData
 
 final class HomeServiceTests: XCTestCase {
 
-    func testRankedTodayItemsSortsByDeadlineThenPriorityAndExcludesCompleted() throws {
-        let container = PersistenceController.makeInMemoryContainer()
-        let context = ModelContext(container)
-        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
-
-        let noDeadlineLowPriority = try WorkItemService.createWorkItem(
-            title: "Low priority, no deadline", workspace: .writing, workTypeName: "Outline", in: project, priority: 1, context: context
-        )
-        let noDeadlineHighPriority = try WorkItemService.createWorkItem(
-            title: "High priority, no deadline", workspace: .writing, workTypeName: "Outline", in: project, priority: 5, context: context
-        )
-        let soonDeadline = try WorkItemService.createWorkItem(
-            title: "Due soon", workspace: .writing, workTypeName: "Outline", in: project, context: context
-        )
-        let laterDeadline = try WorkItemService.createWorkItem(
-            title: "Due later", workspace: .writing, workTypeName: "Outline", in: project, context: context
-        )
-        let completed = try WorkItemService.createWorkItem(
-            title: "Already done", workspace: .writing, workTypeName: "Outline", in: project, priority: 5, context: context
-        )
-        WorkItemService.complete(completed, context: context)
-
-        DeadlineService.setDeadline(for: soonDeadline, label: "Soon", dueAt: Date(timeIntervalSinceNow: 86400), context: context)
-        DeadlineService.setDeadline(for: laterDeadline, label: "Later", dueAt: Date(timeIntervalSinceNow: 86400 * 10), context: context)
-        try context.save()
-
-        let ranked = HomeService.rankedTodayItems(from: [noDeadlineLowPriority, noDeadlineHighPriority, soonDeadline, laterDeadline, completed])
-
-        XCTAssertEqual(
-            ranked.map(\.title),
-            ["Due soon", "Due later", "High priority, no deadline", "Low priority, no deadline"],
-            "Deadlines sort first (soonest first), then no-deadline items by priority; completed items are excluded"
-        )
-    }
-
-    func testRankedTodayItemsRespectsLimit() throws {
-        let container = PersistenceController.makeInMemoryContainer()
-        let context = ModelContext(container)
-        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
-
-        var items: [WorkItemService.WorkItem] = []
-        for i in 0..<15 {
-            items.append(try WorkItemService.createWorkItem(
-                title: "Item \(i)", workspace: .writing, workTypeName: "Outline", in: project, context: context
-            ))
-        }
-        try context.save()
-
-        XCTAssertEqual(HomeService.rankedTodayItems(from: items, limit: 10).count, 10)
-    }
-
     func testTotalLoggedSecondsSumsAcrossAllWorkItemsInAProject() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
