@@ -22,6 +22,7 @@ struct CalendarHomeView: View {
     @State private var isAddingEvent = false
     @State private var hasCapacityOverride = false
     @State private var overrideHours: Double = 0
+    @State private var reflowSummary: ReflowSummary?
 
     private var calendar: Calendar { .current }
     private var days: [MonthCalendarService.DayCell] {
@@ -64,6 +65,9 @@ struct CalendarHomeView: View {
         }
         .sheet(isPresented: $isAddingEvent) {
             CalendarEventFormSheet(mode: .add(defaultDate: selectedDay))
+        }
+        .sheet(item: $reflowSummary) { summary in
+            CascadeReflowSummaryView(summary: summary)
         }
         .onAppear {
             ensureDayJobBlocksForDisplayedMonth()
@@ -233,12 +237,33 @@ struct CalendarHomeView: View {
             try? CreativeCapacityService.clearOverride(for: selectedDay, context: context, calendar: calendar)
         }
         try? context.save()
+        runCascadeReflow()
     }
 
     private func saveCapacityOverrideHours() {
         guard hasCapacityOverride else { return }
         try? CreativeCapacityService.setOverride(for: selectedDay, hours: overrideHours, context: context, calendar: calendar)
         try? context.save()
+        runCascadeReflow()
+    }
+
+    /// PRD §4.6/Decision Gate B: lowering a day's Creative Capacity is exactly the "blocked off
+    /// things" moment Kyle described — already-planned flexible work should reflow to fit, and
+    /// he should see what moved (or what didn't fit anywhere), not have it happen invisibly.
+    /// Quiet when nothing actually needed to move — only a genuine reshuffle surfaces the sheet.
+    private func runCascadeReflow() {
+        guard let settings = allSettings.first else { return }
+        let result = CascadeReschedulingService.reflow(
+            startingFrom: selectedDay,
+            settings: settings,
+            calendarEvents: allEvents,
+            capacityOverrides: allCapacityOverrides,
+            allSessions: allPlannedSessions,
+            calendar: calendar
+        )
+        guard !result.moves.isEmpty || !result.unresolved.isEmpty else { return }
+        try? context.save()
+        reflowSummary = ReflowSummary(moves: result.moves, unresolved: result.unresolved)
     }
 
     /// Deleting a `.dayJob` block specifically means "override this day off" (PRD §11.4) — must
@@ -262,6 +287,53 @@ struct CalendarHomeView: View {
     private func shiftMonth(by value: Int) {
         guard let newMonth = calendar.date(byAdding: .month, value: value, to: displayedMonth) else { return }
         displayedMonth = newMonth
+    }
+}
+
+/// Wraps a `CascadeReschedulingService.ReflowResult` for `.sheet(item:)` presentation.
+struct ReflowSummary: Identifiable {
+    let id = UUID()
+    let moves: [CascadeReschedulingService.Move]
+    let unresolved: [CascadeReschedulingService.PlannedSession]
+}
+
+/// What actually happened when lowering a day's Creative Capacity triggered a cascade reflow —
+/// PRD §4.6's "Kyle OS must flag the conflict," made visible rather than silent.
+struct CascadeReflowSummaryView: View {
+    let summary: ReflowSummary
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Schedule Adjusted").font(.headline)
+            if !summary.moves.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Moved").font(.subheadline.bold())
+                    ForEach(summary.moves, id: \.session.id) { move in
+                        HStack {
+                            Text(move.session.workItem?.title ?? "Untitled")
+                            Spacer()
+                            Text("\(move.from.formatted(.dateTime.month().day())) → \(move.to.formatted(.dateTime.month().day()))")
+                                .foregroundStyle(.secondary)
+                        }
+                        .font(.callout)
+                    }
+                }
+            }
+            if !summary.unresolved.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Couldn't Find Room").font(.subheadline.bold())
+                    ForEach(summary.unresolved, id: \.id) { session in
+                        Text(session.workItem?.title ?? "Untitled")
+                            .font(.callout)
+                    }
+                    Text("No spare capacity in the next 30 days — these stayed where they were.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(24)
+        .frame(width: 420)
     }
 }
 
