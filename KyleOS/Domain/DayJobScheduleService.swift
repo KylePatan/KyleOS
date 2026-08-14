@@ -12,8 +12,8 @@ import SwiftData
 /// it. A CalendarEvent's mere absence can't distinguish "never generated yet" from "deliberately
 /// removed," so `DayJobOverride` exists purely to record the latter.
 enum DayJobScheduleService {
-    typealias CalendarEvent = KyleOSSchemaV27.CalendarEvent
-    typealias DayJobOverride = KyleOSSchemaV27.DayJobOverride
+    typealias CalendarEvent = KyleOSSchemaV28.CalendarEvent
+    typealias DayJobOverride = KyleOSSchemaV28.DayJobOverride
 
     /// Creates a `.dayJob` CalendarEvent for every configured weekday in `[start, end)` that
     /// doesn't already have one and hasn't been marked off — safe to call repeatedly (e.g. every

@@ -12,8 +12,10 @@ struct PostItView: View {
     @Environment(\.modelContext) private var context
     @Query private var allClips: [PostingItemService.Clip]
     @Query private var allProjects: [PostingItemService.Project]
+    @Query private var allSettings: [SettingsService.AppSettings]
 
     @State private var editingRow: PostItRow?
+    @State private var cadenceTarget = 3
 
     private var finishedSketchProjects: [PostingItemService.Project] {
         allProjects.filter { $0.projectType == .sketch && $0.status == .finished && !$0.isArchived }
@@ -47,9 +49,18 @@ struct PostItView: View {
         rows.filter { $0.displayStatus == .ready && $0.confirmedPostDate == nil }.count
     }
 
+    /// PRD §8.8/§10.4: "Kyle OS should suggest open posting dates and avoid unnecessary
+    /// clustering... shared across Clips and Sketches" — the confirmed-date pool spans both
+    /// content types, matching the shared posting calendar the PRD describes.
+    private var suggestedDates: [Date] {
+        let confirmedDates = rows.compactMap { $0.displayStatus != .posted ? $0.confirmedPostDate : nil }
+        return PostingCadenceService.suggestedDates(target: cadenceTarget, confirmedDates: confirmedDates)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             summaryBar
+            cadenceSection
             if rows.isEmpty {
                 Text("Nothing ready to post yet. Finish editing a Clip or Sketch to see it here.")
                     .foregroundStyle(.secondary)
@@ -66,6 +77,27 @@ struct PostItView: View {
         .sheet(item: $editingRow) { row in
             PostItRowSheet(row: row)
         }
+        .onAppear { cadenceTarget = allSettings.first?.displayPostsPerWeekTarget ?? 3 }
+    }
+
+    private var cadenceSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Stepper("Weekly posting goal: \(cadenceTarget)", value: $cadenceTarget, in: 0...14)
+                    .onChange(of: cadenceTarget) { saveCadenceTarget() }
+            }
+            if !suggestedDates.isEmpty {
+                Text("Suggested post dates: " + suggestedDates.prefix(4).map { $0.formatted(.dateTime.month().day()) }.joined(separator: ", "))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func saveCadenceTarget() {
+        guard let settings = allSettings.first else { return }
+        SettingsService.updatePostsPerWeekTarget(settings, to: cadenceTarget)
+        try? context.save()
     }
 
     private var summaryBar: some View {

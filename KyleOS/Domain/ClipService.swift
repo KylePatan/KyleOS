@@ -4,11 +4,11 @@ import SwiftData
 /// Reusable domain actions for Clips (PRD §8.3-§8.4), kept out of views per CLAUDE.md §4. "One
 /// Source can contain many Clip records."
 enum ClipService {
-    typealias Clip = KyleOSSchemaV27.Clip
-    typealias Source = KyleOSSchemaV27.Source
-    typealias ClipStatus = KyleOSSchemaV27.ClipStatus
-    typealias Joke = KyleOSSchemaV27.Joke
-    typealias Chunk = KyleOSSchemaV27.Chunk
+    typealias Clip = KyleOSSchemaV28.Clip
+    typealias Source = KyleOSSchemaV28.Source
+    typealias ClipStatus = KyleOSSchemaV28.ClipStatus
+    typealias Joke = KyleOSSchemaV28.Joke
+    typealias Chunk = KyleOSSchemaV28.Chunk
 
     /// PRD §8.4: "A board can visually simplify these to To Isolate, Editing, Needs Subtitles,
     /// Ready, Posted." The full 7-state `ClipStatus` remains the real stored value (needed for

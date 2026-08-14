@@ -1409,4 +1409,49 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(PostingItemService.displayStatus(for: clip), .dueToday)
         }
     }
+
+    func testStoreWrittenUnderV27OpensCleanlyAsV28WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV27Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        // Write a store using ONLY the V27 schema shape — AppSettings.postsPerWeekTarget does
+        // not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV27.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let settings = KyleOSSchemaV27.AppSettings()
+            context.insert(settings)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let settings = try SettingsService.currentSettings(in: context)
+            XCTAssertNil(settings.postsPerWeekTarget, "New field should default to nil, not crash or fabricate data")
+            XCTAssertEqual(settings.displayPostsPerWeekTarget, 3, "Falls back to the PRD's own '3 posts per week' example")
+
+            // The new field must actually be usable post-migration, not just present.
+            SettingsService.updatePostsPerWeekTarget(settings, to: 5)
+            try context.save()
+
+            XCTAssertEqual(settings.postsPerWeekTarget, 5)
+            let suggestions = PostingCadenceService.suggestedDates(
+                target: settings.displayPostsPerWeekTarget, confirmedDates: [], weeksAhead: 1
+            )
+            XCTAssertFalse(suggestions.isEmpty, "The new field's value should be usable by PostingCadenceService immediately")
+        }
+    }
 }
