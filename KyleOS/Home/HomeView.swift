@@ -12,6 +12,7 @@ struct HomeView: View {
         case today = "Today"
         case allTasks = "All Tasks"
         case calendar = "Calendar"
+        case postIt = "Post It"
         var id: String { rawValue }
     }
 
@@ -21,7 +22,7 @@ struct HomeView: View {
     @Query private var allWorkItems: [HomeService.WorkItem]
 
     @State private var selectedTab: Tab = .today
-    @State private var interruptedSession: KyleOSSchemaV26.ActiveTimerState?
+    @State private var interruptedSession: KyleOSSchemaV27.ActiveTimerState?
     @State private var hasCheckedForRecovery = false
 
     private var todayItems: [HomeService.WorkItem] {
@@ -50,6 +51,8 @@ struct HomeView: View {
                 AllTasksView()
             case .calendar:
                 MonthCalendarView()
+            case .postIt:
+                PostItView()
             }
         }
         .navigationTitle("Home")

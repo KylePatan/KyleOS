@@ -5,7 +5,7 @@ import SwiftData
 /// whole point of this model is that "Outline takes about 1.5 hours" lives here once, not as a
 /// magic number copy-pasted into every screen that needs it.
 enum WorkTypeDefaultService {
-    typealias WorkTypeDefault = KyleOSSchemaV26.WorkTypeDefault
+    typealias WorkTypeDefault = KyleOSSchemaV27.WorkTypeDefault
 
     /// The only two estimates the Master PRD actually specifies (§5.1). Everything else
     /// ("script drafting, clip editing, subtitles, sketch editing, call sheets...") is

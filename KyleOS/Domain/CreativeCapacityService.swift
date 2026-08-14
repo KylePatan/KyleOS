@@ -6,10 +6,10 @@ import SwiftData
 /// are explicitly "planning assumptions, not hard restrictions" (§4.4's own words) — a simple
 /// baseline-minus-scheduled calculation, not a precise minute-by-minute free/busy derivation.
 enum CreativeCapacityService {
-    typealias AppSettings = KyleOSSchemaV26.AppSettings
-    typealias CalendarEvent = KyleOSSchemaV26.CalendarEvent
-    typealias PlannedSession = KyleOSSchemaV26.PlannedSession
-    typealias CapacityOverride = KyleOSSchemaV26.CapacityOverride
+    typealias AppSettings = KyleOSSchemaV27.AppSettings
+    typealias CalendarEvent = KyleOSSchemaV27.CalendarEvent
+    typealias PlannedSession = KyleOSSchemaV27.PlannedSession
+    typealias CapacityOverride = KyleOSSchemaV27.CapacityOverride
 
     struct Summary: Equatable {
         let baselineHours: Double
@@ -29,6 +29,7 @@ enum CreativeCapacityService {
     /// same-shaped Double — the field's name is a minor legacy misnomer worth cleaning up in a
     /// future Settings-UI pass, not worth a schema migration on its own. Scheduled = today's
     /// Scheduled (not missed/cancelled) Planned Sessions.
+    ///
     /// PRD §11.6: "The user can override a day's expected Creative Capacity, including setting it
     /// to zero or increasing it for a free day." An override is the user's own stated number for
     /// that specific day — used directly as the baseline, bypassing the Settings/gig-night

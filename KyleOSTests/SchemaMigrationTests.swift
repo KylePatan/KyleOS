@@ -1358,4 +1358,55 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertTrue(summary.isOverridden)
         }
     }
+
+    func testStoreWrittenUnderV26OpensCleanlyAsV27WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV26Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let clipID: UUID
+        // Write a store using ONLY the V26 schema shape — PostingItem does not exist yet, and
+        // Clip has no `postingItem` relationship.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV26.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let source = KyleOSSchemaV26.Source(title: "March Comedy Slam")
+            context.insert(source)
+            let clip = KyleOSSchemaV26.Clip(title: "Airline Bit", status: .ready)
+            clip.source = source
+            clipID = clip.id
+            context.insert(clip)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let clips = try context.fetch(FetchDescriptor<ClipService.Clip>())
+            guard let clip = clips.first(where: { $0.id == clipID }) else {
+                return XCTFail("Expected the pre-migration clip to survive")
+            }
+            XCTAssertEqual(clip.title, "Airline Bit")
+            XCTAssertNil(clip.postingItem, "New relationship should default to nil, not crash or fabricate data")
+
+            // The new entity must actually be usable post-migration, not just present.
+            let item = PostingItemService.findOrCreate(for: clip, context: context)
+            PostingItemService.setConfirmedPostDate(item, date: .now, context: context)
+            try context.save()
+
+            XCTAssertEqual(clip.postingItem?.id, item.id)
+            XCTAssertEqual(PostingItemService.displayStatus(for: clip), .dueToday)
+        }
+    }
 }

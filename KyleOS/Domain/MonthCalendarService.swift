@@ -6,7 +6,7 @@ import SwiftData
 /// §8). "The Home calendar uses the same data source as the Calendar workspace" (PRD §11.3) — this
 /// reads the same CalendarEvent model the full Calendar workspace (still a placeholder) will use.
 enum MonthCalendarService {
-    typealias CalendarEvent = KyleOSSchemaV26.CalendarEvent
+    typealias CalendarEvent = KyleOSSchemaV27.CalendarEvent
 
     struct DayCell: Identifiable, Equatable {
         let date: Date
