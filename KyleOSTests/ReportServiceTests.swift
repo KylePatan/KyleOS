@@ -675,4 +675,114 @@ final class ReportServiceTests: XCTestCase {
 
         XCTAssertTrue(turnaround.isEmpty)
     }
+
+    // MARK: - §13.12 Posting Reports
+
+    func testPostingReportCountsPostsWithinRangeSplitByClipsAndSketches() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Set", context: context)
+        let clip = ClipService.createClip(title: "Bit One", in: source, context: context)
+        ClipService.changeStatus(clip, to: .ready, context: context)
+        let clipPostItem = PostingItemService.findOrCreate(for: clip, context: context)
+        PostingItemService.markPosted(clipPostItem, context: context)
+
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        let sketchPostItem = PostingItemService.findOrCreate(for: project, context: context)
+        PostingItemService.markPosted(sketchPostItem, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.postingReport(in: interval, context: context)
+
+        XCTAssertEqual(report.postsCount, 2)
+        XCTAssertEqual(report.clipsPostedCount, 1)
+        XCTAssertEqual(report.sketchesPostedCount, 1)
+    }
+
+    func testPostingReportExcludesPostsOutsideRange() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Set", context: context)
+        let clip = ClipService.createClip(title: "Bit One", in: source, context: context)
+        ClipService.changeStatus(clip, to: .posted, context: context)
+        let postItem = PostingItemService.findOrCreate(for: clip, context: context)
+        postItem.actualPostedDate = Date(timeIntervalSinceNow: -86400 * 30)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.postingReport(in: interval, context: context)
+
+        XCTAssertEqual(report.postsCount, 0)
+    }
+
+    func testPostingReportActualPerWeekScalesWithRangeLength() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Set", context: context)
+        let clip = ClipService.createClip(title: "Bit One", in: source, context: context)
+        ClipService.changeStatus(clip, to: .posted, context: context)
+        let postItem = PostingItemService.findOrCreate(for: clip, context: context)
+        PostingItemService.markPosted(postItem, context: context)
+        try context.save()
+
+        // A one-week-long range containing exactly one post: 1 post / 1 week = 1.0/week.
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -86400 * 3), end: Date(timeIntervalSinceNow: 86400 * 4))
+        let report = try ReportService.postingReport(in: interval, context: context)
+
+        XCTAssertEqual(report.actualPerWeek, 1.0, accuracy: 0.01)
+    }
+
+    func testPostingReportTargetPerWeekReflectsSettings() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        SettingsService.updatePostsPerWeekTarget(settings, to: 5)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.postingReport(in: interval, context: context)
+
+        XCTAssertEqual(report.targetPerWeek, 5)
+    }
+
+    func testPostingReportReadyAndWaitingCountsUnpostedReadyClipsAndSketches() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Set", context: context)
+        let readyClip = ClipService.createClip(title: "Bit One", in: source, context: context)
+        ClipService.changeStatus(readyClip, to: .ready, context: context)
+        let backlogClip = ClipService.createClip(title: "Bit Two", in: source, context: context)
+        ClipService.changeStatus(backlogClip, to: .currentlyEditing, context: context)
+
+        let readySketch = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        SketchProductionService.changeStatus(for: readySketch, to: .ready, context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.postingReport(in: interval, context: context)
+
+        XCTAssertEqual(report.readyPiecesWaitingCount, 2)
+    }
+
+    func testPostingReportMissedPlannedPostsCountsPastConfirmedDatesNeverPosted() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Set", context: context)
+        let overdueClip = ClipService.createClip(title: "Bit One", in: source, context: context)
+        ClipService.changeStatus(overdueClip, to: .ready, context: context)
+        let overdueItem = PostingItemService.findOrCreate(for: overdueClip, context: context)
+        PostingItemService.setConfirmedPostDate(overdueItem, date: Date(timeIntervalSinceNow: -86400), context: context)
+
+        let onTrackClip = ClipService.createClip(title: "Bit Two", in: source, context: context)
+        ClipService.changeStatus(onTrackClip, to: .ready, context: context)
+        let onTrackItem = PostingItemService.findOrCreate(for: onTrackClip, context: context)
+        PostingItemService.setConfirmedPostDate(onTrackItem, date: Date(timeIntervalSinceNow: 86400), context: context)
+        try context.save()
+
+        let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
+        let report = try ReportService.postingReport(in: interval, context: context)
+
+        XCTAssertEqual(report.missedPlannedPostsCount, 1)
+    }
 }

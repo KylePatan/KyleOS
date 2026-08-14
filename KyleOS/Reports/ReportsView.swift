@@ -3,11 +3,12 @@ import SwiftData
 
 /// PRD §13: the Reports workspace. Covers §13.2 (Default Summary, "This Week" by default),
 /// §13.4's Workspace time breakdown, §13.6 (Planned vs Actual), §13.7 (Estimate Accuracy), §13.8
-/// (Active/Stalled Work), Recent Activity (§14.19's status/progress history log), and §13.10/
-/// §13.11 (Clips/Sketch Reports, including precise status-transition counts and Sketch
-/// Writing-to-Post turnaround) — see `ReportService`'s own doc comment for what's still
-/// deliberately not built (a per-Project aggregate progress-over-time view, and §13.9 Stand-Up
-/// Reports, which needs Joke/Chunk status history that doesn't exist yet).
+/// (Active/Stalled Work), Recent Activity (§14.19's status/progress history log), §13.10/§13.11
+/// (Clips/Sketch Reports, including precise status-transition counts and Sketch Writing-to-Post
+/// turnaround), and §13.12 (Posting Reports: cadence, Ready & Waiting, Missed Posts, Clips vs
+/// Sketches) — see `ReportService`'s own doc comment for what's still deliberately not built (a
+/// per-Project aggregate progress-over-time view, and §13.9 Stand-Up Reports, which needs
+/// Joke/Chunk status history that doesn't exist yet).
 struct ReportsView: View {
     @Environment(\.modelContext) private var context
 
@@ -26,6 +27,7 @@ struct ReportsView: View {
     @State private var sketchTransitions: [(status: ReportService.SketchProductionStatus, count: Int)] = []
     @State private var sketchesEditingSeconds = 0
     @State private var sketchTurnaround: [ReportService.SketchTurnaroundEntry] = []
+    @State private var postingReport: ReportService.PostingReport?
 
     private var interval: DateInterval {
         ReportService.interval(for: rangeOption, customStart: customStart, customEnd: customEnd)
@@ -58,6 +60,9 @@ struct ReportsView: View {
                 }
                 if !sketchTransitions.isEmpty || sketchesEditingSeconds > 0 {
                     sketchesReportSection
+                }
+                if let postingReport {
+                    postingReportSection(postingReport)
                 }
             }
             .padding()
@@ -263,6 +268,22 @@ struct ReportsView: View {
         .frame(maxWidth: 700, alignment: .leading)
     }
 
+    /// PRD §13.12: "Posts per week/month; Target cadence vs actual cadence; Ready pieces waiting;
+    /// Missed planned posts; Clips vs Sketches posted."
+    private func postingReportSection(_ report: ReportService.PostingReport) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Posting").font(.headline)
+            HStack(spacing: 24) {
+                stat(label: "Posts This Range", value: "\(report.postsCount)")
+                stat(label: "Clips vs Sketches", value: "\(report.clipsPostedCount) / \(report.sketchesPostedCount)")
+                stat(label: "Actual per Week", value: String(format: "%.1f", report.actualPerWeek))
+                stat(label: "Target per Week", value: "\(report.targetPerWeek)")
+                stat(label: "Ready & Waiting", value: "\(report.readyPiecesWaitingCount)")
+                stat(label: "Missed Posts", value: "\(report.missedPlannedPostsCount)")
+            }
+        }
+    }
+
     private func reload() {
         let currentInterval = interval
         summary = try? ReportService.summary(in: currentInterval, context: context)
@@ -278,6 +299,7 @@ struct ReportsView: View {
         sketchTransitions = (try? ReportService.sketchStatusTransitions(in: currentInterval, context: context)) ?? []
         sketchesEditingSeconds = (try? ReportService.sketchesEditingSeconds(in: currentInterval, context: context)) ?? 0
         sketchTurnaround = (try? ReportService.sketchTurnaround(in: currentInterval, context: context)) ?? []
+        postingReport = try? ReportService.postingReport(in: currentInterval, context: context)
     }
 }
 

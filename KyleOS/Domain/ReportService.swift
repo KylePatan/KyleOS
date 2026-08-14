@@ -10,10 +10,11 @@ import SwiftData
 /// Projects, status history, posting records, gigs, shoots, and Calendar capacity." Covers §13.2
 /// (Default Summary), the Workspace dimension of §13.4, §13.6 (Planned vs Actual), §13.7
 /// (Estimate Accuracy), §13.8 (Active/Stalled Work), §13.5/history-backed reporting via
-/// `HistoryEvent` (V29) — `recentActivity` and `progressHistory` — and now §13.10/§13.11 (Clips/
-/// Sketch Reports), which lean on the same `HistoryEvent` log for precise status-transition
-/// counts (not live snapshots) and Sketch "Writing-to-post turnaround" (Project ->`.finished`
-/// history event to `PostingItem.actualPostedDate`).
+/// `HistoryEvent` (V29) — `recentActivity` and `progressHistory` — §13.10/§13.11 (Clips/Sketch
+/// Reports), which lean on the same `HistoryEvent` log for precise status-transition counts (not
+/// live snapshots) and Sketch "Writing-to-post turnaround" (Project ->`.finished` history event to
+/// `PostingItem.actualPostedDate`) — and now §13.12 (Posting Reports), built entirely from
+/// `PostingItem`/`AppSettings.postsPerWeekTarget`, no `HistoryEvent` needed.
 ///
 /// Deliberately NOT building the full per-Project aggregate progress-over-time view — a Project
 /// can have several Work Items, and the PRD doesn't specify how their individual progress numbers
@@ -36,6 +37,7 @@ enum ReportService {
     typealias Project = KyleOSSchemaV29.Project
     typealias ProjectStatus = KyleOSSchemaV29.ProjectStatus
     typealias SketchProductionStatus = KyleOSSchemaV29.SketchProductionStatus
+    typealias AppSettings = KyleOSSchemaV29.AppSettings
 
     enum DateRangeOption: String, CaseIterable, Identifiable {
         case thisWeek = "This Week"
@@ -380,6 +382,56 @@ enum ReportService {
             ))
         }
         return entries.sorted { $0.postedAt > $1.postedAt }
+    }
+
+    // MARK: - §13.12 Posting Reports
+
+    /// PRD §13.12: "Posts per week/month, Target cadence vs actual cadence, Ready pieces waiting,
+    /// Missed planned posts, Clips vs Sketches posted." `readyPiecesWaitingCount` and
+    /// `missedPlannedPostsCount` are live snapshots (not date-ranged) — same reasoning as
+    /// `ClipsReport`'s buffer counts: a waiting/overdue count is a point-in-time inventory level,
+    /// not a period total.
+    struct PostingReport: Equatable {
+        let postsCount: Int
+        let clipsPostedCount: Int
+        let sketchesPostedCount: Int
+        let targetPerWeek: Int
+        let rangeDurationDays: Double
+        var actualPerWeek: Double { rangeDurationDays > 0 ? Double(postsCount) / (rangeDurationDays / 7) : 0 }
+        let readyPiecesWaitingCount: Int
+        let missedPlannedPostsCount: Int
+    }
+
+    static func postingReport(in interval: DateInterval, context: ModelContext) throws -> PostingReport {
+        let postedItems = try context.fetch(FetchDescriptor<PostingItem>())
+            .filter { item in
+                guard let postedAt = item.actualPostedDate else { return false }
+                return interval.contains(postedAt)
+            }
+        let settings = try SettingsService.currentSettings(in: context)
+
+        // "Ready" for a Sketch is `SketchProductionStatus.ready`; for a Clip it's either bucket of
+        // the Ready lane (`readyContentBuffer`/`scheduledPosts` — same distinction the Ready Queue
+        // widget already draws, just summed here into one waiting count).
+        let readyPiecesWaitingCount = ClipService.readyContentBuffer(in: context).count
+            + ClipService.scheduledPosts(in: context).count
+            + SketchProductionService.finishedSketchProjects(inStatus: .ready, in: context).count
+
+        let now = Date()
+        let missedPlannedPostsCount = try context.fetch(FetchDescriptor<PostingItem>())
+            .filter { $0.actualPostedDate == nil }
+            .filter { ($0.confirmedPostDate ?? .distantFuture) < now }
+            .count
+
+        return PostingReport(
+            postsCount: postedItems.count,
+            clipsPostedCount: postedItems.filter { $0.clip != nil }.count,
+            sketchesPostedCount: postedItems.filter { $0.sketchProject != nil }.count,
+            targetPerWeek: settings.displayPostsPerWeekTarget,
+            rangeDurationDays: interval.duration / (24 * 3600),
+            readyPiecesWaitingCount: readyPiecesWaitingCount,
+            missedPlannedPostsCount: missedPlannedPostsCount
+        )
     }
 
     private static func historyEvents(in interval: DateInterval, context: ModelContext) throws -> [HistoryEvent] {
