@@ -8,18 +8,19 @@ struct CreativeCapacityWidget: View {
     @Query private var allSettings: [CreativeCapacityService.AppSettings]
     @Query private var allEvents: [CreativeCapacityService.CalendarEvent]
     @Query private var allPlannedSessions: [CreativeCapacityService.PlannedSession]
+    @Query private var allCapacityOverrides: [CreativeCapacityService.CapacityOverride]
 
     private var summary: CreativeCapacityService.Summary? {
         guard let settings = allSettings.first else { return nil }
         return CreativeCapacityService.todaysCapacity(
-            settings: settings, events: allEvents, plannedSessions: allPlannedSessions
+            settings: settings, events: allEvents, plannedSessions: allPlannedSessions, overrides: allCapacityOverrides
         )
     }
 
     var body: some View {
         if let summary {
             HStack(spacing: 16) {
-                capacityStat(label: "Available", hours: summary.baselineHours)
+                capacityStat(label: summary.isOverridden ? "Available (Overridden)" : "Available", hours: summary.baselineHours)
                 capacityStat(label: "Scheduled", hours: summary.scheduledHours)
                 capacityStat(label: "Remaining", hours: summary.remainingHours, emphasized: true)
             }

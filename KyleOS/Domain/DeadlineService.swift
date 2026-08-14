@@ -14,9 +14,9 @@ import SwiftData
 /// CalendarEvent relationships (CalendarEvent survives as a historical record by default in this
 /// codebase unless it's a Gig/FilmShoot-style single owned commitment).
 enum DeadlineService {
-    typealias Deadline = KyleOSSchemaV25.Deadline
-    typealias Project = KyleOSSchemaV25.Project
-    typealias WorkItem = KyleOSSchemaV25.WorkItem
+    typealias Deadline = KyleOSSchemaV26.Deadline
+    typealias Project = KyleOSSchemaV26.Project
+    typealias WorkItem = KyleOSSchemaV26.WorkItem
 
     @discardableResult
     static func setDeadline(

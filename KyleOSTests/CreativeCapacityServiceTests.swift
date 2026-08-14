@@ -122,6 +122,90 @@ final class CreativeCapacityServiceTests: XCTestCase {
         XCTAssertEqual(summary.scheduledHours, 0)
     }
 
+    func testOverrideForTodayReplacesTheBaselineEntirely() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+
+        let gigEvent = CalendarEventService.createEvent(
+            type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context
+        )
+        let override = try CreativeCapacityService.setOverride(for: now, hours: 6, context: context)
+        try context.save()
+
+        let summary = CreativeCapacityService.todaysCapacity(
+            settings: settings, events: [gigEvent], plannedSessions: [], overrides: [override], now: now
+        )
+
+        XCTAssertEqual(summary.baselineHours, 6, "The override replaces the baseline, bypassing the gig-night reduction entirely")
+        XCTAssertTrue(summary.isOverridden)
+    }
+
+    func testOverrideOnADifferentDayDoesNotApply() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+        let tomorrow = Date(timeIntervalSinceNow: 86400)
+
+        let override = try CreativeCapacityService.setOverride(for: tomorrow, hours: 6, context: context)
+        try context.save()
+
+        let summary = CreativeCapacityService.todaysCapacity(
+            settings: settings, events: [], plannedSessions: [], overrides: [override], now: now
+        )
+
+        XCTAssertEqual(summary.baselineHours, 2.5)
+        XCTAssertFalse(summary.isOverridden)
+    }
+
+    func testSetOverrideTwiceUpdatesRatherThanDuplicates() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let now = Date()
+
+        let first = try CreativeCapacityService.setOverride(for: now, hours: 4, context: context)
+        try context.save()
+        let second = try CreativeCapacityService.setOverride(for: now, hours: 8, context: context)
+        try context.save()
+
+        XCTAssertEqual(first.id, second.id)
+        XCTAssertEqual(second.hours, 8)
+
+        let fetched = try context.fetch(FetchDescriptor<CreativeCapacityService.CapacityOverride>())
+        XCTAssertEqual(fetched.count, 1, "A second setOverride call must update, not create a duplicate")
+    }
+
+    func testSetOverrideClampsNegativeHoursToZero() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let now = Date()
+
+        let override = try CreativeCapacityService.setOverride(for: now, hours: -3, context: context)
+        try context.save()
+
+        XCTAssertEqual(override.hours, 0)
+    }
+
+    func testClearOverrideRestoresNormalCalculation() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+
+        try CreativeCapacityService.setOverride(for: now, hours: 10, context: context)
+        try context.save()
+        try CreativeCapacityService.clearOverride(for: now, context: context)
+        try context.save()
+
+        XCTAssertNil(try CreativeCapacityService.override(for: now, in: context))
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [], overrides: [], now: now)
+        XCTAssertEqual(summary.baselineHours, 2.5)
+        XCTAssertFalse(summary.isOverridden)
+    }
+
     func testRemainingNeverGoesNegative() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

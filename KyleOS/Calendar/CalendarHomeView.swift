@@ -12,11 +12,16 @@ struct CalendarHomeView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \CalendarEventService.CalendarEvent.startAt)
     private var allEvents: [CalendarEventService.CalendarEvent]
+    @Query private var allSettings: [CreativeCapacityService.AppSettings]
+    @Query private var allPlannedSessions: [CreativeCapacityService.PlannedSession]
+    @Query private var allCapacityOverrides: [CreativeCapacityService.CapacityOverride]
 
     @State private var displayedMonth: Date = .now
     @State private var selectedDay: Date = .now
     @State private var editingEvent: CalendarEventService.CalendarEvent?
     @State private var isAddingEvent = false
+    @State private var hasCapacityOverride = false
+    @State private var overrideHours: Double = 0
 
     private var calendar: Calendar { .current }
     private var days: [MonthCalendarService.DayCell] {
@@ -24,6 +29,17 @@ struct CalendarHomeView: View {
     }
     private var selectedDayEvents: [CalendarEventService.CalendarEvent] {
         MonthCalendarService.events(on: selectedDay, from: allEvents, calendar: calendar)
+    }
+    private var selectedDayCapacity: CreativeCapacityService.Summary? {
+        guard let settings = allSettings.first else { return nil }
+        return CreativeCapacityService.todaysCapacity(
+            settings: settings,
+            events: allEvents,
+            plannedSessions: allPlannedSessions,
+            overrides: allCapacityOverrides,
+            calendar: calendar,
+            now: selectedDay
+        )
     }
 
     var body: some View {
@@ -37,6 +53,8 @@ struct CalendarHomeView: View {
             }
             Divider()
             selectedDaySection
+            Divider()
+            capacitySection
             Spacer()
         }
         .padding()
@@ -47,8 +65,12 @@ struct CalendarHomeView: View {
         .sheet(isPresented: $isAddingEvent) {
             CalendarEventFormSheet(mode: .add(defaultDate: selectedDay))
         }
-        .onAppear { ensureDayJobBlocksForDisplayedMonth() }
+        .onAppear {
+            ensureDayJobBlocksForDisplayedMonth()
+            reloadCapacityOverride()
+        }
         .onChange(of: displayedMonth) { ensureDayJobBlocksForDisplayedMonth() }
+        .onChange(of: selectedDay) { reloadCapacityOverride() }
     }
 
     /// PRD §11.4: generates Day Job blocks lazily for whatever month is actually being viewed —
@@ -164,6 +186,59 @@ struct CalendarHomeView: View {
             .buttonStyle(.borderless)
         }
         .font(.callout)
+    }
+
+    /// PRD §11.6: "The user can override a day's expected Creative Capacity, including setting it
+    /// to zero or increasing it for a free day."
+    private var capacitySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Creative Capacity").font(.headline)
+            if let summary = selectedDayCapacity {
+                HStack {
+                    Text("\(formatted(summary.baselineHours)) available, \(formatted(summary.scheduledHours)) scheduled, \(formatted(summary.remainingHours)) remaining")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    if summary.isOverridden {
+                        Text("Overridden").font(.caption).foregroundStyle(.orange)
+                    }
+                }
+            }
+            Toggle("Override this day's capacity", isOn: $hasCapacityOverride)
+                .onChange(of: hasCapacityOverride) { saveCapacityOverrideToggle() }
+            if hasCapacityOverride {
+                Stepper("Capacity: \(formatted(overrideHours))", value: $overrideHours, in: 0...24, step: 0.5)
+                    .onChange(of: overrideHours) { saveCapacityOverrideHours() }
+            }
+        }
+    }
+
+    private func formatted(_ hours: Double) -> String {
+        hours.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(hours))h" : String(format: "%.1fh", hours)
+    }
+
+    private func reloadCapacityOverride() {
+        if let existing = try? CreativeCapacityService.override(for: selectedDay, in: context, calendar: calendar) {
+            hasCapacityOverride = true
+            overrideHours = existing.hours
+        } else {
+            hasCapacityOverride = false
+            overrideHours = selectedDayCapacity?.baselineHours ?? 0
+        }
+    }
+
+    private func saveCapacityOverrideToggle() {
+        if hasCapacityOverride {
+            try? CreativeCapacityService.setOverride(for: selectedDay, hours: overrideHours, context: context, calendar: calendar)
+        } else {
+            try? CreativeCapacityService.clearOverride(for: selectedDay, context: context, calendar: calendar)
+        }
+        try? context.save()
+    }
+
+    private func saveCapacityOverrideHours() {
+        guard hasCapacityOverride else { return }
+        try? CreativeCapacityService.setOverride(for: selectedDay, hours: overrideHours, context: context, calendar: calendar)
+        try? context.save()
     }
 
     /// Deleting a `.dayJob` block specifically means "override this day off" (PRD §11.4) — must

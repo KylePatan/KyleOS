@@ -1309,4 +1309,53 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertFalse(events.isEmpty, "Day Job blocks should have generated for the coming week")
         }
     }
+
+    func testStoreWrittenUnderV25OpensCleanlyAsV26WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV25Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        let projectID: UUID
+        // Write a store using ONLY the V25 schema shape — CapacityOverride does not exist yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV25.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let project = KyleOSSchemaV25.Project(title: "Untitled Pilot")
+            projectID = project.id
+            context.insert(project)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let projects = try ProjectService.activeProjects(in: context)
+            guard let project = projects.first(where: { $0.id == projectID }) else {
+                return XCTFail("Expected the pre-migration project to survive")
+            }
+            XCTAssertEqual(project.title, "Untitled Pilot")
+
+            // The new entity must actually be usable post-migration, not just present.
+            let settings = try SettingsService.currentSettings(in: context)
+            let override = try CreativeCapacityService.setOverride(for: .now, hours: 5, context: context)
+            try context.save()
+
+            let summary = CreativeCapacityService.todaysCapacity(
+                settings: settings, events: [], plannedSessions: [], overrides: [override]
+            )
+            XCTAssertEqual(summary.baselineHours, 5)
+            XCTAssertTrue(summary.isOverridden)
+        }
+    }
 }
