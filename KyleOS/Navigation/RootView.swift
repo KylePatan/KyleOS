@@ -36,6 +36,8 @@ struct RootView: View {
                 SketchBoardView()
             case .destination(.calendar):
                 CalendarHomeView()
+            case .destination(.reports):
+                ReportsView()
             case .destination(let destination):
                 PlaceholderDestinationView(destination: destination)
             case .dev(.projects):
