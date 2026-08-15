@@ -49,7 +49,7 @@ struct HeadlineSetDetailView: View {
                 }
             TextField("Notes", text: $notes, axis: .vertical)
                 .textFieldStyle(.plain)
-                .font(.callout)
+                .font(WritingSurfaceFont.swiftUI(size: 13))
                 .foregroundStyle(.secondary)
                 .onChange(of: notes) {
                     HeadlineSetService.updateNotes(headlineSet, notes: notes)

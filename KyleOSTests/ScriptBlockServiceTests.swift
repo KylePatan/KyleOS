@@ -23,8 +23,8 @@ final class ScriptBlockServiceTests: XCTestCase {
         XCTAssertEqual(ScriptBlockService.suggestedNextType(afterEnterFrom: .character), .dialogue)
     }
 
-    func testSuggestedNextTypeAfterDialogueIsCharacter() {
-        XCTAssertEqual(ScriptBlockService.suggestedNextType(afterEnterFrom: .dialogue), .character)
+    func testSuggestedNextTypeAfterDialogueIsAction() {
+        XCTAssertEqual(ScriptBlockService.suggestedNextType(afterEnterFrom: .dialogue), .action)
     }
 
     func testSuggestedNextTypeAfterParentheticalIsDialogue() {

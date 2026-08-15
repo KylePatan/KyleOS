@@ -45,7 +45,7 @@ struct ChunkDetailView: View {
                 }
             TextField("Notes", text: $notes, axis: .vertical)
                 .textFieldStyle(.plain)
-                .font(.callout)
+                .font(WritingSurfaceFont.swiftUI(size: 13))
                 .foregroundStyle(.secondary)
                 .onChange(of: notes) {
                     ChunkService.updateNotes(chunk, notes: notes)

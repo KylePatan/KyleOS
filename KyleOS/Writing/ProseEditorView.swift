@@ -30,7 +30,7 @@ struct ProseEditorView: View {
                 }
             }
             TextEditor(text: $editorText)
-                .font(.system(.body, design: .serif))
+                .font(WritingSurfaceFont.swiftUI(size: 14))
                 .onChange(of: editorText) {
                     autosave.scheduleSave {
                         DocumentService.updateContent(document, content: editorText)

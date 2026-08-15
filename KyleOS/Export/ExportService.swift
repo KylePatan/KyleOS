@@ -18,7 +18,7 @@ enum ExportService {
             string: title + "\n\n",
             attributes: [.font: NSFont.boldSystemFont(ofSize: 18)]
         )
-        result.append(NSAttributedString(string: body, attributes: [.font: NSFont.systemFont(ofSize: 12)]))
+        result.append(NSAttributedString(string: body, attributes: [.font: WritingSurfaceFont.nsFont(size: 12)]))
         try render(result, to: url)
     }
 

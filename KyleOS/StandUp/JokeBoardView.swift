@@ -103,7 +103,7 @@ private struct JokeCard: View {
                 }
             TextField("Joke text", text: $text, axis: .vertical)
                 .textFieldStyle(.plain)
-                .font(.callout)
+                .font(WritingSurfaceFont.swiftUI(size: 13))
                 .onChange(of: text) {
                     JokeService.updateText(joke, text: text)
                     try? context.save()

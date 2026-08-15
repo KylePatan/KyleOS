@@ -6,13 +6,14 @@ import SwiftData
 ///
 /// The Enter-key transition rule below implements Decision Gate A's "How should structured
 /// screenplay blocks behave" question — PRD §6.7: "Enter-key behavior should move naturally
-/// between common screenplay elements." Standard Final Draft-style industry convention: a scene
-/// heading or transition is always followed by action; action stays in action (most action
-/// description runs multiple paragraphs); a character cue is followed by their dialogue; a
-/// parenthetical is followed by more dialogue; dialogue is followed by a new character cue (the
-/// next line of the exchange). Kyle briefly tried a tighter beat-by-beat cycle instead
-/// (action->character->dialogue->action) and confirmed after using it for real that he wanted
-/// standard convention back — Enter still drives the transitions, just via this mapping.
+/// between common screenplay elements." Kyle's confirmed convention (2026-08-15, WriterDuet-style
+/// pass): a scene heading or transition is followed by action; a character cue is followed by
+/// their dialogue; a parenthetical is followed by more dialogue; dialogue returns to action (not
+/// back to another character cue) — matching how a beat of dialogue is usually followed by an
+/// action beat, not assumed back-and-forth. Action is the one type with no confident next guess —
+/// `ScriptTextView.insertNewline` shows the element-type menu instead of silently continuing in
+/// Action, so `.action` here reads as "the value if that prompt is dismissed without a pick," not
+/// "always what happens next."
 ///
 /// Tab no longer cycles types silently — it now opens a visible element-type menu directly in
 /// ScriptTextView (PRD §6.7's "visible element selector" fallback, made literal rather than a
@@ -28,7 +29,7 @@ enum ScriptBlockService {
         case .sceneHeading, .transition: return .action
         case .action: return .action
         case .character: return .dialogue
-        case .dialogue: return .character
+        case .dialogue: return .action
         case .parenthetical: return .dialogue
         }
     }

@@ -14,6 +14,12 @@ import UniformTypeIdentifiers
 /// (§6.8/§6.9), and PDF export (§6.20) — all originally deferred from the first increment —
 /// have since been added, closing out every Script Editor requirement that doesn't depend on
 /// another module that doesn't exist yet (e.g. §6.14's "Create Script from Scene Outline").
+///
+/// 2026-08-15 WriterDuet-feel pass (Kyle, hands-on after first real use): direct Cmd+letter
+/// hotkeys for element types (`ScriptTextView.performKeyEquivalent`), Enter after Dialogue now
+/// returns to Action instead of another Character cue, Enter on Action opens the element-type
+/// menu instead of silently continuing, and Return no longer gets swallowed by the character-name
+/// completion popup (`insertCompletion`) — see each override's own doc comment for the reasoning.
 private extension NSAttributedString.Key {
     static let scriptElementType = NSAttributedString.Key("KyleOSScriptElementType")
 }
@@ -22,7 +28,7 @@ private extension NSAttributedString.Key {
 /// PDF always visually matches the live editor.
 enum ScriptFormatting {
     static func font(for type: ScriptBlockService.ScriptElementType) -> NSFont {
-        NSFont(name: "Courier", size: 12) ?? NSFont.userFixedPitchFont(ofSize: 12)!
+        WritingSurfaceFont.nsFont(size: 12)
     }
 
     /// Simplified, visually-distinct indentation per element type — deliberately not
@@ -80,18 +86,27 @@ enum ScriptFormatting {
 }
 
 /// Custom key-command handling is the entire reason this isn't plain SwiftUI (see file doc
-/// comment) — Enter suggests the natural next element (Kyle's confirmed beat-by-beat cycle, see
-/// ScriptBlockService.suggestedNextType's doc comment), Tab opens a visible element-type menu at
-/// the caret, matching PRD §6.7's "keyboard-first" requirement and its explicit fallback ("The
-/// editor should offer a visible element selector as a fallback").
+/// comment) — Enter suggests the natural next element (see ScriptBlockService.suggestedNextType's
+/// doc comment), Tab opens a visible element-type menu at the caret, matching PRD §6.7's
+/// "keyboard-first" requirement and its explicit fallback ("The editor should offer a visible
+/// element selector as a fallback"). Cmd+letter (see `performKeyEquivalent`) is the WriterDuet-
+/// style direct hotkey path Kyle asked for on top of that — jump straight to an element type
+/// after pressing Enter, no Tab-then-click required.
 final class ScriptTextView: NSTextView {
     /// Set once by ScriptEditorRepresentable right after creation — needed for the
     /// character/scene-heading suggestions below (PRD §6.8/§6.9).
     var document: ScriptBlockService.Document?
 
+    /// Action is the one type `ScriptBlockService.suggestedNextType` has no confident next guess
+    /// for — Kyle (2026-08-15): pressing Enter while on Action should offer the element-type menu
+    /// rather than silently starting another Action paragraph.
     override func insertNewline(_ sender: Any?) {
         let currentType = ScriptFormatting.type(at: max(selectedRange().location - 1, 0), in: textStorage!)
         super.insertNewline(sender)
+        if currentType == .action {
+            showElementTypeMenu()
+            return
+        }
         let nextType = ScriptBlockService.suggestedNextType(afterEnterFrom: currentType)
         typingAttributes = ScriptFormatting.attributes(for: nextType)
         applyTypeToCurrentParagraph(nextType)
@@ -106,19 +121,52 @@ final class ScriptTextView: NSTextView {
         showElementTypeMenu()
     }
 
-    private static let transitionQuickInserts = ["FADE IN:", "CUT TO:"]
+    /// WriterDuet-style direct hotkeys (Kyle, 2026-08-15): "having to click the next 'character'
+    /// or 'dialogue' from [the Tab] dropdown is a no go... I like the hot keys." First letter of
+    /// each element name, matching his explicit ask — zero mouse interaction, the fast path. Tab's
+    /// menu (below) still exists as a visible/discoverable fallback and now shows each hotkey next
+    /// to its item, but is no longer the only way to override the guessed element type after
+    /// Enter. Trade-off worth knowing: within the script editor specifically, this claims Cmd+A/
+    /// Cmd+S/Cmd+P/Cmd+D/Cmd+T away from their usual Select All/Save/Print/Duplicate/New Tab
+    /// meanings — none of those are wired to anything in this app today, but flagging it since
+    /// it's a real, if minor, standard-shortcut trade-off, not a silent one.
+    private static let elementTypeHotkeys: [String: ScriptBlockService.ScriptElementType] = [
+        "s": .sceneHeading, "a": .action, "c": .character,
+        "d": .dialogue, "p": .parenthetical, "t": .transition
+    ]
 
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        if event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
+           let characters = event.charactersIgnoringModifiers?.lowercased(),
+           let type = Self.elementTypeHotkeys[characters] {
+            selectElementType(type)
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+
+    private static let transitionQuickInserts = ["FADE IN:", "CUT TO:"]
+    private static let typeMenuItems: [(String, String, ScriptBlockService.ScriptElementType)] = [
+        ("Scene Heading", "s", .sceneHeading),
+        ("Action", "a", .action),
+        ("Character", "c", .character),
+        ("Dialogue", "d", .dialogue),
+        ("Parenthetical", "p", .parenthetical),
+        ("Transition", "t", .transition)
+    ]
+
+    /// Bare letter, no Cmd, once the menu is actually open — Kyle (2026-08-15): "if i hit C...
+    /// it doesn't just highlight the 'character' option. It should go straight to that." NSMenu's
+    /// default behavior for a bare keystroke is type-ahead (highlight the first match, wait for a
+    /// second Enter/click to commit); giving each item a real keyEquivalent with no modifier mask
+    /// makes AppKit commit it immediately instead. This only applies while the menu itself is
+    /// showing — the *standalone* Cmd+letter hotkeys in `performKeyEquivalent` above still require
+    /// Cmd, since without the menu open a bare letter needs to keep inserting normal text.
     private func showElementTypeMenu() {
         let menu = NSMenu()
-        let typeItems: [(String, ScriptBlockService.ScriptElementType)] = [
-            ("Scene Heading", .sceneHeading),
-            ("Action", .action),
-            ("Character", .character),
-            ("Dialogue", .dialogue),
-            ("Parenthetical", .parenthetical)
-        ]
-        for (title, type) in typeItems {
-            let item = NSMenuItem(title: title, action: #selector(selectElementType(_:)), keyEquivalent: "")
+        for (title, key, type) in Self.typeMenuItems {
+            let item = NSMenuItem(title: title, action: #selector(selectElementTypeFromMenu(_:)), keyEquivalent: key)
+            item.keyEquivalentModifierMask = []
             item.target = self
             item.representedObject = type
             menu.addItem(item)
@@ -138,8 +186,12 @@ final class ScriptTextView: NSTextView {
         menu.popUp(positioning: nil, at: viewPoint, in: self)
     }
 
-    @objc private func selectElementType(_ sender: NSMenuItem) {
+    @objc private func selectElementTypeFromMenu(_ sender: NSMenuItem) {
         guard let type = sender.representedObject as? ScriptBlockService.ScriptElementType else { return }
+        selectElementType(type)
+    }
+
+    private func selectElementType(_ type: ScriptBlockService.ScriptElementType) {
         applyTypeToCurrentParagraph(type)
         typingAttributes = ScriptFormatting.attributes(for: type)
         triggerLiveSuggestionsIfNeeded(for: type)
@@ -178,11 +230,25 @@ final class ScriptTextView: NSTextView {
         triggerLiveSuggestionsIfNeeded(for: type)
     }
 
+    /// A freshly-created paragraph (right after Enter, before anything's typed into it) is
+    /// zero-length, so there's no text run to tag with the new type. But `ScriptFormatting.
+    /// type(at:)` in `insertNewline` reads the character just *before* the cursor to identify
+    /// "what type is the paragraph I'm currently in" — for an empty paragraph, that's the
+    /// preceding newline, which still carries the *previous* paragraph's type attribute if we
+    /// only ever tag non-empty ranges. Left alone, that stale tag made pressing Enter again on a
+    /// still-empty paragraph misidentify its type (Kyle, 2026-08-15: had to hit Enter twice from
+    /// a fresh Action line to open the menu, because the first press still read as the type it
+    /// transitioned *from*). Retagging that boundary newline too keeps it consistent.
     private func applyTypeToCurrentParagraph(_ type: ScriptBlockService.ScriptElementType) {
         guard let storage = textStorage else { return }
         let paragraphRange = (storage.string as NSString).paragraphRange(for: selectedRange())
-        guard paragraphRange.length > 0 else { return }
-        storage.addAttributes(ScriptFormatting.attributes(for: type), range: paragraphRange)
+        if paragraphRange.length > 0 {
+            storage.addAttributes(ScriptFormatting.attributes(for: type), range: paragraphRange)
+        }
+        if paragraphRange.location > 0 {
+            let precedingNewlineRange = NSRange(location: paragraphRange.location - 1, length: 1)
+            storage.addAttributes(ScriptFormatting.attributes(for: type), range: precedingNewlineRange)
+        }
     }
 
     /// PRD §6.8/§6.9: known character names and scene headings. Originally only shown via
@@ -224,6 +290,22 @@ final class ScriptTextView: NSTextView {
         }
         guard !partial.isEmpty else { return candidates }
         return candidates.filter { $0.hasPrefix(partial.uppercased()) }
+    }
+
+    /// Kyle (2026-08-15): "it should be a 'tab' into that. If I'm writing character name and i
+    /// press enter, that should automatically go to dialogue." AppKit's completion popup normally
+    /// treats Return as "accept the suggestion," which was swallowing the Enter keystroke before
+    /// it ever reached `insertNewline` — so finishing a character name and hitting Enter could
+    /// silently just accept/dismiss the popup instead of advancing to Dialogue. Now: Tab accepts a
+    /// suggestion (matching Tab's role as "confirm and move on" everywhere else in this editor),
+    /// Return always falls through to the normal element-transition behavior, keeping whatever
+    /// Kyle actually typed rather than substituting the suggestion.
+    override func insertCompletion(_ word: String, forPartialWordRange charRange: NSRange, movement: Int, isFinal: Bool) {
+        if movement == NSReturnTextMovement {
+            insertNewline(nil)
+            return
+        }
+        super.insertCompletion(word, forPartialWordRange: charRange, movement: movement, isFinal: isFinal)
     }
 }
 
