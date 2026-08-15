@@ -1078,5 +1078,22 @@ Track major implementation milestones here as they ship, so future sessions know
 built against this spec versus still pending.
 
 - **2026-08-15**: §20 (Writing Environment typography) shipped — see `WritingSurfaceFont.swift`.
-  Everything else in this document (component system, navigation restructure, color system,
-  window chrome, etc.) is not yet built.
+- **2026-08-15**: Design system foundation + Home reskin shipped:
+  - `RetroTheme` — color/spacing/border/corner tokens (§3, §5, §7, §21, §23).
+  - `RetroUI/` component library — `RetroPanel`, `RetroButtonStyle` (`.retro`/`.retroProminent`),
+    `RetroInputStyle`, `RetroTabs`, `RetroListRow`, `RetroBevel`, `RetroStatusBar`, `RetroTopNav`,
+    `RetroPageHeader` (§8, §9, §10, §11, §14, §15).
+  - `RootView` restructured: horizontal top nav (`RetroTopNav`) + page header (`RetroPageHeader`)
+    replacing the `NavigationSplitView` sidebar (§13). Dead `Dev/` section and `SidebarSelection`
+    wrapper removed as part of this — no longer needed once every module had a real destination.
+  - Home fully reskinned end to end: `CreativeCapacityWidget`, `TodayItemCard` (now a dense single
+    -line row per §4's own row-not-card example), `HomeView`'s tab strip (`RetroTabs`),
+    `AllTasksView`, `PostItView` (summary stats, row list, edit sheet), `MonthCalendarView`
+    (month grid, day detail), `ActiveTimerBanner`, `QuickAddButton`'s add sheet,
+    `FinishSessionPrompt`, `InterruptedSessionPrompt`, `SchedulingTieBreakPrompt` — every view
+    reachable from Home now reads `RetroTheme` tokens and the shared component set.
+  - Verified: full build (`BUILD SUCCEEDED`), full test suite (409/409 passing), and live
+    screenshots of all four Home tabs (Today, All Tasks, Calendar, Post It) in dark mode.
+  - Not yet built: everything else in this document — Writing/Stand Up/Clips/Sketches/Calendar/
+    Reports/Settings still use pre-spec styling; window-chrome details (§6, §12), menus/
+    scrollbars (§27–28), animation timing (§29), drag-and-drop visuals (§30) not yet addressed.

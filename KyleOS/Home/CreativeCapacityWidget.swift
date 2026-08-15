@@ -19,15 +19,13 @@ struct CreativeCapacityWidget: View {
 
     var body: some View {
         if let summary {
-            HStack(spacing: 16) {
-                capacityStat(label: summary.isOverridden ? "Available (Overridden)" : "Available", hours: summary.baselineHours)
-                capacityStat(label: "Scheduled", hours: summary.scheduledHours)
-                capacityStat(label: "Remaining", hours: summary.remainingHours, emphasized: true)
+            RetroPanel("Creative Capacity") {
+                HStack(spacing: RetroTheme.sectionSpacing) {
+                    capacityStat(label: summary.isOverridden ? "Available (Overridden)" : "Available", hours: summary.baselineHours)
+                    capacityStat(label: "Scheduled", hours: summary.scheduledHours)
+                    capacityStat(label: "Remaining", hours: summary.remainingHours, emphasized: true)
+                }
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(Color.gray.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 
@@ -35,9 +33,10 @@ struct CreativeCapacityWidget: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(RetroTheme.secondaryText)
             Text(formatted(hours))
                 .font(emphasized ? .headline : .body)
+                .foregroundStyle(emphasized ? RetroTheme.accent : RetroTheme.primaryText)
         }
     }
 

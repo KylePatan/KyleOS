@@ -20,41 +20,49 @@ struct MonthCalendarView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            header
-            weekdayLabels
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
-                ForEach(days) { cell in
-                    dayCell(cell)
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+            RetroPanel {
+                VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                    header
+                    weekdayLabels
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
+                        ForEach(days) { cell in
+                            dayCell(cell)
+                        }
+                    }
                 }
             }
-            Divider()
-            selectedDaySection
+            RetroPanel {
+                selectedDaySection
+            }
         }
-        .padding()
+        .padding(RetroTheme.sectionPadding)
     }
 
     private var header: some View {
         HStack {
             Text(displayedMonth, format: .dateTime.month(.wide).year())
                 .font(.title3.bold())
+                .foregroundStyle(RetroTheme.primaryText)
             Spacer()
             Button { shiftMonth(by: -1) } label: { Image(systemName: "chevron.left") }
+                .buttonStyle(.retro)
             Button("Today") {
                 displayedMonth = .now
                 selectedDay = .now
             }
+            .buttonStyle(.retro)
             Button { shiftMonth(by: 1) } label: { Image(systemName: "chevron.right") }
+                .buttonStyle(.retro)
         }
-        .buttonStyle(.borderless)
     }
 
     private var weekdayLabels: some View {
         HStack {
             ForEach(shortWeekdaySymbols, id: \.self) { symbol in
                 Text(symbol)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption.bold())
+                    .foregroundStyle(RetroTheme.secondaryText)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -73,37 +81,39 @@ struct MonthCalendarView: View {
                     .font(.callout)
                     .fontWeight(isToday ? .bold : .regular)
                 if dayEventCount > 0 {
-                    Circle().frame(width: 4, height: 4)
+                    Circle().fill(RetroTheme.accent).frame(width: 4, height: 4)
                 } else {
                     Circle().frame(width: 4, height: 4).opacity(0)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 32)
-            .foregroundStyle(cell.isInCurrentMonth ? .primary : .secondary)
+            .foregroundStyle(cell.isInCurrentMonth ? RetroTheme.primaryText : RetroTheme.secondaryText)
             .padding(4)
-            .background(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .background(isSelected ? RetroTheme.accent.opacity(0.18) : Color.clear)
+            .overlay(isToday ? Rectangle().strokeBorder(RetroTheme.accent, lineWidth: RetroTheme.borderWidth) : nil)
         }
         .buttonStyle(.plain)
     }
 
     private var selectedDaySection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             Text(selectedDay, format: .dateTime.weekday(.wide).month().day())
                 .font(.headline)
+                .foregroundStyle(RetroTheme.primaryText)
             if selectedDayEvents.isEmpty {
                 Text("Nothing on the calendar.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
                 ForEach(selectedDayEvents) { event in
                     HStack {
                         Text(event.startAt, format: .dateTime.hour().minute())
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                             .frame(width: 70, alignment: .leading)
                         Text(event.eventType.rawValue)
+                            .foregroundStyle(RetroTheme.primaryText)
                         if !event.notes.isEmpty {
                             Text(event.notes)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(RetroTheme.secondaryText)
                         }
                     }
                     .font(.callout)

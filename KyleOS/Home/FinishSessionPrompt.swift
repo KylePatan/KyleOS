@@ -10,27 +10,32 @@ struct FinishSessionPrompt: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             Text("How complete is this stage now?")
                 .font(.headline)
+                .foregroundStyle(RetroTheme.primaryText)
             HStack {
                 Slider(value: $progress, in: 0...100, step: 1)
                 Text("\(Int(progress))%")
                     .monospacedDigit()
+                    .foregroundStyle(RetroTheme.primaryText)
                     .frame(width: 44, alignment: .trailing)
             }
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
+                    .buttonStyle(.retro)
                 Button("Finish Session") {
                     onConfirm()
                     dismiss()
                 }
+                .buttonStyle(.retroProminent)
                 .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(minWidth: 320)
+        .background(RetroTheme.panelBackground)
     }
 }
 

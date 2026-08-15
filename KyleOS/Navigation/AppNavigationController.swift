@@ -46,31 +46,34 @@ enum DeepLinkTarget: Equatable {
 /// with Home's Today cards — can request a jump into another module's specific item, not just
 /// switch the sidebar to that module's default list.
 ///
-/// Owns sidebar `selection` itself (moved out of RootView, which previously held it as private
-/// `@State`) so switching sections and setting a deep-link target happen together, atomically,
-/// from one `navigate(to:)` call — a caller never has to separately flip the sidebar and then
-/// hope the destination module notices a target arrived.
+/// Owns primary-navigation `selection` itself (moved out of RootView, which previously held it
+/// as private `@State`) so switching sections and setting a deep-link target happen together,
+/// atomically, from one `navigate(to:)` call — a caller never has to separately flip the nav and
+/// then hope the destination module notices a target arrived. `selection` is a bare
+/// `SidebarDestination` now, not a wrapper enum — the wrapper existed only to unify real
+/// destinations with the temporary Dev/ section, which is gone (2026-08-15, once every module it
+/// stood in for actually shipped, per that section's own doc comment).
 @Observable
 final class AppNavigationController {
-    var selection: SidebarSelection? = .destination(.home)
+    var selection: SidebarDestination? = .home
 
     /// Set by `navigate(to:)`; consumed and cleared by whichever module view owns the
     /// NavigationStack that target belongs to (see each module's own `.task`/`.onChange` hook,
     /// e.g. `WritingHomeView`, `StandUpHomeView`+`ChunkListView`, `ClipsHomeView`+
-    /// `SourceListView`, `SketchBoardView`). Nil once consumed so switching sidebar sections
-    /// manually afterward doesn't replay a stale push.
+    /// `SourceListView`, `SketchBoardView`). Nil once consumed so switching sections manually
+    /// afterward doesn't replay a stale push.
     var pendingTarget: DeepLinkTarget?
 
     func navigate(to target: DeepLinkTarget) {
         switch target {
         case .writingProject:
-            selection = .destination(.writing)
+            selection = .writing
         case .standUpChunk, .standUpJokeBoard:
-            selection = .destination(.standUp)
+            selection = .standUp
         case .clip:
-            selection = .destination(.clips)
+            selection = .clips
         case .sketchProject:
-            selection = .destination(.sketches)
+            selection = .sketches
         }
         pendingTarget = target
     }

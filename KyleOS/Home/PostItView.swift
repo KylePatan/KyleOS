@@ -58,22 +58,28 @@ struct PostItView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            summaryBar
-            cadenceSection
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+            RetroPanel {
+                VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                    summaryBar
+                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+                    cadenceSection
+                }
+            }
             if rows.isEmpty {
                 Text("Nothing ready to post yet. Finish editing a Clip or Sketch to see it here.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                List {
-                    ForEach(rows) { row in
-                        rowView(row)
+                RetroPanel("Ready to Post") {
+                    VStack(spacing: 0) {
+                        ForEach(rows) { row in
+                            rowView(row)
+                        }
                     }
                 }
-                .listStyle(.inset)
             }
         }
-        .padding()
+        .padding(RetroTheme.sectionPadding)
         .sheet(item: $editingRow) { row in
             PostItRowSheet(row: row)
         }
@@ -85,11 +91,12 @@ struct PostItView: View {
             HStack {
                 Stepper("Weekly posting goal: \(cadenceTarget)", value: $cadenceTarget, in: 0...14)
                     .onChange(of: cadenceTarget) { saveCadenceTarget() }
+                    .foregroundStyle(RetroTheme.primaryText)
             }
             if !suggestedDates.isEmpty {
                 Text("Suggested post dates: " + suggestedDates.prefix(4).map { $0.formatted(.dateTime.month().day()) }.joined(separator: ", "))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
         }
     }
@@ -101,7 +108,7 @@ struct PostItView: View {
     }
 
     private var summaryBar: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: RetroTheme.sectionSpacing) {
             summaryStat(label: "Ready to Post", count: readyToPostCount)
             summaryStat(label: "Scheduled This Week", count: scheduledThisWeekCount)
             summaryStat(label: "Unscheduled Ready", count: unscheduledReadyCount)
@@ -110,29 +117,34 @@ struct PostItView: View {
 
     private func summaryStat(label: String, count: Int) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Text("\(count)").font(.headline)
+            Text(label).font(.caption).foregroundStyle(RetroTheme.secondaryText)
+            Text("\(count)").font(.headline).foregroundStyle(RetroTheme.primaryText)
         }
     }
 
     private func rowView(_ row: PostItRow) -> some View {
-        HStack {
+        HStack(spacing: RetroTheme.controlSpacing) {
             statusDot(row.displayStatus)
             VStack(alignment: .leading, spacing: 2) {
-                Text(row.title).font(.callout)
-                Text(row.subtitle).font(.caption).foregroundStyle(.secondary)
+                Text(row.title).font(.callout).foregroundStyle(RetroTheme.primaryText)
+                Text(row.subtitle).font(.caption2).foregroundStyle(RetroTheme.secondaryText)
             }
             Spacer()
             if let date = row.confirmedPostDate {
                 Text(date, format: .dateTime.month().day())
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
             Text(row.displayStatus.rawValue)
                 .font(.caption)
                 .foregroundStyle(color(for: row.displayStatus))
             Button("Edit") { editingRow = row }
-                .buttonStyle(.borderless)
+                .buttonStyle(.retro)
+        }
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
         }
     }
 
@@ -142,9 +154,9 @@ struct PostItView: View {
 
     private func color(for status: PostingItemService.DisplayStatus) -> Color {
         switch status {
-        case .notReady: return .secondary
-        case .ready: return .accentColor
-        case .dueToday: return .orange
+        case .notReady: return RetroTheme.secondaryText
+        case .ready: return RetroTheme.accent
+        case .dueToday: return RetroTheme.warning
         case .posted: return .green
         case .overdue: return .red
         }
@@ -204,11 +216,13 @@ private struct PostItRowSheet: View {
     @State private var platform = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(row.title).font(.headline)
-            Text(row.displayStatus.rawValue)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(row.title).font(.headline).foregroundStyle(RetroTheme.primaryText)
+                Text(row.displayStatus.rawValue)
+                    .font(.caption)
+                    .foregroundStyle(RetroTheme.secondaryText)
+            }
 
             Toggle("Confirmed post date", isOn: $hasConfirmedDate)
                 .onChange(of: hasConfirmedDate) { save() }
@@ -217,7 +231,7 @@ private struct PostItRowSheet: View {
                     .onChange(of: confirmedDate) { save() }
             }
             TextField("Platform", text: $platform)
-                .textFieldStyle(.roundedBorder)
+                .retroInputStyle()
                 .onChange(of: platform) { savePlatform() }
 
             HStack {
@@ -226,14 +240,17 @@ private struct PostItRowSheet: View {
                         markPosted()
                         dismiss()
                     }
+                    .buttonStyle(.retro)
                 }
                 Spacer()
                 Button("Done") { dismiss() }
+                    .buttonStyle(.retroProminent)
                     .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(minWidth: 360)
+        .background(RetroTheme.panelBackground)
         .onAppear(perform: populate)
     }
 

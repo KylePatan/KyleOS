@@ -19,17 +19,24 @@ struct AllTasksView: View {
     var body: some View {
         if items.isEmpty {
             Text("No unfinished work items yet.")
-                .foregroundStyle(.secondary)
-                .padding()
+                .foregroundStyle(RetroTheme.secondaryText)
+                .padding(RetroTheme.sectionPadding)
         } else {
-            List {
-                ForEach(items) { item in
-                    AllTasksRow(workItem: item)
+            RetroPanel("All Tasks") {
+                List {
+                    ForEach(items) { item in
+                        AllTasksRow(workItem: item)
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                    }
+                    .onMove(perform: move)
                 }
-                .onMove(perform: move)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 200, idealHeight: CGFloat(items.count) * 40 + 20)
             }
-            .listStyle(.inset)
-            .frame(minHeight: 200, idealHeight: CGFloat(items.count) * 44 + 20)
+            .padding(RetroTheme.sectionPadding)
         }
     }
 
@@ -45,22 +52,26 @@ private struct AllTasksRow: View {
     let workItem: HomeService.WorkItem
 
     var body: some View {
-        HStack {
+        HStack(spacing: RetroTheme.controlSpacing) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(workItem.title)
+                    .font(.callout)
+                    .foregroundStyle(RetroTheme.primaryText)
                 Text("\(workItem.workspace.rawValue) — \(workItem.project?.title ?? "Untitled") — \(workItem.workTypeName)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption2)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
             Spacer()
             Text("\(workItem.progress)%")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(RetroTheme.secondaryText)
             if let dueAt = workItem.deadline?.dueAt {
                 Text(dueAt.formatted(date: .abbreviated, time: .omitted))
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(RetroTheme.warning)
             }
         }
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
     }
 }

@@ -10,37 +10,39 @@ struct SchedulingTieBreakPrompt: View {
     let onChoose: (HomeService.WorkItem) -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: RetroTheme.sectionSpacing) {
             Text("Which should you work on?")
                 .font(.headline)
+                .foregroundStyle(RetroTheme.primaryText)
             Text("These are scored about the same — your call breaks the tie.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(RetroTheme.secondaryText)
 
-            VStack(spacing: 8) {
+            VStack(spacing: RetroTheme.controlSpacing) {
                 Button {
                     onChoose(first)
                 } label: {
                     optionLabel(for: first)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.retro)
 
                 Button {
                     onChoose(second)
                 } label: {
                     optionLabel(for: second)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.retro)
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(width: 360)
+        .background(RetroTheme.panelBackground)
     }
 
     private func optionLabel(for workItem: HomeService.WorkItem) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(workItem.title).font(.body.bold())
-            Text(workItem.workspace.rawValue).font(.caption).foregroundStyle(.secondary)
+            Text(workItem.title).font(.body.bold()).foregroundStyle(RetroTheme.primaryText)
+            Text(workItem.workspace.rawValue).font(.caption).foregroundStyle(RetroTheme.secondaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

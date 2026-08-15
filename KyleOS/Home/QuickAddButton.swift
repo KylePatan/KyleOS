@@ -63,9 +63,10 @@ private struct QuickAddSheet: View {
     @State private var jokeText = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             Text(title)
                 .font(.headline)
+                .foregroundStyle(RetroTheme.primaryText)
 
             switch kind {
             case .task: taskForm
@@ -77,13 +78,16 @@ private struct QuickAddSheet: View {
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
+                    .buttonStyle(.retro)
                 Button("Add", action: add)
+                    .buttonStyle(.retroProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!isValid)
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(minWidth: 360)
+        .background(RetroTheme.panelBackground)
     }
 
     private var title: String {
@@ -111,8 +115,8 @@ private struct QuickAddSheet: View {
     }
 
     private var taskForm: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TextField("Title", text: $taskTitle)
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+            TextField("Title", text: $taskTitle).retroInputStyle()
             Picker("Project", selection: $taskProject) {
                 Text("Choose a project").tag(HomeService.Project?.none)
                 ForEach(activeProjects) { project in
@@ -124,12 +128,12 @@ private struct QuickAddSheet: View {
                     Text(workspace.rawValue).tag(workspace)
                 }
             }
-            TextField("Work type (e.g. Outline)", text: $taskWorkTypeName)
+            TextField("Work type (e.g. Outline)", text: $taskWorkTypeName).retroInputStyle()
         }
     }
 
     private var calendarEventForm: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             Picker("Type", selection: $eventType) {
                 ForEach(CalendarEventService.CalendarEventType.allCases, id: \.self) { type in
                     Text(type.rawValue).tag(type)
@@ -137,16 +141,16 @@ private struct QuickAddSheet: View {
             }
             DatePicker("Starts", selection: $eventStart)
             Stepper("Duration: \(eventDurationMinutes) min", value: $eventDurationMinutes, in: 15...480, step: 15)
-            TextField("Notes", text: $eventNotes)
+            TextField("Notes", text: $eventNotes).retroInputStyle()
         }
     }
 
     private var projectForm: some View {
-        TextField("Title", text: $projectTitle)
+        TextField("Title", text: $projectTitle).retroInputStyle()
     }
 
     private var jokeIdeaForm: some View {
-        TextField("Idea text", text: $jokeText, axis: .vertical)
+        TextField("Idea text", text: $jokeText, axis: .vertical).retroInputStyle()
     }
 
     private func add() {

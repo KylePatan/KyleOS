@@ -12,16 +12,19 @@ struct InterruptedSessionPrompt: View {
     let onResolved: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             Text("Interrupted Session Found")
-                .font(.title2)
+                .font(.title2.bold())
+                .foregroundStyle(RetroTheme.primaryText)
             if let workItem = state.workItem {
                 Text("A timer for \u{201C}\(workItem.title)\u{201D} didn\u{2019}t close cleanly last time.")
+                    .foregroundStyle(RetroTheme.primaryText)
             } else {
                 Text("A timer session didn\u{2019}t close cleanly last time.")
+                    .foregroundStyle(RetroTheme.primaryText)
             }
             Text("Checkpointed active time: \(TimeFormatting.shortDuration(state.activeDurationSecondsAtCheckpoint))")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(RetroTheme.secondaryText)
 
             HStack {
                 Button("Discard", role: .destructive) {
@@ -29,6 +32,7 @@ struct InterruptedSessionPrompt: View {
                     try? context.save()
                     onResolved()
                 }
+                .buttonStyle(.retro)
                 Spacer()
                 Button("End Session") {
                     TimerRecoveryService.end(
@@ -39,14 +43,17 @@ struct InterruptedSessionPrompt: View {
                     try? context.save()
                     onResolved()
                 }
+                .buttonStyle(.retro)
                 Button("Resume") {
                     TimerRecoveryService.resume(state, into: timerController)
                     onResolved()
                 }
+                .buttonStyle(.retroProminent)
                 .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(minWidth: 380)
+        .background(RetroTheme.panelBackground)
     }
 }

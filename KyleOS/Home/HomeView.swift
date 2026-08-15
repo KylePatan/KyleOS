@@ -49,19 +49,14 @@ struct HomeView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 0) {
             ActiveTimerBanner()
-                .padding([.horizontal, .top])
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
 
-            Picker("", selection: $selectedTab) {
-                ForEach(Tab.allCases) { tab in
-                    Text(tab.rawValue).tag(tab)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .padding(.horizontal)
-            .frame(maxWidth: 420)
+            RetroTabs(tabs: Tab.allCases.map { ($0, $0.rawValue) }, selection: $selectedTab)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
 
             switch selectedTab {
             case .today:
@@ -74,6 +69,7 @@ struct HomeView: View {
                 PostItView()
             }
         }
+        .background(RetroTheme.background)
         .navigationTitle("Home")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -111,20 +107,25 @@ struct HomeView: View {
 
     private var todayContent: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 CreativeCapacityWidget()
 
                 if todayItems.isEmpty {
                     // PRD §4.9: an empty/blocked day isn't failure — say so plainly.
                     Text("Nothing scheduled. Enjoy the break, or start something from Projects.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
+                        .padding(.top, RetroTheme.controlSpacing)
                 } else {
-                    ForEach(todayItems) { item in
-                        TodayItemCard(workItem: item)
+                    RetroPanel("Today") {
+                        VStack(spacing: 0) {
+                            ForEach(todayItems) { item in
+                                TodayItemCard(workItem: item)
+                            }
+                        }
                     }
                 }
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
     }
 }
