@@ -52,20 +52,17 @@ Implementation: `KyleOS/Domain/SchedulingService.swift` (ranking/scoring, depend
 
 ### Decision Gate C — Final Visual Design
 
-**Must be resolved during:** V1.0 — Integration & UX Pass. A consistent baseline component system should exist from Foundation, but final visual identity is deliberately deferred until the workflows are proven.
-
-Questions to answer:
-
-- Final colour palette and accent treatment.
-- Typography hierarchy.
-- Information density.
-- Sidebar and navigation treatment.
-- Card, list, progress, timer, and calendar visual language.
-- Light-mode and dark-mode behaviour.
-- Motion/animation level.
-- How much visual personality Kyle OS should have while remaining calm and focused for long writing sessions.
-
-The final design should polish proven workflows rather than forcing workflows to fit an early visual concept.
+**RESOLVED 2026-08-15.** Full spec given directly by Kyle, preserved verbatim in
+`docs/VISUAL_DESIGN_SYSTEM.md` — that document is now the authoritative source, not this
+summary. Short version: **Windows 95/98 structure + late-90s/early-2000s web personality +
+modern application smoothness** — dense, bordered, top-down, desktop-first, square-cornered
+panels/windows/toolbars/tabs instead of floating rounded cards, horizontal top navigation
+instead of a permanent sidebar, light mode default with a parallel dark mode (not a redesign),
+Courier-style typewriter typography on writing surfaces only. See that document's own §34 "
+Reference Principle" for how to resolve anything it doesn't explicitly cover, and its
+Implementation Log for what's actually been built against it so far (only §20 typography as of
+this resolution — the rest, including the full component system and navigation restructure, is
+still pending).
 
 ### Decision Gate D — Shared Hub Cloud Technology
 
