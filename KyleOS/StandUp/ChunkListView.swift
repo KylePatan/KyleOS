@@ -5,6 +5,7 @@ import SwiftData
 /// Chunks, + New Chunk, drilling into ChunkDetailView for membership management.
 struct ChunkListView: View {
     @Environment(\.modelContext) private var context
+    @Environment(AppNavigationController.self) private var navigator
     @Query(sort: \ChunkService.Chunk.createdAt) private var chunks: [ChunkService.Chunk]
 
     @State private var newChunkTitle = ""
@@ -55,6 +56,13 @@ struct ChunkListView: View {
                 }
             }
         }
+        .task(id: navigator.pendingTarget) { consumePendingTarget() }
+    }
+
+    private func consumePendingTarget() {
+        guard case .standUpChunk(let id) = navigator.pendingTarget else { return }
+        path.append(id)
+        navigator.pendingTarget = nil
     }
 
     private func createChunk() {
@@ -69,4 +77,5 @@ struct ChunkListView: View {
 #Preview {
     ChunkListView()
         .modelContainer(PersistenceController.makeInMemoryContainer())
+        .environment(AppNavigationController())
 }

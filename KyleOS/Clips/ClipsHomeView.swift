@@ -13,6 +13,7 @@ struct ClipsHomeView: View {
     }
 
     @State private var selectedTab: Tab = .sources
+    @Environment(AppNavigationController.self) private var navigator
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -33,10 +34,20 @@ struct ClipsHomeView: View {
             }
         }
         .navigationTitle("Clips")
+        .task(id: navigator.pendingTarget) { selectTabForPendingTarget() }
+    }
+
+    /// Only switches the tab — `SourceListView` owns the actual NavigationStack `ClipRoute`
+    /// pushes into (it's the tab that stack lives on), so it consumes and clears the target
+    /// itself once mounted.
+    private func selectTabForPendingTarget() {
+        guard case .clip = navigator.pendingTarget else { return }
+        selectedTab = .sources
     }
 }
 
 #Preview {
     ClipsHomeView()
         .modelContainer(PersistenceController.makeInMemoryContainer())
+        .environment(AppNavigationController())
 }

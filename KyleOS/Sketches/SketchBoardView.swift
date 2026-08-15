@@ -9,6 +9,7 @@ import SwiftData
 /// JokeBoardView/ClipBoardView (CLAUDE.md §13, documented implementation choice).
 struct SketchBoardView: View {
     @Environment(\.modelContext) private var context
+    @Environment(AppNavigationController.self) private var navigator
     @Query(sort: \ProjectService.Project.updatedAt, order: .reverse) private var allProjects: [ProjectService.Project]
     @State private var path = NavigationPath()
 
@@ -44,6 +45,13 @@ struct SketchBoardView: View {
                 }
             }
         }
+        .task(id: navigator.pendingTarget) { consumePendingTarget() }
+    }
+
+    private func consumePendingTarget() {
+        guard case .sketchProject(let id) = navigator.pendingTarget else { return }
+        path.append(id)
+        navigator.pendingTarget = nil
     }
 
     private func column(for status: SketchProductionService.SketchProductionStatus) -> some View {
@@ -127,4 +135,5 @@ private struct SketchCard: View {
         SketchBoardView()
     }
     .modelContainer(container)
+    .environment(AppNavigationController())
 }

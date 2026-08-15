@@ -133,4 +133,5 @@ struct HomeView: View {
     HomeView()
         .modelContainer(PersistenceController.makeInMemoryContainer())
         .environment(FocusTimerController())
+        .environment(AppNavigationController())
 }

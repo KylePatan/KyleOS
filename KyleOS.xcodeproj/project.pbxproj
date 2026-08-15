@@ -35,6 +35,7 @@
 		252B55FA286040385CE319DF /* ScriptBlockServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BDD98234E1607C97ADCA2D0 /* ScriptBlockServiceTests.swift */; };
 		25948435255141F199AC1872 /* KyleOSSchemaV19.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */; };
 		262EF5371EDF0B42E677F82C /* SketchBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD25AFAA1F4A7C9234D63D1 /* SketchBoardView.swift */; };
+		26D5419A85B6426F696821E0 /* WritingSurfaceFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E771A0E74A83BC697F73D7 /* WritingSurfaceFont.swift */; };
 		28413DC38795D2B932C96C3E /* AutosaveControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CA19F98E82823FFD181FC3E /* AutosaveControllerTests.swift */; };
 		29090345C4C5C8513953AFC7 /* SketchProductionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC806CFAA90C92159C5BD2 /* SketchProductionServiceTests.swift */; };
 		29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */; };
@@ -162,6 +163,7 @@
 		F41BFD558D386EA255C5BC35 /* ChunkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5118E5FE8729FFEA8FB2D27A /* ChunkService.swift */; };
 		F4B6740698EDB8B40863C372 /* KyleOSSchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9409FDBA105077F901A54E6 /* KyleOSSchemaV2.swift */; };
 		F76C9254BED6894DDA2CA598 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8D57D0B5B87CC2EEB0705D /* HomeView.swift */; };
+		F87FEEE6528B668DE25BC8A2 /* AppNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA40FDE892D88E8830E34DA /* AppNavigationController.swift */; };
 		F940FF559018B4C56F940133 /* PostingCadenceServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A8A25DAE7708ADE9306A73 /* PostingCadenceServiceTests.swift */; };
 		FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4013FEDF4F30E962B4F6F8 /* ActiveTimerStateService.swift */; };
 		FC49E0D37F02A95E0AF6D1A0 /* KyleOSSchemaV26.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A725F810620AC8F10C06B5F /* KyleOSSchemaV26.swift */; };
@@ -314,6 +316,7 @@
 		C666739B8DC9F109621A875F /* StandUpHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUpHomeView.swift; sourceTree = "<group>"; };
 		C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationTests.swift; sourceTree = "<group>"; };
 		C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlinePersistenceTests.swift; sourceTree = "<group>"; };
+		CAA40FDE892D88E8830E34DA /* AppNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigationController.swift; sourceTree = "<group>"; };
 		CAD25AFAA1F4A7C9234D63D1 /* SketchBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchBoardView.swift; sourceTree = "<group>"; };
 		CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderDestinationView.swift; sourceTree = "<group>"; };
 		CB5A12EDF34A5FF515C0D8DA /* MonthCalendarServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthCalendarServiceTests.swift; sourceTree = "<group>"; };
@@ -332,6 +335,7 @@
 		DFE69DD91F0B820753D4356A /* SourceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceService.swift; sourceTree = "<group>"; };
 		E025BCBDB4BAC1888B4038AF /* KyleOSSchemaV11.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV11.swift; sourceTree = "<group>"; };
 		E02CA4026D19A121892F2FB4 /* JokeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JokeService.swift; sourceTree = "<group>"; };
+		E1E771A0E74A83BC697F73D7 /* WritingSurfaceFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingSurfaceFont.swift; sourceTree = "<group>"; };
 		E3522C8B1A80D72FCC6071D2 /* FocusTimerSessionLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerSessionLength.swift; sourceTree = "<group>"; };
 		E6D66DC425A52CFA4105B857 /* ClipService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipService.swift; sourceTree = "<group>"; };
 		EEBDA6AF784F5931DE830C5C /* CreativeCapacityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreativeCapacityService.swift; sourceTree = "<group>"; };
@@ -390,6 +394,7 @@
 			children = (
 				308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */,
 				660BC2802312A49BFFD14B72 /* KyleOSApp.swift */,
+				E1E771A0E74A83BC697F73D7 /* WritingSurfaceFont.swift */,
 				640BABB0947FE9B124A8C7C6 /* Backup */,
 				66959961B8D1A90F1576BAAC /* Calendar */,
 				1EF6ACD0FC55EB3A043BF051 /* Clips */,
@@ -412,6 +417,7 @@
 		474886536D11B067E057E2A1 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
+				CAA40FDE892D88E8830E34DA /* AppNavigationController.swift */,
 				CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */,
 				2245AF51F43F2E8BDD6097CC /* RootView.swift */,
 				05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */,
@@ -814,6 +820,7 @@
 				C05EA5601A5BFEE75C50BC2F /* ActiveTimerBanner.swift in Sources */,
 				FC29E516C999040BC1966962 /* ActiveTimerStateService.swift in Sources */,
 				F3674B5F4ED317D2A104484A /* AllTasksView.swift in Sources */,
+				F87FEEE6528B668DE25BC8A2 /* AppNavigationController.swift in Sources */,
 				C3E1E810E12DFEBA0EDB15C1 /* AutosaveController.swift in Sources */,
 				EC3FE050D3D76369D0611A36 /* BackupService.swift in Sources */,
 				E2C3148B136DD92DB1CF24D6 /* CalendarEventFormSheet.swift in Sources */,
@@ -929,6 +936,7 @@
 				EE6ABE183FEE644130DA91A6 /* WritingHomeView.swift in Sources */,
 				804A079A2D9516979DA922C8 /* WritingProjectDetailView.swift in Sources */,
 				3C7F0095F6F48B0151C709BC /* WritingRoute.swift in Sources */,
+				26D5419A85B6426F696821E0 /* WritingSurfaceFont.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

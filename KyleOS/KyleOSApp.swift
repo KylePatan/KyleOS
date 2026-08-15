@@ -8,6 +8,9 @@ struct KyleOSApp: App {
     /// §4.8: "the timer continues while navigating elsewhere in Kyle OS." Any screen, not just
     /// Home, can observe/control it.
     @State private var timerController = FocusTimerController()
+    /// One shared instance for the app's lifetime — owns sidebar selection and cross-module
+    /// deep-linking (see AppNavigationController's own doc comment).
+    @State private var navigationController = AppNavigationController()
 
     init() {
         let container = PersistenceController.makeContainer()
@@ -29,6 +32,7 @@ struct KyleOSApp: App {
         WindowGroup {
             RootView()
                 .environment(timerController)
+                .environment(navigationController)
         }
         .modelContainer(container)
     }

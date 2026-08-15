@@ -19,6 +19,7 @@ struct StandUpHomeView: View {
     @State private var selectedTab: Tab = .jokeBoard
     @Environment(\.modelContext) private var context
     @Environment(FocusTimerController.self) private var timerController
+    @Environment(AppNavigationController.self) private var navigator
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -50,6 +51,24 @@ struct StandUpHomeView: View {
             }
         }
         .navigationTitle("Stand Up")
+        .task(id: navigator.pendingTarget) { selectTabForPendingTarget() }
+    }
+
+    /// Only switches the tab — a Chunk target's own push happens inside `ChunkListView` once
+    /// it's actually mounted on the `.chunks` tab and can see the target itself (it reads the
+    /// same shared `navigator`, no need to thread anything down from here). A loose-Joke target
+    /// has nowhere further to go than the Joke Board tab itself, so switching here is the whole
+    /// job for that case.
+    private func selectTabForPendingTarget() {
+        switch navigator.pendingTarget {
+        case .standUpChunk:
+            selectedTab = .chunks
+        case .standUpJokeBoard:
+            selectedTab = .jokeBoard
+            navigator.pendingTarget = nil
+        default:
+            break
+        }
     }
 }
 
@@ -57,4 +76,5 @@ struct StandUpHomeView: View {
     StandUpHomeView()
         .modelContainer(PersistenceController.makeInMemoryContainer())
         .environment(FocusTimerController())
+        .environment(AppNavigationController())
 }

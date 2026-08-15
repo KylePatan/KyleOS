@@ -8,6 +8,7 @@ import SwiftData
 /// rather than each detail view nesting its own NavigationStack.
 struct SourceListView: View {
     @Environment(\.modelContext) private var context
+    @Environment(AppNavigationController.self) private var navigator
     @Query(sort: \SourceService.Source.createdAt, order: .reverse) private var sources: [SourceService.Source]
     @Query private var allClips: [ClipService.Clip]
 
@@ -64,6 +65,13 @@ struct SourceListView: View {
                 }
             }
         }
+        .task(id: navigator.pendingTarget) { consumePendingTarget() }
+    }
+
+    private func consumePendingTarget() {
+        guard case .clip(let id) = navigator.pendingTarget else { return }
+        path.append(ClipRoute(id: id))
+        navigator.pendingTarget = nil
     }
 
     private func createSource() {
@@ -78,4 +86,5 @@ struct SourceListView: View {
 #Preview {
     SourceListView()
         .modelContainer(PersistenceController.makeInMemoryContainer())
+        .environment(AppNavigationController())
 }

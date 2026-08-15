@@ -7,6 +7,8 @@ import SwiftData
 /// Script Editor (Decision Gate A, resolved with Kyle — see ScriptEditorView.swift) exist so far.
 /// Side-by-side split view (§6.12/§6.13) is a later increment.
 struct WritingHomeView: View {
+    @Environment(AppNavigationController.self) private var navigator
+
     // SwiftData's #Predicate can't reliably evaluate a keypath into an enum-typed property
     // (confirmed live: even a plain `!= nil` check on `projectType` crashed with "keypath
     // projectType not found in entity Project") — filter on the safe field (isArchived) in the
@@ -89,6 +91,17 @@ struct WritingHomeView: View {
                 NewWritingProjectSheet()
             }
         }
+        .task(id: navigator.pendingTarget) { consumePendingTarget() }
+    }
+
+    /// Kyle (2026-08-15): clicking a project card on Home should land here, on that project.
+    /// `.task(id:)` re-runs whenever `pendingTarget` changes, including the moment this view
+    /// first appears already carrying one (the sidebar-switch and the target are set together in
+    /// `AppNavigationController.navigate(to:)`).
+    private func consumePendingTarget() {
+        guard case .writingProject(let id) = navigator.pendingTarget else { return }
+        path.append(ProjectRoute(id: id))
+        navigator.pendingTarget = nil
     }
 }
 
@@ -113,4 +126,5 @@ private struct WritingProjectRow: View {
 #Preview {
     WritingHomeView()
         .modelContainer(PersistenceController.makeInMemoryContainer())
+        .environment(AppNavigationController())
 }
