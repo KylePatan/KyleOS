@@ -87,18 +87,18 @@ Foundation must preserve stable IDs, ownership-ready models, timestamps, revisio
 
 ### Decision Gate E — Distribution Method
 
-**Must be resolved during:** V1.0 release preparation before Kyle OS is distributed beyond the primary development Mac.
+**RESOLVED 2026-08-15.** Kyle: personal/private installation only — not signed/notarized for outside distribution, not the Mac App Store.
 
-Questions to answer:
+Consequences of that answer:
 
-- Personal/private installation only, direct signed/notarized distribution, Mac App Store, or another supported distribution route.
-- Whether an Apple Developer Program membership is required at that stage.
-- App Sandbox and entitlement requirements.
-- Google OAuth configuration implications for the chosen distribution model.
-- Update mechanism for non-App-Store distribution, if applicable.
-- Signing, notarization, privacy disclosures, and packaging requirements.
+- No Apple Developer Program membership needed.
+- No App Sandbox/entitlement work required.
+- The existing ad-hoc signing setup (`CODE_SIGN_IDENTITY: "-"`, `CODE_SIGN_STYLE: Manual`, no team, hardened runtime off — see `project_kyle_os_current_state` memory's very first lesson) is the real, final answer, not a Foundation-era placeholder to revisit.
+- No update mechanism needed — Kyle builds and runs it himself via Xcode.
+- No notarization, privacy-disclosure, or packaging pipeline to build.
+- Google OAuth (whenever that's tackled, still separately gated per CLAUDE.md §8) only needs to satisfy personal-use OAuth consent, not an App-Store-review or public-notarization bar.
 
-Foundation development should avoid unnecessarily blocking future sandboxed or notarized distribution, but packaging decisions should not delay the first personal build.
+Do not build App Sandbox, notarization, or Mac-App-Store-oriented packaging work unless Kyle explicitly reopens this.
 
 ### Other Phase-Local Decisions
 
