@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 @main
 struct KyleOSApp: App {
@@ -13,6 +14,13 @@ struct KyleOSApp: App {
     @State private var navigationController = AppNavigationController()
 
     init() {
+        // Kyle (2026-08-16): "I don't like this dark mode stuff" — white background, black/dark
+        // blue writing, always. Forcing .aqua rather than just a SwiftUI-side override keeps
+        // native chrome (title bar, standard controls, menus) light too, not just RetroTheme's
+        // own custom-drawn surfaces. `NSApplication.shared`, not the `NSApp` global — under the
+        // SwiftUI App lifecycle, `NSApp` is still nil this early during `init()`.
+        NSApplication.shared.appearance = NSAppearance(named: .aqua)
+
         let container = PersistenceController.makeContainer()
         self.container = container
 
@@ -33,6 +41,7 @@ struct KyleOSApp: App {
             RootView()
                 .environment(timerController)
                 .environment(navigationController)
+                .preferredColorScheme(.light)
         }
         .modelContainer(container)
     }
