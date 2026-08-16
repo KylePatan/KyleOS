@@ -102,6 +102,9 @@ final class ScriptTextView: NSTextView {
     /// rather than silently starting another Action paragraph.
     override func insertNewline(_ sender: Any?) {
         let currentType = ScriptFormatting.type(at: max(selectedRange().location - 1, 0), in: textStorage!)
+        if currentType == .character {
+            applyContinuedSuffixIfNeeded()
+        }
         super.insertNewline(sender)
         if currentType == .action {
             showElementTypeMenu()
@@ -249,6 +252,45 @@ final class ScriptTextView: NSTextView {
             let precedingNewlineRange = NSRange(location: paragraphRange.location - 1, length: 1)
             storage.addAttributes(ScriptFormatting.attributes(for: type), range: precedingNewlineRange)
         }
+    }
+
+    /// Kyle (2026-08-16): a Character cue that resumes the same character after only action (or
+    /// parenthetical) beats — no other character's dialogue in between, same scene — reads
+    /// "CHARACTER (CONT'D)". Fires right as the cue is finalized (Enter, leaving Character for
+    /// Dialogue) so the suffix is literal typed text from here on — see
+    /// `ScriptBlockService.continuedSuffix`'s doc comment for why that's the chosen approach and
+    /// its one known limitation (decided once, not live-recomputed on later edits).
+    ///
+    /// `.dropLast()` assumes the paragraph being finalized is the last one `extractBlocks` finds,
+    /// true for the normal type-forward-and-press-Enter flow this fires from; editing back into
+    /// an earlier Character cue and pressing Enter there is an unhandled edge case, not the
+    /// common path this was built for.
+    private func applyContinuedSuffixIfNeeded() {
+        guard let storage = textStorage else { return }
+        var nameRange = (storage.string as NSString).paragraphRange(for: selectedRange())
+        if nameRange.length > 0 {
+            let lastCharRange = NSRange(location: nameRange.location + nameRange.length - 1, length: 1)
+            if (storage.string as NSString).substring(with: lastCharRange) == "\n" {
+                nameRange.length -= 1
+            }
+        }
+        let name = (storage.string as NSString).substring(with: nameRange).trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !name.hasSuffix(ScriptBlockService.continuedSuffix) else { return }
+
+        let precedingEntries = ScriptEditorRepresentable.Coordinator.extractBlocks(from: storage)
+            .dropLast()
+            .map { (type: $0.type, text: $0.text) }
+        guard ScriptBlockService.shouldMarkContinued(characterName: name, precedingEntries: precedingEntries) else { return }
+
+        let suffix = " " + ScriptBlockService.continuedSuffix
+        let insertRange = NSRange(location: nameRange.location + nameRange.length, length: 0)
+        guard shouldChangeText(in: insertRange, replacementString: suffix) else { return }
+        storage.replaceCharacters(in: insertRange, with: suffix)
+        storage.addAttributes(
+            ScriptFormatting.attributes(for: .character),
+            range: NSRange(location: insertRange.location, length: (suffix as NSString).length)
+        )
+        setSelectedRange(NSRange(location: insertRange.location + (suffix as NSString).length, length: 0))
     }
 
     /// PRD §6.8/§6.9: known character names and scene headings. Originally only shown via

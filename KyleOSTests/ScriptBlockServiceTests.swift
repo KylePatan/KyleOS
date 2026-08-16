@@ -177,6 +177,87 @@ final class ScriptBlockServiceTests: XCTestCase {
         XCTAssertEqual(blocks.map(\.text), ["EXT. DOCKS - NIGHT", "The tide is out."])
     }
 
+    // MARK: - (CONT'D) continuation rule
+
+    func testShouldMarkContinuedWhenSameCharacterResumesAfterOnlyAction() {
+        let preceding: [(type: ScriptBlockService.ScriptElementType, text: String)] = [
+            (.character, "MARA"), (.dialogue, "Coffee, black."), (.action, "She glances at the door.")
+        ]
+        XCTAssertTrue(ScriptBlockService.shouldMarkContinued(characterName: "MARA", precedingEntries: preceding))
+    }
+
+    func testShouldMarkContinuedWhenSplitByMultipleActionAndParentheticalBeats() {
+        let preceding: [(type: ScriptBlockService.ScriptElementType, text: String)] = [
+            (.character, "MARA"), (.dialogue, "Coffee, black."),
+            (.action, "She glances at the door."), (.action, "The bell rings."),
+            (.parenthetical, "beat")
+        ]
+        XCTAssertTrue(ScriptBlockService.shouldMarkContinued(characterName: "MARA", precedingEntries: preceding))
+    }
+
+    func testShouldNotMarkContinuedWhenAnotherCharacterSpokeInBetween() {
+        let preceding: [(type: ScriptBlockService.ScriptElementType, text: String)] = [
+            (.character, "MARA"), (.dialogue, "Coffee, black."),
+            (.character, "SHERIFF COLE"), (.dialogue, "Rough morning?")
+        ]
+        XCTAssertFalse(ScriptBlockService.shouldMarkContinued(characterName: "MARA", precedingEntries: preceding))
+    }
+
+    func testShouldNotMarkContinuedAcrossASceneHeading() {
+        let preceding: [(type: ScriptBlockService.ScriptElementType, text: String)] = [
+            (.character, "MARA"), (.dialogue, "Coffee, black."),
+            (.sceneHeading, "EXT. DOCKS - NIGHT"), (.action, "The tide is out.")
+        ]
+        XCTAssertFalse(ScriptBlockService.shouldMarkContinued(characterName: "MARA", precedingEntries: preceding))
+    }
+
+    func testShouldNotMarkContinuedAcrossATransition() {
+        let preceding: [(type: ScriptBlockService.ScriptElementType, text: String)] = [
+            (.character, "MARA"), (.dialogue, "Coffee, black."), (.transition, "CUT TO:")
+        ]
+        XCTAssertFalse(ScriptBlockService.shouldMarkContinued(characterName: "MARA", precedingEntries: preceding))
+    }
+
+    func testShouldNotMarkContinuedForACharactersFirstLineInAScene() {
+        let preceding: [(type: ScriptBlockService.ScriptElementType, text: String)] = [
+            (.sceneHeading, "INT. DINER - DAY"), (.action, "Quiet morning.")
+        ]
+        XCTAssertFalse(ScriptBlockService.shouldMarkContinued(characterName: "MARA", precedingEntries: preceding))
+    }
+
+    func testShouldMarkContinuedComparesAgainstTheBaseNameOfAnAlreadyContinuedCue() {
+        let preceding: [(type: ScriptBlockService.ScriptElementType, text: String)] = [
+            (.character, "MARA"), (.dialogue, "Coffee, black."),
+            (.action, "Beat."), (.character, "MARA (CONT'D)"), (.dialogue, "Make it a large."),
+            (.action, "She checks her phone.")
+        ]
+        XCTAssertTrue(ScriptBlockService.shouldMarkContinued(characterName: "MARA", precedingEntries: preceding))
+    }
+
+    func testNormalizedCharacterNameStripsContinuedSuffix() {
+        XCTAssertEqual(ScriptBlockService.normalizedCharacterName("MARA (CONT'D)"), "MARA")
+        XCTAssertEqual(ScriptBlockService.normalizedCharacterName("MARA"), "MARA")
+    }
+
+    func testKnownCharacterNamesTreatsAContinuedCueAsTheSameCharacter() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [
+                (.character, "MARA"), (.dialogue, "Coffee, black."),
+                (.action, "Beat."),
+                (.character, "MARA (CONT'D)"), (.dialogue, "Make it a large.")
+            ],
+            context: context
+        )
+        try context.save()
+
+        XCTAssertEqual(ScriptBlockService.knownCharacterNames(for: document), ["MARA"])
+    }
+
     func testDeletingTheDocumentCascadesToItsScriptBlocks() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

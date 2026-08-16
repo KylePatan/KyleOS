@@ -49,17 +49,63 @@ enum ScriptBlockService {
     }
 
     /// PRD §6.9: "Character names previously used in the project should be suggested when
-    /// entering a Character block." Distinct, non-empty names in first-used order.
+    /// entering a Character block." Distinct, non-empty names in first-used order. Normalized via
+    /// `normalizedCharacterName` so a "(CONT'D)" cue never shows up as a separate suggested name
+    /// from its own base character.
     static func knownCharacterNames(for document: Document) -> [String] {
         var seen = Set<String>()
         var names: [String] = []
         for block in blocks(for: document) where block.elementType == .character {
-            let name = block.text.trimmingCharacters(in: .whitespaces)
+            let name = normalizedCharacterName(block.text)
             guard !name.isEmpty, !seen.contains(name) else { continue }
             seen.insert(name)
             names.append(name)
         }
         return names
+    }
+
+    /// Kyle (2026-08-16): "when a character has dialogue and there are no other characters
+    /// responding back to them in the same scene (say it is only split by action items), the
+    /// lines following the initial line are CHARACTER (CONT'D)." Appended as literal text right
+    /// on the Character cue (see `ScriptTextView.applyContinuedSuffixIfNeeded`) rather than
+    /// computed separately at display/export time — it then flows through PDF export and
+    /// persistence for free, since both already just print/save whatever's in the block's `text`.
+    /// Known limitation: this is decided once, when the cue is typed — it does not retroactively
+    /// update if the surrounding scene is edited afterward (matches this pass's "not Final
+    /// Draft-level feature parity" scope; a live-recompute pass would be a reasonable follow-up).
+    static let continuedSuffix = "(CONT'D)"
+
+    /// Strips a trailing "(CONT'D)" so a continued cue's name still matches its own base
+    /// character for suggestions and for `shouldMarkContinued`'s own lookback — "MARA (CONT'D)"
+    /// and "MARA" must never be treated as different characters.
+    static func normalizedCharacterName(_ text: String) -> String {
+        var name = text.trimmingCharacters(in: .whitespaces)
+        if name.hasSuffix(continuedSuffix) {
+            name = String(name.dropLast(continuedSuffix.count)).trimmingCharacters(in: .whitespaces)
+        }
+        return name
+    }
+
+    /// Scans backward through the blocks preceding a newly-typed Character cue for the nearest
+    /// other Character cue, stopping at a scene/transition boundary (a new scene never inherits
+    /// "who spoke last" from the one before it). Action and Parenthetical are exactly the
+    /// "split by action items" case Kyle described — they're skipped over, not treated as
+    /// breaking the streak. If the nearest preceding cue names the same character, this one
+    /// continues them.
+    static func shouldMarkContinued(characterName: String, precedingEntries: [(type: ScriptElementType, text: String)]) -> Bool {
+        let normalizedName = normalizedCharacterName(characterName)
+        guard !normalizedName.isEmpty else { return false }
+        for entry in precedingEntries.reversed() {
+            switch entry.type {
+            case .sceneHeading, .transition:
+                return false
+            case .character:
+                return normalizedCharacterName(entry.text) == normalizedName
+            case .action, .dialogue, .parenthetical:
+                continue
+            }
+        }
+        return false
     }
 
     /// PRD §6.8: "Known project locations" and previously-used scene headings, alongside the
