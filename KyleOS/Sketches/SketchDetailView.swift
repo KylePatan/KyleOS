@@ -98,7 +98,22 @@ struct SketchDetailView: View {
     }
 
     private var header: some View {
-        Text(project.title).font(.title3.bold()).foregroundStyle(RetroTheme.primaryText)
+        HStack {
+            Text(project.title).font(.title3.bold()).foregroundStyle(RetroTheme.primaryText)
+            Spacer()
+            DeadlineControl(
+                dueAt: project.deadline?.dueAt,
+                isHard: project.deadline?.isHard ?? true,
+                onSet: { dueAt, isHard in
+                    DeadlineService.setDeadline(for: project, label: project.title, dueAt: dueAt, isHard: isHard, context: context)
+                    try? context.save()
+                },
+                onRemove: {
+                    DeadlineService.removeDeadline(for: project, context: context)
+                    try? context.save()
+                }
+            )
+        }
     }
 
     /// PRD §9.7: "Cumulative project time should include Writing and later production/post-

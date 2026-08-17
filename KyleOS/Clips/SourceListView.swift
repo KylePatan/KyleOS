@@ -9,6 +9,7 @@ import SwiftData
 struct SourceListView: View {
     @Environment(\.modelContext) private var context
     @Environment(AppNavigationController.self) private var navigator
+    @Environment(\.openWindow) private var openWindow
     @Query(sort: \SourceService.Source.createdAt, order: .reverse) private var sources: [SourceService.Source]
     @Query private var allClips: [ClipService.Clip]
 
@@ -46,6 +47,13 @@ struct SourceListView: View {
                                     }
                                     .buttonStyle(.plain)
                                     Spacer()
+                                    Button {
+                                        openWindow(value: DetachedWindowTarget.sourceDetail(source.persistentModelID))
+                                    } label: {
+                                        Image(systemName: "arrow.up.forward.square")
+                                    }
+                                    .buttonStyle(.retro)
+                                    .help("Open in a new window")
                                     Button(role: .destructive) {
                                         SourceService.delete(source, context: context)
                                         try? context.save()

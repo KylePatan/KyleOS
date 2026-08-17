@@ -8,10 +8,17 @@ import SwiftData
 /// already is, so each case just carries the id(s) needed to re-resolve the real model once the
 /// new window mounts, via `DetachedWindowRootView`.
 ///
-/// Deliberately extensible, one case at a time — `.actScenes` is the first real slice (matching
-/// Kyle's own concrete example exactly), not a blanket rollout to every list in the app yet.
+/// 2026-08-17: extended from the single `.actScenes` slice to every module's primary
+/// list-with-detail screen (Chunks, Headline Sets, Gigs, Sources, Clips, Sketch projects) per
+/// Kyle's explicit "This should be the same for all items in all potential projects."
 enum DetachedWindowTarget: Codable, Hashable, Identifiable {
     case actScenes(PersistentIdentifier)
+    case chunkDetail(PersistentIdentifier)
+    case headlineSetDetail(PersistentIdentifier)
+    case gigDetail(PersistentIdentifier)
+    case sourceDetail(PersistentIdentifier)
+    case clipDetail(PersistentIdentifier)
+    case sketchDetail(PersistentIdentifier)
 
     var id: Self { self }
 }

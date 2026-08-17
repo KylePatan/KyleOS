@@ -49,6 +49,7 @@ private struct ClipCard: View {
     let otherLanes: [ClipService.BoardLane]
 
     @Environment(\.modelContext) private var context
+    @Environment(\.openWindow) private var openWindow
 
     /// The "Move to" menu sets a lane's primary/entry status — a documented simplification
     /// (CLAUDE.md §13) since a lane can represent more than one real `ClipStatus`. Finer-grained
@@ -66,7 +67,17 @@ private struct ClipCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(clip.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+            HStack {
+                Text(clip.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+                Spacer()
+                Button {
+                    openWindow(value: DetachedWindowTarget.clipDetail(clip.persistentModelID))
+                } label: {
+                    Image(systemName: "arrow.up.forward.square")
+                }
+                .buttonStyle(.retro)
+                .help("Open in a new window")
+            }
             if let sourceTitle = clip.source?.title {
                 Text(sourceTitle)
                     .font(.caption)

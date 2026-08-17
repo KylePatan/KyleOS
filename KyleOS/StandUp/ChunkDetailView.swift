@@ -34,6 +34,14 @@ struct ChunkDetailView: View {
             .sorted { $0.createdAt < $1.createdAt }
     }
 
+    /// Kyle (2026-08-17): deadlines belong on "each thing created individually," not just
+    /// Projects — same lazy-WorkItem pattern as ProseEditorView/ActOutlineView.
+    @Query private var allWorkItems: [WorkItemService.WorkItem]
+
+    private var workItem: WorkItemService.WorkItem? {
+        allWorkItems.first { $0.chunk?.persistentModelID == chunk.persistentModelID }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             header
@@ -77,13 +85,29 @@ struct ChunkDetailView: View {
                     }
                 }
                 .frame(width: 160)
-                if timerController.state == .idle {
-                    Button("Start Timer") {
-                        guard let workItem = try? WorkItemService.standUpWorkItem(for: chunk, context: context) else { return }
-                        timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
-                        try? context.save()
+                HStack {
+                    if timerController.state == .idle {
+                        Button("Start Timer") {
+                            guard let workItem = try? WorkItemService.standUpWorkItem(for: chunk, context: context) else { return }
+                            timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                            try? context.save()
+                        }
+                        .buttonStyle(.retroProminent)
                     }
-                    .buttonStyle(.retroProminent)
+                    DeadlineControl(
+                        dueAt: workItem?.deadline?.dueAt,
+                        isHard: workItem?.deadline?.isHard ?? true,
+                        onSet: { dueAt, isHard in
+                            guard let resolvedWorkItem = try? WorkItemService.standUpWorkItem(for: chunk, context: context) else { return }
+                            DeadlineService.setDeadline(for: resolvedWorkItem, label: chunk.title, dueAt: dueAt, isHard: isHard, context: context)
+                            try? context.save()
+                        },
+                        onRemove: {
+                            guard let workItem else { return }
+                            DeadlineService.removeDeadline(for: workItem, context: context)
+                            try? context.save()
+                        }
+                    )
                 }
             }
         }

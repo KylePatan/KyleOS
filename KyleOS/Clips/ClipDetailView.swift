@@ -12,6 +12,14 @@ struct ClipDetailView: View {
     @Query(sort: \ClipService.Joke.createdAt) private var allJokes: [ClipService.Joke]
     @Query(sort: \ClipService.Chunk.createdAt) private var allChunks: [ClipService.Chunk]
 
+    /// Kyle (2026-08-17): deadlines belong on "each thing created individually," not just
+    /// Projects — same lazy-WorkItem pattern as ProseEditorView/ChunkDetailView.
+    @Query private var allWorkItems: [WorkItemService.WorkItem]
+
+    private var workItem: WorkItemService.WorkItem? {
+        allWorkItems.first { $0.clip?.persistentModelID == clip.persistentModelID }
+    }
+
     @State private var title = ""
     @State private var clipDescription = ""
     @State private var startSecondsText = ""
@@ -77,13 +85,29 @@ struct ClipDetailView: View {
     private var timerSection: some View {
         VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             ActiveTimerBanner()
-            if timerController.state == .idle {
-                Button("Start Timer") {
-                    guard let workItem = try? WorkItemService.clipWorkItem(for: clip, context: context) else { return }
-                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
-                    try? context.save()
+            HStack {
+                if timerController.state == .idle {
+                    Button("Start Timer") {
+                        guard let workItem = try? WorkItemService.clipWorkItem(for: clip, context: context) else { return }
+                        timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                        try? context.save()
+                    }
+                    .buttonStyle(.retroProminent)
                 }
-                .buttonStyle(.retroProminent)
+                DeadlineControl(
+                    dueAt: workItem?.deadline?.dueAt,
+                    isHard: workItem?.deadline?.isHard ?? true,
+                    onSet: { dueAt, isHard in
+                        guard let resolvedWorkItem = try? WorkItemService.clipWorkItem(for: clip, context: context) else { return }
+                        DeadlineService.setDeadline(for: resolvedWorkItem, label: clip.title, dueAt: dueAt, isHard: isHard, context: context)
+                        try? context.save()
+                    },
+                    onRemove: {
+                        guard let workItem else { return }
+                        DeadlineService.removeDeadline(for: workItem, context: context)
+                        try? context.save()
+                    }
+                )
             }
         }
     }

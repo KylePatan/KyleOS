@@ -80,15 +80,26 @@ private struct SketchCard: View {
     let otherStatuses: [SketchProductionService.SketchProductionStatus]
 
     @Environment(\.modelContext) private var context
+    @Environment(\.openWindow) private var openWindow
     @State private var hasPostDate = false
     @State private var postDate = Date.now
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            NavigationLink(value: project.persistentModelID) {
-                Text(project.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+            HStack {
+                NavigationLink(value: project.persistentModelID) {
+                    Text(project.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+                }
+                .buttonStyle(.plain)
+                Spacer()
+                Button {
+                    openWindow(value: DetachedWindowTarget.sketchDetail(project.persistentModelID))
+                } label: {
+                    Image(systemName: "arrow.up.forward.square")
+                }
+                .buttonStyle(.retro)
+                .help("Open in a new window")
             }
-            .buttonStyle(.plain)
             Toggle("Post date", isOn: $hasPostDate)
                 .font(.caption)
                 .foregroundStyle(RetroTheme.secondaryText)

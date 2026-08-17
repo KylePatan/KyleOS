@@ -6,6 +6,7 @@ import SwiftData
 /// GigDetailView for full editing.
 struct GigListView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.openWindow) private var openWindow
     @Query(sort: \GigService.Gig.startAt) private var gigs: [GigService.Gig]
 
     @State private var newVenue = ""
@@ -50,6 +51,13 @@ struct GigListView: View {
                                     }
                                     .buttonStyle(.plain)
                                     Spacer()
+                                    Button {
+                                        openWindow(value: DetachedWindowTarget.gigDetail(gig.persistentModelID))
+                                    } label: {
+                                        Image(systemName: "arrow.up.forward.square")
+                                    }
+                                    .buttonStyle(.retro)
+                                    .help("Open in a new window")
                                     Button(role: .destructive) {
                                         GigService.delete(gig, context: context)
                                         try? context.save()

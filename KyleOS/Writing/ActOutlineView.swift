@@ -20,8 +20,36 @@ struct ActOutlineView: View {
         allActs.filter { $0.document?.persistentModelID == document.persistentModelID }
     }
 
+    /// Kyle (2026-08-17): "even smaller things deserve deadlines including 'act outline'. Because
+    /// once we have a deadline for that - we can move on. While the big project itself... has a
+    /// hard deadline to finish EVERYTHING." So an Act Outline Document's own deadline is distinct
+    /// from — and typically earlier/softer than — its parent Project's. Same lazy-WorkItem pattern
+    /// as ProseEditorView.
+    @Query private var allWorkItems: [WorkItemService.WorkItem]
+
+    private var workItem: WorkItemService.WorkItem? {
+        allWorkItems.first { $0.document?.persistentModelID == document.persistentModelID }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+            HStack {
+                Spacer()
+                DeadlineControl(
+                    dueAt: workItem?.deadline?.dueAt,
+                    isHard: workItem?.deadline?.isHard ?? true,
+                    onSet: { dueAt, isHard in
+                        guard let resolvedWorkItem = try? WorkItemService.writingWorkItem(for: document, context: context) else { return }
+                        DeadlineService.setDeadline(for: resolvedWorkItem, label: document.title, dueAt: dueAt, isHard: isHard, context: context)
+                        try? context.save()
+                    },
+                    onRemove: {
+                        guard let workItem else { return }
+                        DeadlineService.removeDeadline(for: workItem, context: context)
+                        try? context.save()
+                    }
+                )
+            }
             if acts.isEmpty {
                 Text("No acts yet. Kyle OS doesn't force exactly three — add as many as the story needs.")
                     .foregroundStyle(RetroTheme.secondaryText)

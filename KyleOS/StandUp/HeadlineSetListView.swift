@@ -5,6 +5,7 @@ import SwiftData
 /// Headline Sets, + New, drilling into HeadlineSetDetailView for Chunk membership management.
 struct HeadlineSetListView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.openWindow) private var openWindow
     @Query(sort: \HeadlineSetService.HeadlineSet.createdAt) private var sets: [HeadlineSetService.HeadlineSet]
 
     @State private var newSetTitle = ""
@@ -41,6 +42,13 @@ struct HeadlineSetListView: View {
                                     }
                                     .buttonStyle(.plain)
                                     Spacer()
+                                    Button {
+                                        openWindow(value: DetachedWindowTarget.headlineSetDetail(set.persistentModelID))
+                                    } label: {
+                                        Image(systemName: "arrow.up.forward.square")
+                                    }
+                                    .buttonStyle(.retro)
+                                    .help("Open in a new window")
                                     Button(role: .destructive) {
                                         HeadlineSetService.delete(set, context: context)
                                         try? context.save()

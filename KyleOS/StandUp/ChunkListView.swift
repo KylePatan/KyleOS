@@ -6,6 +6,7 @@ import SwiftData
 struct ChunkListView: View {
     @Environment(\.modelContext) private var context
     @Environment(AppNavigationController.self) private var navigator
+    @Environment(\.openWindow) private var openWindow
     @Query(sort: \ChunkService.Chunk.createdAt) private var chunks: [ChunkService.Chunk]
 
     @State private var newChunkTitle = ""
@@ -42,6 +43,13 @@ struct ChunkListView: View {
                                     }
                                     .buttonStyle(.plain)
                                     Spacer()
+                                    Button {
+                                        openWindow(value: DetachedWindowTarget.chunkDetail(chunk.persistentModelID))
+                                    } label: {
+                                        Image(systemName: "arrow.up.forward.square")
+                                    }
+                                    .buttonStyle(.retro)
+                                    .help("Open in a new window")
                                     Button(role: .destructive) {
                                         ChunkService.delete(chunk, context: context)
                                         try? context.save()
