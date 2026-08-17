@@ -41,32 +41,39 @@ struct SceneListView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             if scenes.isEmpty {
                 Text("No scenes in this act yet.")
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                List {
-                    ForEach(scenes) { scene in
-                        SceneRow(
-                            scene: scene,
-                            sceneNumber: sceneNumbers[scene.persistentModelID] ?? 0,
-                            otherActs: otherActs,
-                            onDelete: {
-                                SceneService.delete(scene, from: act, context: context)
-                                try? context.save()
-                            },
-                            onMove: { newAct in
-                                SceneService.move(scene, to: newAct, context: context)
-                                try? context.save()
-                            }
-                        )
+                RetroPanel("Scenes") {
+                    List {
+                        ForEach(scenes) { scene in
+                            SceneRow(
+                                scene: scene,
+                                sceneNumber: sceneNumbers[scene.persistentModelID] ?? 0,
+                                otherActs: otherActs,
+                                onDelete: {
+                                    SceneService.delete(scene, from: act, context: context)
+                                    try? context.save()
+                                },
+                                onMove: { newAct in
+                                    SceneService.move(scene, to: newAct, context: context)
+                                    try? context.save()
+                                }
+                            )
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                        }
+                        .onMove { source, destination in
+                            SceneService.reorder(within: act, movingFromOffsets: source, toOffset: destination)
+                            try? context.save()
+                        }
                     }
-                    .onMove { source, destination in
-                        SceneService.reorder(within: act, movingFromOffsets: source, toOffset: destination)
-                        try? context.save()
-                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: max(160, CGFloat(scenes.count) * 190 + 20))
                 }
             }
             Button {
@@ -75,9 +82,11 @@ struct SceneListView: View {
             } label: {
                 Label("Add Scene", systemImage: "plus")
             }
-            .padding(.horizontal)
+            .buttonStyle(.retroProminent)
+            Spacer(minLength: 0)
         }
-        .padding(.vertical)
+        .padding(RetroTheme.sectionPadding)
+        .background(RetroTheme.background)
         .navigationTitle(act.title)
     }
 }
@@ -98,10 +107,16 @@ private struct SceneRow: View {
     @State private var keyBeats = ""
     @State private var notes = ""
 
+    /// Kyle (2026-08-16): "I think it should be like a fill in the blanks. INT EXT. PLACE OF
+    /// SCENE. SHORT DESCRIPTION OF SCENE and then below it a big field to fill in of things that
+    /// happen in the scene." The cue line (type/location/time) stays compact; Scene description
+    /// is now the visually prominent field — larger text, a real inset well, room to grow — since
+    /// that's literally "what happens in the scene." Purpose/Characters/Key beats stay small,
+    /// secondary metadata below it.
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             HStack {
-                Text("Scene \(sceneNumber)").font(.caption.bold()).foregroundStyle(.secondary)
+                Text("Scene \(sceneNumber)").font(.caption.bold()).foregroundStyle(RetroTheme.secondaryText)
                 Picker("", selection: Binding(
                     get: { scene.locationType },
                     set: { SceneService.update(scene, locationType: $0); try? context.save() }
@@ -115,9 +130,11 @@ private struct SceneRow: View {
                 TextField("Location", text: $location)
                     .textFieldStyle(.plain)
                     .font(.body.bold())
+                    .foregroundStyle(RetroTheme.primaryText)
                     .onChange(of: location) { SceneService.update(scene, location: location); try? context.save() }
                 TextField("Time of day", text: $timeOfDay)
                     .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.secondaryText)
                     .frame(width: 100)
                     .onChange(of: timeOfDay) { SceneService.update(scene, timeOfDay: timeOfDay); try? context.save() }
                 Spacer()
@@ -135,31 +152,38 @@ private struct SceneRow: View {
                 Button(role: .destructive, action: onDelete) {
                     Image(systemName: "trash")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.retro)
             }
-            TextField("Scene description", text: $sceneDescription, axis: .vertical)
+            TextField("What happens in this scene?", text: $sceneDescription, axis: .vertical)
                 .textFieldStyle(.plain)
-                .font(.callout)
+                .font(.body)
+                .foregroundStyle(RetroTheme.primaryText)
+                .lineLimit(3...8)
+                .padding(RetroTheme.controlSpacing)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .background(RetroTheme.insetBackground)
+                .overlay(RetroBevel(isPressed: true))
+                .overlay(Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
                 .onChange(of: sceneDescription) { SceneService.update(scene, sceneDescription: sceneDescription); try? context.save() }
             HStack {
                 TextField("Purpose", text: $purpose)
                     .textFieldStyle(.plain)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
                     .onChange(of: purpose) { SceneService.update(scene, purpose: purpose); try? context.save() }
                 TextField("Characters", text: $characters)
                     .textFieldStyle(.plain)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
                     .onChange(of: characters) { SceneService.update(scene, characters: characters); try? context.save() }
             }
             TextField("Key beats / notes", text: $keyBeats, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(RetroTheme.secondaryText)
                 .onChange(of: keyBeats) { SceneService.update(scene, keyBeats: keyBeats); try? context.save() }
         }
-        .padding(.vertical, 6)
+        .padding(RetroTheme.controlSpacing + 4)
         .onAppear {
             location = scene.location
             timeOfDay = scene.timeOfDay

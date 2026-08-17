@@ -50,17 +50,24 @@ struct WritingHomeView: View {
                         description: Text("Create a TV Pilot, Screenplay, Short Story, or other Writing project to get started.")
                     )
                 } else {
-                    List {
-                        ForEach(grouped, id: \.0) { status, projects in
-                            Section(status.rawValue) {
-                                ForEach(projects) { project in
-                                    NavigationLink(value: ProjectRoute(id: project.persistentModelID)) {
-                                        WritingProjectRow(project: project)
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                            ForEach(grouped, id: \.0) { status, projects in
+                                RetroPanel(status.rawValue) {
+                                    VStack(spacing: 0) {
+                                        ForEach(projects) { project in
+                                            NavigationLink(value: ProjectRoute(id: project.persistentModelID)) {
+                                                WritingProjectRow(project: project)
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
                                     }
                                 }
                             }
                         }
+                        .padding(RetroTheme.sectionPadding)
                     }
+                    .background(RetroTheme.background)
                 }
             }
             .navigationTitle("Writing")
@@ -130,7 +137,7 @@ private struct WritingProjectRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(project.title).font(.body)
+            Text(project.title).font(.body.bold()).foregroundStyle(RetroTheme.primaryText)
             HStack(spacing: 6) {
                 if let projectType = project.projectType {
                     Text(projectType.rawValue)
@@ -138,7 +145,14 @@ private struct WritingProjectRow: View {
                 Text("Edited \(project.updatedAt.formatted(date: .abbreviated, time: .omitted))")
             }
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(RetroTheme.secondaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
+        .contentShape(Rectangle())
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
         }
     }
 }
@@ -165,33 +179,44 @@ private struct ArchivedWritingProjectsSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Archived Projects").font(.headline)
+                Text("Archived Projects").font(.headline).foregroundStyle(RetroTheme.primaryText)
                 Spacer()
                 Button("Done") { dismiss() }
+                    .buttonStyle(.retroProminent)
                     .keyboardShortcut(.defaultAction)
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
             if projects.isEmpty {
-                Text("Nothing archived.").foregroundStyle(.secondary).padding()
+                Text("Nothing archived.").foregroundStyle(RetroTheme.secondaryText).padding(RetroTheme.sectionPadding)
             } else {
-                List(projects) { project in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(project.title)
-                            if let projectType = project.projectType {
-                                Text(projectType.rawValue).font(.caption).foregroundStyle(.secondary)
+                VStack(spacing: 0) {
+                    ForEach(projects) { project in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(project.title).foregroundStyle(RetroTheme.primaryText)
+                                if let projectType = project.projectType {
+                                    Text(projectType.rawValue).font(.caption).foregroundStyle(RetroTheme.secondaryText)
+                                }
                             }
+                            Spacer()
+                            Button("Restore") {
+                                ProjectService.restore(project)
+                                try? context.save()
+                            }
+                            .buttonStyle(.retro)
                         }
-                        Spacer()
-                        Button("Restore") {
-                            ProjectService.restore(project)
-                            try? context.save()
+                        .padding(.horizontal, RetroTheme.sectionPadding)
+                        .padding(.vertical, RetroTheme.controlSpacing)
+                        .overlay(alignment: .bottom) {
+                            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                         }
                     }
                 }
             }
+            Spacer(minLength: 0)
         }
-        .frame(minWidth: 360, minHeight: 300)
+        .frame(minWidth: 380, minHeight: 300)
+        .background(RetroTheme.panelBackground)
     }
 }
 

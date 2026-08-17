@@ -34,7 +34,7 @@ struct AllTasksView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .frame(minHeight: 200, idealHeight: CGFloat(items.count) * 40 + 20)
+                .frame(height: max(200, CGFloat(items.count) * 40 + 20))
             }
             .padding(RetroTheme.sectionPadding)
         }

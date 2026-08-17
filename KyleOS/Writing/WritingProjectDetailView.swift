@@ -23,16 +23,17 @@ struct WritingProjectDetailView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header
-            if let lastOpened = project.lastOpenedDocument {
-                continueWritingSection(for: lastOpened)
+        ScrollView {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                header
+                if let lastOpened = project.lastOpenedDocument {
+                    continueWritingSection(for: lastOpened)
+                }
+                documentsSection
             }
-            Divider()
-            documentsSection
-            Spacer()
+            .padding(RetroTheme.sectionPadding)
         }
-        .padding()
+        .background(RetroTheme.background)
         .navigationTitle(project.title)
         .confirmationDialog(
             "Archive \"\(project.title)\"?",
@@ -54,83 +55,97 @@ struct WritingProjectDetailView: View {
         NavigationLink(value: DocumentRoute(id: document.persistentModelID)) {
             HStack {
                 Image(systemName: "arrow.uturn.forward.circle")
+                    .foregroundStyle(RetroTheme.accent)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Continue Writing").font(.subheadline.bold())
-                    Text(document.title).font(.caption).foregroundStyle(.secondary)
+                    Text("Continue Writing").font(.subheadline.bold()).foregroundStyle(RetroTheme.primaryText)
+                    Text(document.title).font(.caption).foregroundStyle(RetroTheme.secondaryText)
                 }
                 Spacer()
             }
-            .padding(8)
-            .background(Color.blue.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(RetroTheme.controlSpacing + 4)
+            .background(RetroTheme.panelBackground)
+            .overlay(Rectangle().strokeBorder(RetroTheme.accent, lineWidth: RetroTheme.borderWidth))
         }
         .buttonStyle(.plain)
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                if let projectType = project.projectType {
-                    Text(projectType.rawValue)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Picker("Status", selection: Binding(
-                    get: { project.displayStatus },
-                    set: { ProjectService.setStatus(project, to: $0, context: context); try? context.save() }
-                )) {
-                    ForEach(ProjectService.ProjectStatus.allCases, id: \.self) { status in
-                        Text(status.rawValue).tag(status)
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                HStack {
+                    if let projectType = project.projectType {
+                        Text(projectType.rawValue)
+                            .font(.subheadline)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
+                    Spacer()
+                    Picker("Status", selection: Binding(
+                        get: { project.displayStatus },
+                        set: { ProjectService.setStatus(project, to: $0, context: context); try? context.save() }
+                    )) {
+                        ForEach(ProjectService.ProjectStatus.allCases, id: \.self) { status in
+                            Text(status.rawValue).tag(status)
+                        }
+                    }
+                    .frame(width: 160)
+                    Button(role: .destructive) {
+                        isShowingArchiveConfirmation = true
+                    } label: {
+                        Label("Archive Project", systemImage: "archivebox")
+                    }
+                    .buttonStyle(.retro)
                 }
-                .frame(width: 160)
-                Button(role: .destructive) {
-                    isShowingArchiveConfirmation = true
-                } label: {
-                    Label("Archive Project", systemImage: "archivebox")
+                HStack(spacing: 12) {
+                    if let deadline = project.deadline {
+                        Text("Deadline: \(deadline.dueAt.formatted(date: .abbreviated, time: .omitted))")
+                    }
+                    Text("Total time: \(TimeFormatting.shortDuration(HomeService.totalLoggedSeconds(for: project)))")
                 }
-                .buttonStyle(.borderless)
+                .font(.caption)
+                .foregroundStyle(RetroTheme.secondaryText)
             }
-            HStack(spacing: 12) {
-                if let deadline = project.deadline {
-                    Text("Deadline: \(deadline.dueAt.formatted(date: .abbreviated, time: .omitted))")
-                }
-                Text("Total time: \(TimeFormatting.shortDuration(HomeService.totalLoggedSeconds(for: project)))")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
         }
     }
 
     private var documentsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Documents").font(.headline)
-                Spacer()
-                Menu {
-                    Button("Prose", action: addProseDocument)
-                    Button("Act Outline", action: addActOutlineDocument)
-                    Button("Script", action: addScriptDocument)
-                } label: {
-                    Label("New Document", systemImage: "plus")
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                HStack {
+                    Text("Documents").font(.headline).foregroundStyle(RetroTheme.primaryText)
+                    Spacer()
+                    Menu {
+                        Button("Prose", action: addProseDocument)
+                        Button("Act Outline", action: addActOutlineDocument)
+                        Button("Script", action: addScriptDocument)
+                    } label: {
+                        Label("New Document", systemImage: "plus")
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
                 }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-            }
-            if documents.isEmpty {
-                Text("No documents yet. Outline stages are never mandatory — start writing whenever you're ready.")
-                    .foregroundStyle(.secondary)
-            } else {
-                List {
-                    ForEach(documents) { document in
-                        NavigationLink(value: DocumentRoute(id: document.persistentModelID)) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(document.title)
-                                Text("\(document.documentType.rawValue) · \(document.displayDraftLabel)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                if documents.isEmpty {
+                    Text("No documents yet. Outline stages are never mandatory — start writing whenever you're ready.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    VStack(spacing: 0) {
+                        ForEach(documents) { document in
+                            NavigationLink(value: DocumentRoute(id: document.persistentModelID)) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(document.title).foregroundStyle(RetroTheme.primaryText)
+                                        Text("\(document.documentType.rawValue) · \(document.displayDraftLabel)")
+                                            .font(.caption)
+                                            .foregroundStyle(RetroTheme.secondaryText)
+                                    }
+                                    Spacer()
+                                }
+                                .padding(.vertical, RetroTheme.controlSpacing)
+                                .contentShape(Rectangle())
+                                .overlay(alignment: .bottom) {
+                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+                                }
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }

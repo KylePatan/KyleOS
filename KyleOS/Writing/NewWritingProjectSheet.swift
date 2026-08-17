@@ -16,10 +16,10 @@ struct NewWritingProjectSheet: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("New Writing Project").font(.headline)
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+            Text("New Writing Project").font(.headline).foregroundStyle(RetroTheme.primaryText)
 
-            TextField("Title", text: $title)
+            TextField("Title", text: $title).retroInputStyle()
             Picker("Type", selection: $projectType) {
                 ForEach(ProjectService.WritingProjectType.allCases, id: \.self) { type in
                     Text(type.rawValue).tag(type)
@@ -29,13 +29,16 @@ struct NewWritingProjectSheet: View {
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
+                    .buttonStyle(.retro)
                 Button("Create", action: create)
+                    .buttonStyle(.retroProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!isValid)
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(minWidth: 340)
+        .background(RetroTheme.panelBackground)
     }
 
     private func create() {

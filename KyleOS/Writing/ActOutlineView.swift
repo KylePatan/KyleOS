@@ -21,35 +21,46 @@ struct ActOutlineView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             if acts.isEmpty {
                 Text("No acts yet. Kyle OS doesn't force exactly three — add as many as the story needs.")
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                List {
-                    ForEach(acts) { act in
-                        ActRow(act: act) {
-                            ActService.delete(act, from: document, context: context)
+                RetroPanel("Acts") {
+                    List {
+                        ForEach(acts) { act in
+                            ActRow(act: act) {
+                                ActService.delete(act, from: document, context: context)
+                                try? context.save()
+                            }
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                        }
+                        .onMove { source, destination in
+                            ActService.reorder(document, movingFromOffsets: source, toOffset: destination)
                             try? context.save()
                         }
                     }
-                    .onMove { source, destination in
-                        ActService.reorder(document, movingFromOffsets: source, toOffset: destination)
-                        try? context.save()
-                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: max(100, CGFloat(acts.count) * 90 + 20))
                 }
             }
-            HStack {
-                TextField("New act title", text: $newActTitle)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(addAct)
-                Button("Add Act", action: addAct)
-                    .disabled(newActTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            RetroPanel {
+                HStack {
+                    TextField("New act title", text: $newActTitle)
+                        .retroInputStyle()
+                        .onSubmit(addAct)
+                    Button("Add Act", action: addAct)
+                        .buttonStyle(.retroProminent)
+                        .disabled(newActTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
             }
-            .padding(.horizontal)
+            Spacer(minLength: 0)
         }
-        .padding(.vertical)
+        .padding(RetroTheme.sectionPadding)
+        .background(RetroTheme.background)
         .navigationTitle(document.title)
         .onAppear {
             if let project = document.project {
@@ -81,6 +92,7 @@ private struct ActRow: View {
                 TextField("Act title", text: $title)
                     .textFieldStyle(.plain)
                     .font(.body.bold())
+                    .foregroundStyle(RetroTheme.primaryText)
                     .onChange(of: title) {
                         ActService.rename(act, to: title)
                         try? context.save()
@@ -88,7 +100,7 @@ private struct ActRow: View {
                 TextField("What happens in this act?", text: $synopsis, axis: .vertical)
                     .textFieldStyle(.plain)
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
                     .onChange(of: synopsis) {
                         ActService.updateSynopsis(act, synopsis: synopsis)
                         try? context.save()
@@ -96,15 +108,18 @@ private struct ActRow: View {
                 NavigationLink(value: ActRoute(id: act.persistentModelID)) {
                     Text("\(act.scenes.count) scene\(act.scenes.count == 1 ? "" : "s")")
                         .font(.caption)
+                        .foregroundStyle(RetroTheme.accent)
                 }
+                .buttonStyle(.plain)
             }
             Spacer()
             Button(role: .destructive, action: onDelete) {
                 Image(systemName: "trash")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.retro)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
         .onAppear {
             title = act.title
             synopsis = act.synopsis

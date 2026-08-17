@@ -20,7 +20,7 @@ struct ProseEditorView: View {
     private let autosave = AutosaveController()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             ActiveTimerBanner()
             if timerController.state == .idle {
                 Button("Start Timer") {
@@ -28,9 +28,13 @@ struct ProseEditorView: View {
                     timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
                     try? context.save()
                 }
+                .buttonStyle(.retroProminent)
             }
             TextEditor(text: $editorText)
                 .font(WritingSurfaceFont.swiftUI(size: 14))
+                .padding(RetroTheme.controlSpacing)
+                .background(RetroTheme.insetBackground)
+                .overlay(Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
                 .onChange(of: editorText) {
                     autosave.scheduleSave {
                         DocumentService.updateContent(document, content: editorText)
@@ -40,7 +44,8 @@ struct ProseEditorView: View {
                 }
             statusBar
         }
-        .padding()
+        .padding(RetroTheme.sectionPadding)
+        .background(RetroTheme.background)
         .navigationTitle(document.title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -106,12 +111,12 @@ struct ProseEditorView: View {
         HStack {
             Text(document.displayDraftLabel)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(RetroTheme.secondaryText)
             Spacer()
             if let lastSavedAt {
                 Text("Saved \(lastSavedAt.formatted(date: .omitted, time: .standard))")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
         }
     }
@@ -124,20 +129,20 @@ private struct DraftHistorySheet: View {
     @Environment(\.modelContext) private var context
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Draft History").font(.headline)
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+            Text("Draft History").font(.headline).foregroundStyle(RetroTheme.primaryText)
             List(DraftService.drafts(for: document)) { draft in
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(draft.label).font(.body.bold())
+                        Text(draft.label).font(.body.bold()).foregroundStyle(RetroTheme.primaryText)
                         Spacer()
                         Text(draft.createdAt.formatted(date: .abbreviated, time: .shortened))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                     Text(draft.content)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                         .lineLimit(2)
                     Button("Restore") {
                         DraftService.restore(draft, into: document, context: context)
@@ -145,17 +150,21 @@ private struct DraftHistorySheet: View {
                         onRestore(document.content)
                         dismiss()
                     }
-                    .font(.caption)
+                    .buttonStyle(.retro)
                 }
                 .padding(.vertical, 4)
+                .listRowBackground(RetroTheme.panelBackground)
             }
+            .scrollContentBackground(.hidden)
             HStack {
                 Spacer()
                 Button("Close") { dismiss() }
+                    .buttonStyle(.retroProminent)
             }
         }
-        .padding(20)
+        .padding(RetroTheme.sectionPadding + 4)
         .frame(minWidth: 420, minHeight: 320)
+        .background(RetroTheme.panelBackground)
     }
 }
 

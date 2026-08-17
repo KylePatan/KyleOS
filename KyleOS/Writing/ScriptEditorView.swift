@@ -522,12 +522,23 @@ struct ScriptEditorView: View {
         try? ExportService.exportScriptPDF(title: document.title, blocks: blocks, to: url)
     }
 
-    /// PRD §6.10: "A scene navigator should allow jumping between scenes."
+    /// PRD §6.10: "A scene navigator should allow jumping between scenes." Chrome only — the
+    /// editing surface itself (ScriptEditorRepresentable) deliberately stays outside the retro
+    /// system, per Kyle's own "Kyle OS interface vs. classic typewriter page" distinction.
     private var sceneNavigator: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Scenes").font(.headline).padding(8)
+            Text("SCENES")
+                .font(.caption.bold())
+                .foregroundStyle(RetroTheme.secondaryText)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.vertical, RetroTheme.controlSpacing)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Rectangle().fill(RetroTheme.border).frame(height: RetroTheme.borderWidth)
             if sceneHeadings.isEmpty {
-                Text("No scenes yet.").foregroundStyle(.secondary).font(.caption).padding(.horizontal, 8)
+                Text("No scenes yet.")
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .font(.caption)
+                    .padding(RetroTheme.sectionPadding)
             } else {
                 List(Array(sceneHeadings.enumerated()), id: \.offset) { _, block in
                     Button {
@@ -535,13 +546,19 @@ struct ScriptEditorView: View {
                     } label: {
                         Text(block.text.isEmpty ? "(untitled scene)" : block.text)
                             .font(.caption)
+                            .foregroundStyle(RetroTheme.primaryText)
                             .lineLimit(2)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
+                    .listRowBackground(RetroTheme.panelBackground)
+                    .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
+        .background(RetroTheme.panelBackground)
     }
 }
 
