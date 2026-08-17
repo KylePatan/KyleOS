@@ -42,47 +42,48 @@ struct ReportsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 rangePicker
                 if let summary {
-                    summaryGrid(summary)
+                    RetroPanel("Summary") { summaryGrid(summary) }
                 }
                 if !breakdown.isEmpty {
-                    workspaceBreakdownSection
+                    RetroPanel("Time by Workspace") { workspaceBreakdownSection }
                 }
                 if let plannedVsActual {
-                    plannedVsActualSection(plannedVsActual)
+                    RetroPanel("Planned vs Actual") { plannedVsActualSection(plannedVsActual) }
                 }
                 if !estimateAccuracy.isEmpty {
-                    estimateAccuracySection
+                    RetroPanel("Estimate Accuracy — Completed This Range") { estimateAccuracySection }
                 }
                 if !stalledWorkItems.isEmpty {
-                    stalledWorkSection
+                    RetroPanel("Not Worked On Recently (14+ days)") { stalledWorkSection }
                 }
                 if !recentActivity.isEmpty {
-                    recentActivitySection
+                    RetroPanel("Recent Activity") { recentActivitySection }
                 }
                 if let standUpReport {
-                    standUpReportSection(standUpReport)
+                    RetroPanel("Stand Up") { standUpReportSection(standUpReport) }
                 }
                 if let clipsReport {
-                    clipsReportSection(clipsReport)
+                    RetroPanel("Clips") { clipsReportSection(clipsReport) }
                 }
                 if !sketchTransitions.isEmpty || sketchesEditingSeconds > 0 {
-                    sketchesReportSection
+                    RetroPanel("Sketches") { sketchesReportSection }
                 }
                 if let postingReport {
-                    postingReportSection(postingReport)
+                    RetroPanel("Posting") { postingReportSection(postingReport) }
                 }
                 if !projectProgress.isEmpty {
-                    projectProgressSection
+                    RetroPanel("Project Progress") { projectProgressSection }
                 }
                 if !readyBufferTrend.isEmpty {
-                    readyBufferTrendSection
+                    RetroPanel("Ready Buffer Trend") { readyBufferTrendSection }
                 }
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
+        .background(RetroTheme.background)
         .navigationTitle("Reports")
         .onAppear(perform: reload)
         .onChange(of: rangeOption) { reload() }
@@ -91,20 +92,22 @@ struct ReportsView: View {
     }
 
     private var rangePicker: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Picker("Date range", selection: $rangeOption) {
-                ForEach(ReportService.DateRangeOption.allCases) { option in
-                    Text(option.rawValue).tag(option)
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                Picker("Date range", selection: $rangeOption) {
+                    ForEach(ReportService.DateRangeOption.allCases) { option in
+                        Text(option.rawValue).tag(option)
+                    }
                 }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(maxWidth: 500)
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 500)
 
-            if rangeOption == .custom {
-                HStack {
-                    DatePicker("From", selection: $customStart, displayedComponents: .date)
-                    DatePicker("To", selection: $customEnd, displayedComponents: .date)
+                if rangeOption == .custom {
+                    HStack {
+                        DatePicker("From", selection: $customStart, displayedComponents: .date)
+                        DatePicker("To", selection: $customEnd, displayedComponents: .date)
+                    }
                 }
             }
         }
@@ -124,21 +127,20 @@ struct ReportsView: View {
 
     private func stat(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Text(value).font(.title3.bold())
+            Text(label).font(.caption).foregroundStyle(RetroTheme.secondaryText)
+            Text(value).font(.title3.bold()).foregroundStyle(RetroTheme.primaryText)
         }
     }
 
     /// PRD §13.4: "Reports should support time by: Workspace..."
     private var workspaceBreakdownSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Time by Workspace").font(.headline)
             ForEach(breakdown, id: \.workspace) { entry in
                 HStack {
-                    Text(entry.workspace.rawValue)
+                    Text(entry.workspace.rawValue).foregroundStyle(RetroTheme.primaryText)
                     Spacer()
                     Text(TimeFormatting.shortDuration(entry.seconds))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
                 .font(.callout)
             }
@@ -149,14 +151,11 @@ struct ReportsView: View {
     /// PRD §13.6: "Compare planned Creative Hours with actual Creative Hours and planned session
     /// length with actual session length."
     private func plannedVsActualSection(_ comparison: ReportService.PlannedVsActual) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Planned vs Actual").font(.headline)
-            HStack(spacing: 24) {
-                stat(label: "Planned Hours", value: TimeFormatting.shortDuration(Int(comparison.plannedHours * 3600)))
-                stat(label: "Actual Hours", value: TimeFormatting.shortDuration(Int(comparison.actualHours * 3600)))
-                stat(label: "Avg Planned Session", value: TimeFormatting.shortDuration(Int(comparison.averagePlannedMinutes * 60)))
-                stat(label: "Avg Actual Session", value: TimeFormatting.shortDuration(Int(comparison.averageActualMinutes * 60)))
-            }
+        HStack(spacing: 24) {
+            stat(label: "Planned Hours", value: TimeFormatting.shortDuration(Int(comparison.plannedHours * 3600)))
+            stat(label: "Actual Hours", value: TimeFormatting.shortDuration(Int(comparison.actualHours * 3600)))
+            stat(label: "Avg Planned Session", value: TimeFormatting.shortDuration(Int(comparison.averagePlannedMinutes * 60)))
+            stat(label: "Avg Actual Session", value: TimeFormatting.shortDuration(Int(comparison.averageActualMinutes * 60)))
         }
     }
 
@@ -165,18 +164,17 @@ struct ReportsView: View {
     /// change estimates without user approval."
     private var estimateAccuracySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Estimate Accuracy — Completed This Range").font(.headline)
             ForEach(estimateAccuracy) { entry in
                 HStack {
-                    Text(entry.title)
-                    Text("(\(entry.workTypeName))").font(.caption).foregroundStyle(.secondary)
+                    Text(entry.title).foregroundStyle(RetroTheme.primaryText)
+                    Text("(\(entry.workTypeName))").font(.caption).foregroundStyle(RetroTheme.secondaryText)
                     Spacer()
                     Text("Est \(entry.estimatedMinutes)m")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                     Text("Actual \(entry.actualMinutes)m")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                     Text(entry.varianceMinutes >= 0 ? "+\(entry.varianceMinutes)m" : "\(entry.varianceMinutes)m")
-                        .foregroundStyle(entry.varianceMinutes > 0 ? .orange : .green)
+                        .foregroundStyle(entry.varianceMinutes > 0 ? RetroTheme.warning : Color.green)
                 }
                 .font(.callout)
             }
@@ -188,13 +186,12 @@ struct ReportsView: View {
     /// should not treat inactivity as failure" — plain list, no visual alarm styling.
     private var stalledWorkSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Not Worked On Recently (14+ days)").font(.headline)
             ForEach(stalledWorkItems) { entry in
                 HStack {
-                    Text(entry.title)
+                    Text(entry.title).foregroundStyle(RetroTheme.primaryText)
                     Spacer()
                     Text(entry.lastActivityAt, format: .dateTime.month().day().year())
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
                 .font(.callout)
             }
@@ -205,17 +202,16 @@ struct ReportsView: View {
     /// PRD §14.19: "Important status changes and progress changes should create history records."
     private var recentActivitySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Recent Activity").font(.headline)
             ForEach(recentActivity) { entry in
                 HStack {
-                    Text(entry.subjectTitle)
-                    Text(entry.kind.rawValue).font(.caption).foregroundStyle(.secondary)
+                    Text(entry.subjectTitle).foregroundStyle(RetroTheme.primaryText)
+                    Text(entry.kind.rawValue).font(.caption).foregroundStyle(RetroTheme.secondaryText)
                     Spacer()
                     Text("\(entry.oldValue) → \(entry.newValue)")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                     Text(entry.occurredAt, format: .dateTime.month().day().hour().minute())
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
                 .font(.callout)
             }
@@ -227,7 +223,6 @@ struct ReportsView: View {
     /// created; Headline Set runtime vs target; Gigs performed; Time spent on individual material."
     private func standUpReportSection(_ report: ReportService.StandUpReport) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Stand Up").font(.headline)
             HStack(spacing: 24) {
                 stat(label: "Creative Time", value: TimeFormatting.shortDuration(report.creativeSeconds))
                 stat(label: "Joke Ideas Created", value: "\(report.jokeIdeasCreatedCount)")
@@ -237,25 +232,25 @@ struct ReportsView: View {
                 stat(label: "Gigs Performed", value: "\(report.gigsPerformedCount)")
             }
             if !headlineSetProgress.isEmpty {
-                Text("Headline Set Runtime vs Target").font(.subheadline)
+                Text("Headline Set Runtime vs Target").font(.subheadline).foregroundStyle(RetroTheme.primaryText)
                 ForEach(headlineSetProgress) { entry in
                     HStack {
-                        Text(entry.title)
+                        Text(entry.title).foregroundStyle(RetroTheme.primaryText)
                         Spacer()
                         Text("\(TimeFormatting.shortDuration(entry.currentSeconds)) / \(TimeFormatting.shortDuration(entry.targetSeconds))")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                     .font(.callout)
                 }
             }
             if !timeByMaterial.isEmpty {
-                Text("Time by Material").font(.subheadline)
+                Text("Time by Material").font(.subheadline).foregroundStyle(RetroTheme.primaryText)
                 ForEach(timeByMaterial) { entry in
                     HStack {
-                        Text(entry.title)
+                        Text(entry.title).foregroundStyle(RetroTheme.primaryText)
                         Spacer()
                         Text(TimeFormatting.shortDuration(entry.seconds))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                     .font(.callout)
                 }
@@ -269,7 +264,6 @@ struct ReportsView: View {
     /// clips."
     private func clipsReportSection(_ report: ReportService.ClipsReport) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Clips").font(.headline)
             HStack(spacing: 24) {
                 stat(label: "Editing Time", value: TimeFormatting.shortDuration(report.editingSeconds))
                 stat(label: "Avg per Clip", value: TimeFormatting.shortDuration(report.averageProductionSeconds))
@@ -282,14 +276,14 @@ struct ReportsView: View {
                     ForEach(clipTransitions.filter { $0.count > 0 }, id: \.status) { entry in
                         Text("\(entry.status.rawValue): \(entry.count)")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                 }
             }
             if !topSources.isEmpty {
                 Text("Top Sources: " + topSources.map { "\($0.sourceTitle) (\($0.clipCount))" }.joined(separator: ", "))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
         }
     }
@@ -298,25 +292,24 @@ struct ReportsView: View {
     /// time; Production time; Full project lifecycle time."
     private var sketchesReportSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Sketches").font(.headline)
             stat(label: "Editing Time", value: TimeFormatting.shortDuration(sketchesEditingSeconds))
             if !sketchTransitions.isEmpty {
                 HStack(spacing: 16) {
                     ForEach(sketchTransitions.filter { $0.count > 0 }, id: \.status) { entry in
                         Text("\(entry.status.rawValue): \(entry.count)")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                 }
             }
             if !sketchTurnaround.isEmpty {
-                Text("Writing-to-Post Turnaround").font(.subheadline)
+                Text("Writing-to-Post Turnaround").font(.subheadline).foregroundStyle(RetroTheme.primaryText)
                 ForEach(sketchTurnaround) { entry in
                     HStack {
-                        Text(entry.title)
+                        Text(entry.title).foregroundStyle(RetroTheme.primaryText)
                         Spacer()
                         Text("\(entry.turnaroundDays)d")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                     .font(.callout)
                 }
@@ -328,16 +321,13 @@ struct ReportsView: View {
     /// PRD §13.12: "Posts per week/month; Target cadence vs actual cadence; Ready pieces waiting;
     /// Missed planned posts; Clips vs Sketches posted."
     private func postingReportSection(_ report: ReportService.PostingReport) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Posting").font(.headline)
-            HStack(spacing: 24) {
-                stat(label: "Posts This Range", value: "\(report.postsCount)")
-                stat(label: "Clips vs Sketches", value: "\(report.clipsPostedCount) / \(report.sketchesPostedCount)")
-                stat(label: "Actual per Week", value: String(format: "%.1f", report.actualPerWeek))
-                stat(label: "Target per Week", value: "\(report.targetPerWeek)")
-                stat(label: "Ready & Waiting", value: "\(report.readyPiecesWaitingCount)")
-                stat(label: "Missed Posts", value: "\(report.missedPlannedPostsCount)")
-            }
+        HStack(spacing: 24) {
+            stat(label: "Posts This Range", value: "\(report.postsCount)")
+            stat(label: "Clips vs Sketches", value: "\(report.clipsPostedCount) / \(report.sketchesPostedCount)")
+            stat(label: "Actual per Week", value: String(format: "%.1f", report.actualPerWeek))
+            stat(label: "Target per Week", value: "\(report.targetPerWeek)")
+            stat(label: "Ready & Waiting", value: "\(report.readyPiecesWaitingCount)")
+            stat(label: "Missed Posts", value: "\(report.missedPlannedPostsCount)")
         }
     }
 
@@ -345,18 +335,17 @@ struct ReportsView: View {
     /// active. All-time, not date-ranged (project time is cumulative, per PRD §4.3).
     private var projectProgressSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Project Progress").font(.headline)
             ForEach(projectProgress) { entry in
                 HStack {
-                    Text(entry.title)
+                    Text(entry.title).foregroundStyle(RetroTheme.primaryText)
                     Spacer()
                     if let mostRecentItemTitle = entry.mostRecentItemTitle {
                         Text("Focus: \(mostRecentItemTitle)")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                     Text(String(format: "%.1fh", entry.totalHours))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
                 .font(.callout)
             }
@@ -368,15 +357,14 @@ struct ReportsView: View {
     /// the selected range, reconstructed from history rather than a live snapshot.
     private var readyBufferTrendSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Ready Buffer Trend").font(.headline)
             ForEach(Array(readyBufferTrend.enumerated()), id: \.offset) { _, point in
                 HStack {
-                    Text(point.date, format: .dateTime.month().day())
+                    Text(point.date, format: .dateTime.month().day()).foregroundStyle(RetroTheme.primaryText)
                     Spacer()
                     Text("Clips: \(point.clipsCount)")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                     Text("Sketches: \(point.sketchesCount)")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
                 .font(.callout)
             }
