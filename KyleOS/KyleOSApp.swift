@@ -49,5 +49,21 @@ struct KyleOSApp: App {
                 .dynamicTypeSize(.xLarge)
         }
         .modelContainer(container)
+
+        // Kyle (2026-08-17): "I should be able to open ACT 1 scenes in a different window...
+        // This should be the same for all items in all potential projects." A second WindowGroup
+        // parameterized by `DetachedWindowTarget`, opened via `openWindow(value:)` from wherever
+        // a "pop out" button lives (see ActOutlineView's ActRow) — shares the SAME `container` as
+        // the main window, so it's a live second view onto one store, not a separate copy.
+        WindowGroup(id: "detached", for: DetachedWindowTarget.self) { $target in
+            if let target {
+                DetachedWindowRootView(target: target)
+                    .environment(timerController)
+                    .environment(navigationController)
+                    .preferredColorScheme(.light)
+                    .dynamicTypeSize(.xLarge)
+            }
+        }
+        .modelContainer(container)
     }
 }

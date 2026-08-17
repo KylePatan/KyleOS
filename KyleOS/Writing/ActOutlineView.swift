@@ -83,6 +83,7 @@ private struct ActRow: View {
     let act: ActService.Act
     let onDelete: () -> Void
     @Environment(\.modelContext) private var context
+    @Environment(\.openWindow) private var openWindow
     @State private var title: String = ""
     @State private var synopsis: String = ""
 
@@ -113,6 +114,13 @@ private struct ActRow: View {
                 .buttonStyle(.plain)
             }
             Spacer()
+            Button {
+                openWindow(value: DetachedWindowTarget.actScenes(act.persistentModelID))
+            } label: {
+                Image(systemName: "arrow.up.forward.square")
+            }
+            .buttonStyle(.retro)
+            .help("Open Scenes in a new window")
             Button(role: .destructive, action: onDelete) {
                 Image(systemName: "trash")
             }

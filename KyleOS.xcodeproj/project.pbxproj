@@ -39,6 +39,7 @@
 		29090345C4C5C8513953AFC7 /* SketchProductionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC806CFAA90C92159C5BD2 /* SketchProductionServiceTests.swift */; };
 		29C6E15AFDC4C5B8F9EB6D8A /* CalendarEventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F48125DFC51F66E4372E9A /* CalendarEventService.swift */; };
 		2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */; };
+		2B8D7011ECB9BAD35BDD79D8 /* DetachedWindowRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A69B41A24111330D977ADB6 /* DetachedWindowRootView.swift */; };
 		2BAABA3A1CFB7F9AF5676567 /* JokeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02CA4026D19A121892F2FB4 /* JokeService.swift */; };
 		2C96D389447C550369DA9EA5 /* RetroInputStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91261356F734A608C9069EDE /* RetroInputStyle.swift */; };
 		2EFE655F08CE1F07A301CB0A /* SourceServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C5CDBE46872A0E0FD33CD8 /* SourceServiceTests.swift */; };
@@ -109,6 +110,7 @@
 		9B03B114A4232F96339A7151 /* WorkTypeDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */; };
 		9D69A4A5F9F7CDE2AD6A942E /* ActServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B9D005FDD6D676804D7607 /* ActServiceTests.swift */; };
 		9FC15AE0BDE7E15A6B4A1742 /* ClipDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAD4428B1BDF26920D51B1D /* ClipDetailView.swift */; };
+		A00054157F6B0B02A179B362 /* DetachedWindowTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A9257611313E20A934AF93D /* DetachedWindowTarget.swift */; };
 		A254830013CF9068F9392E5C /* ScriptBlockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA536F325A3D3ACF08E50BCB /* ScriptBlockService.swift */; };
 		A2AB542B8131E34DD0F9ECEC /* DayJobScheduleServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CEAF1BC80CBABF2F934384 /* DayJobScheduleServiceTests.swift */; };
 		AADDF887398DA6CA587B89A3 /* ClipServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095CA24E8BF528CB09981997 /* ClipServiceTests.swift */; };
@@ -270,6 +272,8 @@
 		70C398E983030FD58708ACD3 /* WritingProjectDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingProjectDetailView.swift; sourceTree = "<group>"; };
 		76011B9ACA3397331B1A89A2 /* FileReferencePersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferencePersistenceTests.swift; sourceTree = "<group>"; };
 		781934EE652133130E41CD12 /* HeadlineSetServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadlineSetServiceTests.swift; sourceTree = "<group>"; };
+		7A69B41A24111330D977ADB6 /* DetachedWindowRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetachedWindowRootView.swift; sourceTree = "<group>"; };
+		7A9257611313E20A934AF93D /* DetachedWindowTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetachedWindowTarget.swift; sourceTree = "<group>"; };
 		7E6ED48BAF8D9BAF6D289699 /* KyleOSSchemaV20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV20.swift; sourceTree = "<group>"; };
 		8039629D24FE7285DF6B6E97 /* DayJobScheduleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayJobScheduleService.swift; sourceTree = "<group>"; };
 		80992EE52D8945F9ED5ED043 /* KyleOSSchemaV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV1.swift; sourceTree = "<group>"; };
@@ -447,6 +451,8 @@
 			isa = PBXGroup;
 			children = (
 				CAA40FDE892D88E8830E34DA /* AppNavigationController.swift */,
+				7A69B41A24111330D977ADB6 /* DetachedWindowRootView.swift */,
+				7A9257611313E20A934AF93D /* DetachedWindowTarget.swift */,
 				CB2B8B128D9C7386AC5A6E6E /* PlaceholderDestinationView.swift */,
 				2245AF51F43F2E8BDD6097CC /* RootView.swift */,
 				05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */,
@@ -858,6 +864,8 @@
 				80EAE83E7EE0097A2D6CF202 /* CreativeCapacityWidget.swift in Sources */,
 				7005BA8B40E36310C65FE638 /* DayJobScheduleService.swift in Sources */,
 				415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */,
+				2B8D7011ECB9BAD35BDD79D8 /* DetachedWindowRootView.swift in Sources */,
+				A00054157F6B0B02A179B362 /* DetachedWindowTarget.swift in Sources */,
 				B97F7A629A30E355726229FE /* DocumentService.swift in Sources */,
 				81EB55285C7B381763B6EFC4 /* DraftService.swift in Sources */,
 				243CF232F0A678D058CEE3B4 /* ExportService.swift in Sources */,
