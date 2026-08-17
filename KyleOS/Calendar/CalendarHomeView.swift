@@ -44,21 +44,29 @@ struct CalendarHomeView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            header
-            weekdayLabels
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
-                ForEach(days) { cell in
-                    dayCell(cell)
+        ScrollView {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                RetroPanel {
+                    VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                        header
+                        weekdayLabels
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
+                            ForEach(days) { cell in
+                                dayCell(cell)
+                            }
+                        }
+                    }
+                }
+                RetroPanel {
+                    selectedDaySection
+                }
+                RetroPanel {
+                    capacitySection
                 }
             }
-            Divider()
-            selectedDaySection
-            Divider()
-            capacitySection
-            Spacer()
+            .padding(RetroTheme.sectionPadding)
         }
-        .padding()
+        .background(RetroTheme.background)
         .navigationTitle("Calendar")
         .sheet(item: $editingEvent) { event in
             CalendarEventFormSheet(mode: .edit(event))
@@ -91,25 +99,28 @@ struct CalendarHomeView: View {
         HStack {
             Text(displayedMonth, format: .dateTime.month(.wide).year())
                 .font(.title3.bold())
+                .foregroundStyle(RetroTheme.primaryText)
             Spacer()
             Button { shiftMonth(by: -1) } label: { Image(systemName: "chevron.left") }
+                .buttonStyle(.retro)
             Button("Today") {
                 displayedMonth = .now
                 selectedDay = .now
             }
+            .buttonStyle(.retro)
             Button { shiftMonth(by: 1) } label: { Image(systemName: "chevron.right") }
-            Divider().frame(height: 16)
+                .buttonStyle(.retro)
             Button("Add Event") { isAddingEvent = true }
+                .buttonStyle(.retroProminent)
         }
-        .buttonStyle(.borderless)
     }
 
     private var weekdayLabels: some View {
         HStack {
             ForEach(shortWeekdaySymbols, id: \.self) { symbol in
                 Text(symbol)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption.bold())
+                    .foregroundStyle(RetroTheme.secondaryText)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -130,28 +141,29 @@ struct CalendarHomeView: View {
                 HStack(spacing: 2) {
                     ForEach(dayEvents.prefix(3)) { event in
                         Circle()
-                            .fill(event.isHardCommitment ? Color.red : Color.accentColor)
+                            .fill(event.isHardCommitment ? RetroTheme.warning : RetroTheme.accent)
                             .frame(width: 4, height: 4)
                     }
                 }
                 .frame(height: 4)
             }
             .frame(maxWidth: .infinity, minHeight: 32)
-            .foregroundStyle(cell.isInCurrentMonth ? .primary : .secondary)
+            .foregroundStyle(cell.isInCurrentMonth ? RetroTheme.primaryText : RetroTheme.secondaryText)
             .padding(4)
-            .background(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .background(isSelected ? RetroTheme.accent.opacity(0.18) : Color.clear)
+            .overlay(isToday ? Rectangle().strokeBorder(RetroTheme.accent, lineWidth: RetroTheme.borderWidth) : nil)
         }
         .buttonStyle(.plain)
     }
 
     private var selectedDaySection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             Text(selectedDay, format: .dateTime.weekday(.wide).month().day())
                 .font(.headline)
+                .foregroundStyle(RetroTheme.primaryText)
             if selectedDayEvents.isEmpty {
                 Text("Nothing on the calendar.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
                 ForEach(selectedDayEvents) { event in
                     eventRow(event)
@@ -163,16 +175,17 @@ struct CalendarHomeView: View {
     private func eventRow(_ event: CalendarEventService.CalendarEvent) -> some View {
         HStack {
             if event.isLocked {
-                Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
+                Image(systemName: "lock.fill").font(.caption).foregroundStyle(RetroTheme.secondaryText)
             }
             Text(event.isAllDay ? "All day" : event.startAt.formatted(.dateTime.hour().minute()))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(RetroTheme.secondaryText)
                 .frame(width: 80, alignment: .leading)
             Text(event.eventType.rawValue)
                 .fontWeight(event.isHardCommitment ? .semibold : .regular)
+                .foregroundStyle(RetroTheme.primaryText)
             if !event.notes.isEmpty {
                 Text(event.notes)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
                     .lineLimit(1)
             }
             Spacer()
@@ -181,29 +194,33 @@ struct CalendarHomeView: View {
             } label: {
                 Image(systemName: "pencil")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.retro)
             Button(role: .destructive) {
                 deleteEvent(event)
             } label: {
                 Image(systemName: "trash")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.retro)
         }
         .font(.callout)
+        .padding(.vertical, RetroTheme.controlSpacing / 2)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+        }
     }
 
     /// PRD §11.6: "The user can override a day's expected Creative Capacity, including setting it
     /// to zero or increasing it for a free day."
     private var capacitySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Creative Capacity").font(.headline)
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+            Text("Creative Capacity").font(.headline).foregroundStyle(RetroTheme.primaryText)
             if let summary = selectedDayCapacity {
                 HStack {
                     Text("\(formatted(summary.baselineHours)) available, \(formatted(summary.scheduledHours)) scheduled, \(formatted(summary.remainingHours)) remaining")
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                     if summary.isOverridden {
-                        Text("Overridden").font(.caption).foregroundStyle(.orange)
+                        Text("Overridden").font(.caption).foregroundStyle(RetroTheme.warning)
                     }
                 }
             }
@@ -303,17 +320,17 @@ struct CascadeReflowSummaryView: View {
     let summary: ReflowSummary
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Schedule Adjusted").font(.headline)
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+            Text("Schedule Adjusted").font(.headline).foregroundStyle(RetroTheme.primaryText)
             if !summary.moves.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Moved").font(.subheadline.bold())
+                    Text("Moved").font(.subheadline.bold()).foregroundStyle(RetroTheme.primaryText)
                     ForEach(summary.moves, id: \.session.id) { move in
                         HStack {
-                            Text(move.session.workItem?.title ?? "Untitled")
+                            Text(move.session.workItem?.title ?? "Untitled").foregroundStyle(RetroTheme.primaryText)
                             Spacer()
                             Text("\(move.from.formatted(.dateTime.month().day())) → \(move.to.formatted(.dateTime.month().day()))")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(RetroTheme.secondaryText)
                         }
                         .font(.callout)
                     }
@@ -321,19 +338,21 @@ struct CascadeReflowSummaryView: View {
             }
             if !summary.unresolved.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Couldn't Find Room").font(.subheadline.bold())
+                    Text("Couldn't Find Room").font(.subheadline.bold()).foregroundStyle(RetroTheme.primaryText)
                     ForEach(summary.unresolved, id: \.id) { session in
                         Text(session.workItem?.title ?? "Untitled")
                             .font(.callout)
+                            .foregroundStyle(RetroTheme.primaryText)
                     }
                     Text("No spare capacity in the next 30 days — these stayed where they were.")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(width: 420)
+        .background(RetroTheme.panelBackground)
     }
 }
 

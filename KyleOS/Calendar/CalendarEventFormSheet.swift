@@ -34,13 +34,13 @@ struct CalendarEventFormSheet: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(isEditing ? "Edit Event" : "Add Event").font(.headline)
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+            Text(isEditing ? "Edit Event" : "Add Event").font(.headline).foregroundStyle(RetroTheme.primaryText)
 
             if isEditingLinkedEvent {
                 Text("This event is managed by another module (Gig, Shoot, Deadline, etc.) — details here stay in sync automatically. Edit the source instead for type/ownership changes.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
 
             Picker("Type", selection: $eventType) {
@@ -70,10 +70,8 @@ struct CalendarEventFormSheet: View {
             }
             Toggle("Hard commitment", isOn: $isHardCommitment)
 
-            TextField("Location", text: $location)
-                .textFieldStyle(.roundedBorder)
-            TextField("Notes", text: $notes, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
+            TextField("Location", text: $location).retroInputStyle()
+            TextField("Notes", text: $notes, axis: .vertical).retroInputStyle()
 
             HStack {
                 if case .edit(let event) = mode {
@@ -88,16 +86,20 @@ struct CalendarEventFormSheet: View {
                         try? context.save()
                         dismiss()
                     }
+                    .buttonStyle(.retro)
                 }
                 Spacer()
                 Button("Cancel") { dismiss() }
+                    .buttonStyle(.retro)
                 Button("Save", action: save)
+                    .buttonStyle(.retroProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!isAllDay && endAt <= startAt)
             }
         }
-        .padding(24)
+        .padding(RetroTheme.sectionPadding + 8)
         .frame(minWidth: 420)
+        .background(RetroTheme.panelBackground)
         .onAppear(perform: populateFromExistingEventIfNeeded)
     }
 
