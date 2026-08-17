@@ -32,5 +32,6 @@ struct RetroPanel<Content: View>: View {
         .overlay(
             Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth)
         )
+        .shadow(color: RetroTheme.shadow, radius: 3, y: 1)
     }
 }

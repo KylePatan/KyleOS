@@ -51,5 +51,6 @@ struct RetroTopNav: View {
         }
         .buttonStyle(.plain)
         .background(isSelected ? RetroTheme.accent : Color.clear)
+        .animation(RetroTheme.interactionAnimation, value: isSelected)
     }
 }

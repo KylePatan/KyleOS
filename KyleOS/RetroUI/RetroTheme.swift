@@ -18,6 +18,11 @@ enum RetroTheme {
     static let controlSpacing: CGFloat = 8
     static let sectionSpacing: CGFloat = 20
 
+    // MARK: - Motion (Kyle, 2026-08-16: "smoother and more natural" — keep sharp corners, get it
+    // from transitions/depth instead. Spec §29's own "100-200ms" range.)
+
+    static let interactionAnimation = Animation.easeOut(duration: 0.12)
+
     // MARK: - Shape (§7: "0-4px, not modern 12/16/24px rounded cards")
 
     static let cornerRadius: CGFloat = 2
@@ -33,9 +38,18 @@ enum RetroTheme {
     /// panels still read as distinct shapes against the page, without introducing visible gray.
     static let panelBackground = Color(red: 0.98, green: 0.98, blue: 0.99)
 
+    /// Standard (non-prominent) button fill — a visible step up from `panelBackground` so buttons
+    /// read as physical controls sitting on a panel, not just bordered text (Kyle, 2026-08-16:
+    /// "more button-y").
+    static let buttonBackground = Color(white: 0.93)
+
     /// Inset surfaces — text fields, wells — one step darker than the panel they sit in, for the
     /// "slightly inset" feel (§10).
     static let insetBackground = Color(white: 0.94)
+
+    /// Soft lift under panels/buttons (Kyle, 2026-08-16: "smoother and more natural") — depth
+    /// without touching the sharp-corner rule.
+    static let shadow = Color.black.opacity(0.12)
 
     /// Visible structural borders (§5: "the interface should have edges").
     static let border = Color(white: 0.60)

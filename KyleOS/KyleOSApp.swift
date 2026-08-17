@@ -42,6 +42,11 @@ struct KyleOSApp: App {
                 .environment(timerController)
                 .environment(navigationController)
                 .preferredColorScheme(.light)
+                // Kyle (2026-08-16): "text a little bigger all over in general." One step above
+                // the system default (.large) — applies app-wide via Dynamic Type, reaching every
+                // screen immediately including modules not yet individually reskinned, rather
+                // than hand-editing font sizes file by file.
+                .dynamicTypeSize(.xLarge)
         }
         .modelContainer(container)
     }

@@ -29,6 +29,7 @@ struct RetroTabs<Tab: Hashable>: View {
                     }
                 }
                 .overlay(Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
+                .animation(RetroTheme.interactionAnimation, value: selection)
             }
         }
     }
