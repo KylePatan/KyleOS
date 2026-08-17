@@ -94,16 +94,21 @@ struct WritingHomeView: View {
                 }
             }
             .toolbar {
-                if !archivedWritingProjects.isEmpty {
-                    ToolbarItem(placement: .secondaryAction) {
+                // Kyle (2026-08-17): "I want the + button on the top right of the screen for
+                // writing rather than top middle. Was hard to find." Reproduced: mixing a
+                // `.secondaryAction` item with a `.primaryAction` item pushed both toward the
+                // window's horizontal center instead of the trailing edge Home's single
+                // `.primaryAction` toolbar button (QuickAddButton) already renders at correctly.
+                // Grouping both under one `.primaryAction` `ToolbarItemGroup` keeps them together
+                // as a trailing-aligned block instead.
+                ToolbarItemGroup(placement: .primaryAction) {
+                    if !archivedWritingProjects.isEmpty {
                         Button {
                             isPresentingArchivedProjects = true
                         } label: {
                             Label("Archived Projects (\(archivedWritingProjects.count))", systemImage: "archivebox")
                         }
                     }
-                }
-                ToolbarItem(placement: .primaryAction) {
                     Button {
                         isPresentingNewProject = true
                     } label: {

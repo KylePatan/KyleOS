@@ -218,6 +218,21 @@ final class ScriptTextView: NSTextView {
     /// insertNewline/insertTab above, and by NSTextView's own default click-to-reposition
     /// behavior) rather than re-deriving from storage, since newly-typed text has no storage
     /// attributes yet.
+    ///
+    /// Kyle (2026-08-17): "Screenplay writing is all messed and keeps going to character over
+    /// and over and over again" — reproduced live: this override used to also call
+    /// `triggerLiveSuggestionsIfNeeded`, re-opening the completion popup on *every single
+    /// keystroke*. Once what's been typed exactly matches a candidate (e.g. finishing "INT."),
+    /// re-triggering `complete(nil)` again right on that same keystroke duplicates the match
+    /// inline ("INT.." was observed) and leaves the popup open into the next Return press, which
+    /// AppKit then routes through `insertCompletion` *in addition to* the normal newline path —
+    /// double-firing `insertNewline` for one Enter, which is what produced runs of repeated
+    /// "CHARACTER (CONT'D)" lines with nothing ever advancing to Dialogue. The popup still opens
+    /// live the moment a Character/Scene Heading block is *entered* (`insertNewline`'s nextType
+    /// branch, `selectElementType`, and the fresh-blank-script bootstrap in `makeNSView` all still
+    /// call it once) — AppKit's own completion window already narrows itself as more is typed
+    /// without needing to be re-triggered, so nothing about the "live suggestions" feature itself
+    /// is lost by only opening it once per block instead of once per keystroke.
     override func insertText(_ string: Any, replacementRange: NSRange) {
         guard let text = string as? String, !text.isEmpty else {
             super.insertText(string, replacementRange: replacementRange)
@@ -230,7 +245,6 @@ final class ScriptTextView: NSTextView {
             return
         }
         super.insertText(text.uppercased(), replacementRange: replacementRange)
-        triggerLiveSuggestionsIfNeeded(for: type)
     }
 
     /// A freshly-created paragraph (right after Enter, before anything's typed into it) is
