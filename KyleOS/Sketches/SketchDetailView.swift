@@ -50,25 +50,19 @@ struct SketchDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 header
-                Divider()
                 timerSection
-                Divider()
                 statusSection
-                Divider()
                 filmSchedulingSection
-                Divider()
                 castAndCrewSection
-                Divider()
                 logisticsSection
-                Divider()
                 scriptSection
-                Divider()
                 callSheetSection
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
+        .background(RetroTheme.background)
         .navigationTitle(project.title)
         .onAppear {
             status = SketchProductionService.status(for: project)
@@ -104,14 +98,14 @@ struct SketchDetailView: View {
     }
 
     private var header: some View {
-        Text(project.title).font(.title3.bold())
+        Text(project.title).font(.title3.bold()).foregroundStyle(RetroTheme.primaryText)
     }
 
     /// PRD §9.7: "Cumulative project time should include Writing and later production/post-
     /// production work as one connected history." Reuses the shared FocusTimerController/
     /// ActiveTimerBanner verbatim, same pattern as ClipDetailView's timerSection.
     private var timerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             ActiveTimerBanner()
             if timerController.state == .idle {
                 Button("Start Timer") {
@@ -119,34 +113,37 @@ struct SketchDetailView: View {
                     timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
                     try? context.save()
                 }
+                .buttonStyle(.retroProminent)
             }
         }
     }
 
     private var statusSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Picker("Status", selection: $status) {
-                ForEach(SketchProductionService.SketchProductionStatus.allCases, id: \.self) { status in
-                    Text(status.rawValue).tag(status)
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                Picker("Status", selection: $status) {
+                    ForEach(SketchProductionService.SketchProductionStatus.allCases, id: \.self) { status in
+                        Text(status.rawValue).tag(status)
+                    }
                 }
-            }
-            .frame(width: 220)
-            .onChange(of: status) {
-                SketchProductionService.changeStatus(for: project, to: status, context: context)
-                try? context.save()
-            }
-            Toggle("Post date", isOn: $hasPostDate)
-                .onChange(of: hasPostDate) {
-                    SketchProductionService.setPostDate(for: project, date: hasPostDate ? postDate : nil, context: context)
+                .frame(width: 220)
+                .onChange(of: status) {
+                    SketchProductionService.changeStatus(for: project, to: status, context: context)
                     try? context.save()
                 }
-            if hasPostDate {
-                DatePicker("", selection: $postDate, displayedComponents: .date)
-                    .labelsHidden()
-                    .onChange(of: postDate) {
-                        SketchProductionService.setPostDate(for: project, date: postDate, context: context)
+                Toggle("Post date", isOn: $hasPostDate)
+                    .onChange(of: hasPostDate) {
+                        SketchProductionService.setPostDate(for: project, date: hasPostDate ? postDate : nil, context: context)
                         try? context.save()
                     }
+                if hasPostDate {
+                    DatePicker("", selection: $postDate, displayedComponents: .date)
+                        .labelsHidden()
+                        .onChange(of: postDate) {
+                            SketchProductionService.setPostDate(for: project, date: postDate, context: context)
+                            try? context.save()
+                        }
+                }
             }
         }
     }
@@ -154,21 +151,22 @@ struct SketchDetailView: View {
     /// PRD §9.3: "The shoot automatically appears on Calendar and generally acts as a hard
     /// calendar commitment once cast/crew/location are involved."
     private var filmSchedulingSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Film Scheduling").font(.headline)
-            DatePicker("Call time", selection: $callTime)
-                .onChange(of: callTime) { ensureShoot() }
-            DatePicker("Estimated wrap", selection: $estimatedWrapTime)
-                .onChange(of: estimatedWrapTime) { ensureShoot() }
-            TextField("Location", text: $location)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: location) { saveLocation() }
-            TextField("Address", text: $address)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: address) { saveLocation() }
-            Text("Automatically appears on Calendar as a Film Shoot.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        RetroPanel("Film Scheduling") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                DatePicker("Call time", selection: $callTime)
+                    .onChange(of: callTime) { ensureShoot() }
+                DatePicker("Estimated wrap", selection: $estimatedWrapTime)
+                    .onChange(of: estimatedWrapTime) { ensureShoot() }
+                TextField("Location", text: $location)
+                    .retroInputStyle()
+                    .onChange(of: location) { saveLocation() }
+                TextField("Address", text: $address)
+                    .retroInputStyle()
+                    .onChange(of: address) { saveLocation() }
+                Text("Automatically appears on Calendar as a Film Shoot.")
+                    .font(.caption)
+                    .foregroundStyle(RetroTheme.secondaryText)
+            }
         }
     }
 
@@ -190,14 +188,15 @@ struct SketchDetailView: View {
     }
 
     private var castAndCrewSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Cast & Crew").font(.headline)
-            TextField("Cast", text: $cast, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: cast) { saveCastAndCrew() }
-            TextField("Crew", text: $crew, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: crew) { saveCastAndCrew() }
+        RetroPanel("Cast & Crew") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                TextField("Cast", text: $cast, axis: .vertical)
+                    .retroInputStyle()
+                    .onChange(of: cast) { saveCastAndCrew() }
+                TextField("Crew", text: $crew, axis: .vertical)
+                    .retroInputStyle()
+                    .onChange(of: crew) { saveCastAndCrew() }
+            }
         }
     }
 
@@ -208,23 +207,24 @@ struct SketchDetailView: View {
     }
 
     private var logisticsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Logistics").font(.headline)
-            TextField("Wardrobe", text: $wardrobe, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: wardrobe) { saveLogistics() }
-            TextField("Props", text: $props, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: props) { saveLogistics() }
-            TextField("Equipment notes", text: $equipmentNotes, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: equipmentNotes) { saveLogistics() }
-            TextField("Parking / access instructions", text: $parkingAccessInstructions, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: parkingAccessInstructions) { saveLogistics() }
-            TextField("General notes", text: $generalNotes, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: generalNotes) { saveLogistics() }
+        RetroPanel("Logistics") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                TextField("Wardrobe", text: $wardrobe, axis: .vertical)
+                    .retroInputStyle()
+                    .onChange(of: wardrobe) { saveLogistics() }
+                TextField("Props", text: $props, axis: .vertical)
+                    .retroInputStyle()
+                    .onChange(of: props) { saveLogistics() }
+                TextField("Equipment notes", text: $equipmentNotes, axis: .vertical)
+                    .retroInputStyle()
+                    .onChange(of: equipmentNotes) { saveLogistics() }
+                TextField("Parking / access instructions", text: $parkingAccessInstructions, axis: .vertical)
+                    .retroInputStyle()
+                    .onChange(of: parkingAccessInstructions) { saveLogistics() }
+                TextField("General notes", text: $generalNotes, axis: .vertical)
+                    .retroInputStyle()
+                    .onChange(of: generalNotes) { saveLogistics() }
+            }
         }
     }
 
@@ -246,18 +246,18 @@ struct SketchDetailView: View {
     /// Script Editor's ExportService.exportScriptPDF — "Writing remains inside Writing" means
     /// this only exports, it doesn't open an editor here.
     private var scriptSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Script").font(.headline)
+        RetroPanel("Script") {
             if let scriptDocument {
                 HStack {
-                    Text(scriptDocument.title)
+                    Text(scriptDocument.title).foregroundStyle(RetroTheme.primaryText)
                     Spacer()
                     Button("Export Script PDF", action: { exportScript(scriptDocument) })
+                        .buttonStyle(.retro)
                 }
             } else {
                 Text("No script found in this project.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
         }
     }
@@ -276,37 +276,39 @@ struct SketchDetailView: View {
     /// first, matching "populated from project data"); once generated, it's its own editable
     /// document — edits here never write back to Film Scheduling above.
     private var callSheetSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Call Sheet").font(.headline)
+        RetroPanel("Call Sheet") {
             if let callSheet {
-                TextField("Cast / Characters", text: $callSheetCastAndCharacters, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: callSheetCastAndCharacters) { saveCallSheetPeople(callSheet) }
-                TextField("Crew / Roles", text: $callSheetCrewAndRoles, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: callSheetCrewAndRoles) { saveCallSheetPeople(callSheet) }
-                TextField("Contact information", text: $contactInformation, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: contactInformation) { saveCallSheetPeople(callSheet) }
-                TextField("Wardrobe", text: $callSheetWardrobe, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: callSheetWardrobe) { saveCallSheetLogistics(callSheet) }
-                TextField("Props", text: $callSheetProps, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: callSheetProps) { saveCallSheetLogistics(callSheet) }
-                TextField("Equipment", text: $callSheetEquipment, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: callSheetEquipment) { saveCallSheetLogistics(callSheet) }
-                TextField("Parking / access", text: $callSheetParkingAccess, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: callSheetParkingAccess) { saveCallSheetLogistics(callSheet) }
-                TextField("Scene notes", text: $sceneNotes, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: sceneNotes) { saveCallSheetNotes(callSheet) }
-                TextField("Additional notes", text: $additionalNotes, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: additionalNotes) { saveCallSheetNotes(callSheet) }
-                Button("Export Call Sheet PDF", action: { exportCallSheet(callSheet) })
+                VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                    TextField("Cast / Characters", text: $callSheetCastAndCharacters, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: callSheetCastAndCharacters) { saveCallSheetPeople(callSheet) }
+                    TextField("Crew / Roles", text: $callSheetCrewAndRoles, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: callSheetCrewAndRoles) { saveCallSheetPeople(callSheet) }
+                    TextField("Contact information", text: $contactInformation, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: contactInformation) { saveCallSheetPeople(callSheet) }
+                    TextField("Wardrobe", text: $callSheetWardrobe, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: callSheetWardrobe) { saveCallSheetLogistics(callSheet) }
+                    TextField("Props", text: $callSheetProps, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: callSheetProps) { saveCallSheetLogistics(callSheet) }
+                    TextField("Equipment", text: $callSheetEquipment, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: callSheetEquipment) { saveCallSheetLogistics(callSheet) }
+                    TextField("Parking / access", text: $callSheetParkingAccess, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: callSheetParkingAccess) { saveCallSheetLogistics(callSheet) }
+                    TextField("Scene notes", text: $sceneNotes, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: sceneNotes) { saveCallSheetNotes(callSheet) }
+                    TextField("Additional notes", text: $additionalNotes, axis: .vertical)
+                        .retroInputStyle()
+                        .onChange(of: additionalNotes) { saveCallSheetNotes(callSheet) }
+                    Button("Export Call Sheet PDF", action: { exportCallSheet(callSheet) })
+                        .buttonStyle(.retroProminent)
+                }
             } else if let shoot {
                 Button("Generate Call Sheet") {
                     _ = SketchProductionService.generateCallSheet(for: shoot, projectTitle: project.title, context: context)
@@ -320,10 +322,11 @@ struct SketchDetailView: View {
                         callSheetParkingAccess = callSheet.parkingAccess
                     }
                 }
+                .buttonStyle(.retroProminent)
             } else {
                 Text("Schedule the film shoot above before generating a Call Sheet.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
         }
     }

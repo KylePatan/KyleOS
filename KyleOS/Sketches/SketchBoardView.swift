@@ -23,22 +23,24 @@ struct SketchBoardView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            ScrollView(.horizontal) {
-                HStack(alignment: .top, spacing: 16) {
-                    ForEach(SketchProductionService.SketchProductionStatus.allCases, id: \.self) { status in
-                        column(for: status)
-                    }
-                }
-                .padding()
-            }
-            .navigationTitle("Sketches")
-            .overlay {
+            Group {
                 if finishedSketches.isEmpty {
                     Text("No finished Sketches yet. Mark a Sketch project's Writing status Finished to see it here.")
-                        .foregroundStyle(.secondary)
-                        .padding()
+                        .foregroundStyle(RetroTheme.secondaryText)
+                        .padding(RetroTheme.sectionPadding)
+                } else {
+                    ScrollView(.horizontal) {
+                        HStack(alignment: .top, spacing: RetroTheme.sectionSpacing) {
+                            ForEach(SketchProductionService.SketchProductionStatus.allCases, id: \.self) { status in
+                                column(for: status)
+                            }
+                        }
+                        .padding(RetroTheme.sectionPadding)
+                    }
                 }
             }
+            .navigationTitle("Sketches")
+            .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 if let project = finishedSketches.first(where: { $0.persistentModelID == id }) {
                     SketchDetailView(project: project)
@@ -55,24 +57,21 @@ struct SketchBoardView: View {
     }
 
     private func column(for status: SketchProductionService.SketchProductionStatus) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(status.rawValue).font(.headline)
-            let items = projects(inStatus: status)
+        let items = projects(inStatus: status)
+        return RetroPanel(status.rawValue) {
             if items.isEmpty {
                 Text("No sketches here.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                List {
+                VStack(spacing: 0) {
                     ForEach(items) { project in
                         SketchCard(project: project, otherStatuses: SketchProductionService.SketchProductionStatus.allCases.filter { $0 != status })
                     }
                 }
-                .listStyle(.inset)
-                .frame(minHeight: 160, idealHeight: CGFloat(items.count) * 60 + 20)
             }
         }
-        .frame(minWidth: 200, maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -87,10 +86,12 @@ private struct SketchCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             NavigationLink(value: project.persistentModelID) {
-                Text(project.title).font(.callout.bold())
+                Text(project.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
             }
+            .buttonStyle(.plain)
             Toggle("Post date", isOn: $hasPostDate)
                 .font(.caption)
+                .foregroundStyle(RetroTheme.secondaryText)
                 .onChange(of: hasPostDate) {
                     SketchProductionService.setPostDate(for: project, date: hasPostDate ? postDate : nil, context: context)
                     try? context.save()
@@ -116,7 +117,11 @@ private struct SketchCard: View {
             .fixedSize()
             .font(.caption)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+        }
         .onAppear {
             if let date = SketchProductionService.postDate(for: project) {
                 postDate = date
