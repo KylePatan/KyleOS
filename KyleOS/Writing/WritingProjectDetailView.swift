@@ -10,6 +10,17 @@ import SwiftData
 struct WritingProjectDetailView: View {
     let project: ProjectService.Project
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var isShowingArchiveConfirmation = false
+
+    /// Live @Query, not `project.documents` read inline — same class of stale-list bug confirmed
+    /// for Add Scene (see SceneListView.swift's doc comment); "New Document" has the identical
+    /// shape (new Document inserted, inverse-linked to `project`).
+    @Query(sort: \ProjectService.Document.updatedAt, order: .reverse) private var allDocuments: [ProjectService.Document]
+
+    private var documents: [ProjectService.Document] {
+        allDocuments.filter { $0.project?.persistentModelID == project.persistentModelID }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -23,6 +34,19 @@ struct WritingProjectDetailView: View {
         }
         .padding()
         .navigationTitle(project.title)
+        .confirmationDialog(
+            "Archive \"\(project.title)\"?",
+            isPresented: $isShowingArchiveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Archive Project", role: .destructive) {
+                ProjectService.archive(project)
+                try? context.save()
+                dismiss()
+            }
+        } message: {
+            Text("Hidden from your active Writing list, not deleted — everything in it, including any scripts, stays intact and can be restored from Archived Projects.")
+        }
     }
 
     /// PRD §6.17: "The goal is to return to the same creative desk."
@@ -61,6 +85,12 @@ struct WritingProjectDetailView: View {
                     }
                 }
                 .frame(width: 160)
+                Button(role: .destructive) {
+                    isShowingArchiveConfirmation = true
+                } label: {
+                    Label("Archive Project", systemImage: "archivebox")
+                }
+                .buttonStyle(.borderless)
             }
             HStack(spacing: 12) {
                 if let deadline = project.deadline {
@@ -88,12 +118,12 @@ struct WritingProjectDetailView: View {
                 .menuStyle(.borderlessButton)
                 .fixedSize()
             }
-            if project.documents.isEmpty {
+            if documents.isEmpty {
                 Text("No documents yet. Outline stages are never mandatory — start writing whenever you're ready.")
                     .foregroundStyle(.secondary)
             } else {
                 List {
-                    ForEach(project.documents.sorted(by: { $0.updatedAt > $1.updatedAt })) { document in
+                    ForEach(documents) { document in
                         NavigationLink(value: DocumentRoute(id: document.persistentModelID)) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(document.title)

@@ -10,6 +10,11 @@ struct SourceDetailView: View {
     let source: SourceService.Source
     @Environment(\.modelContext) private var context
 
+    /// Live @Query, not `source.clips` read via `ClipService.clips(in:)` — same class of
+    /// stale-list bug confirmed for Add Scene (see SceneListView.swift's doc comment); "Add Clip"
+    /// has the identical shape (a new Clip inserted, inverse-linked to `source`).
+    @Query(sort: \ClipService.Clip.createdAt) private var allClips: [ClipService.Clip]
+
     @State private var title = ""
     @State private var recordingDate = Date.now
     @State private var hasRecordingDate = false
@@ -18,7 +23,7 @@ struct SourceDetailView: View {
     @State private var newClipTitle = ""
 
     private var clips: [ClipService.Clip] {
-        ClipService.clips(in: source)
+        allClips.filter { $0.source?.persistentModelID == source.persistentModelID }
     }
 
     var body: some View {

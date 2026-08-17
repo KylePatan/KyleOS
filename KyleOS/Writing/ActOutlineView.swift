@@ -10,8 +10,14 @@ struct ActOutlineView: View {
 
     @State private var newActTitle = ""
 
+    /// Live @Query, not `ActService.acts(for: document)` (which reads `document.acts` off this
+    /// plain-held `document` reference) — same class of stale-list bug confirmed for Add Scene
+    /// (see SceneListView.swift's doc comment); "Add Act" has the identical shape (new Act
+    /// inserted, inverse-linked to `document`), so it silently failed to refresh the same way.
+    @Query(sort: \ActService.Act.order) private var allActs: [ActService.Act]
+
     private var acts: [ActService.Act] {
-        ActService.acts(for: document)
+        allActs.filter { $0.document?.persistentModelID == document.persistentModelID }
     }
 
     var body: some View {

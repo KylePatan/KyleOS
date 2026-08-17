@@ -11,8 +11,23 @@ struct SceneListView: View {
     let act: ActService.Act
     @Environment(\.modelContext) private var context
 
+    /// Live @Query, not `SceneService.scenes(for: act)` (which just reads `act.scenes` off this
+    /// plain-held `act` reference) — confirmed live (2026-08-16, Kyle: "add scene... nothing
+    /// happens") that a to-many relationship read this way does NOT reliably trigger a SwiftUI
+    /// re-render when a new child is inserted elsewhere and linked via its own `act` property; the
+    /// new Scene persisted correctly (visible after relaunch) but never appeared on screen without
+    /// one. `@Query` is the one data source SwiftData reliably re-fetches and republishes on every
+    /// save, so every list in this app that needs to grow live should be backed by one directly,
+    /// not by reading a relationship off a manually-held parent — see also
+    /// `ArchivedWritingProjectsSheet` in WritingHomeView.swift for the same fix applied
+    /// preemptively. Broad, unfiltered @Query + in-memory filter by `persistentModelID` (rather
+    /// than a `#Predicate` comparing the relationship directly) matches this codebase's existing
+    /// workaround for SwiftData predicate limitations (see WritingHomeView's own doc comment) and
+    /// costs nothing at this app's realistic scene counts.
+    @Query(sort: \SceneService.Scene.orderWithinAct) private var allScenes: [SceneService.Scene]
+
     private var scenes: [SceneService.Scene] {
-        SceneService.scenes(for: act)
+        allScenes.filter { $0.act?.persistentModelID == act.persistentModelID }
     }
 
     private var otherActs: [ActService.Act] {

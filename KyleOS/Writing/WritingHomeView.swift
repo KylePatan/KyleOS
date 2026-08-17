@@ -17,11 +17,19 @@ struct WritingHomeView: View {
     @Query(filter: #Predicate<ProjectService.Project> { !$0.isArchived }, sort: \.updatedAt)
     private var allActiveProjects: [ProjectService.Project]
 
+    @Query(filter: #Predicate<ProjectService.Project> { $0.isArchived }, sort: \.updatedAt, order: .reverse)
+    private var allArchivedProjects: [ProjectService.Project]
+
     private var allWritingProjects: [ProjectService.Project] {
         allActiveProjects.filter { $0.projectType != nil }
     }
 
+    private var archivedWritingProjects: [ProjectService.Project] {
+        allArchivedProjects.filter { $0.projectType != nil }
+    }
+
     @State private var isPresentingNewProject = false
+    @State private var isPresentingArchivedProjects = false
     @State private var path = NavigationPath()
 
     private var grouped: [(ProjectService.ProjectStatus, [ProjectService.Project])] {
@@ -79,6 +87,15 @@ struct WritingHomeView: View {
                 }
             }
             .toolbar {
+                if !archivedWritingProjects.isEmpty {
+                    ToolbarItem(placement: .secondaryAction) {
+                        Button {
+                            isPresentingArchivedProjects = true
+                        } label: {
+                            Label("Archived Projects (\(archivedWritingProjects.count))", systemImage: "archivebox")
+                        }
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         isPresentingNewProject = true
@@ -89,6 +106,9 @@ struct WritingHomeView: View {
             }
             .sheet(isPresented: $isPresentingNewProject) {
                 NewWritingProjectSheet()
+            }
+            .sheet(isPresented: $isPresentingArchivedProjects) {
+                ArchivedWritingProjectsSheet()
             }
         }
         .task(id: navigator.pendingTarget) { consumePendingTarget() }
@@ -120,6 +140,58 @@ private struct WritingProjectRow: View {
             .font(.caption)
             .foregroundStyle(.secondary)
         }
+    }
+}
+
+/// Kyle (2026-08-16): "I don't want 'untitled TV pilot' and its not real, and i can't seem to
+/// delete it. We need to fix it so everything you create, you have an option to remove." Archive
+/// (CLAUDE.md §5: never a hard delete for irreplaceable creative work) is the removal itself —
+/// `WritingProjectDetailView`'s "Archive Project" button; this sheet is the other half, so
+/// archiving is never a one-way trip the user can't see or undo themselves.
+private struct ArchivedWritingProjectsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+
+    /// Own live @Query rather than taking the list as a passed-in array — a plain array snapshot
+    /// wouldn't shrink when Restore is tapped inside this same sheet session (the exact class of
+    /// stale-list bug behind the Add Scene fix elsewhere this session; see SceneListView.swift).
+    @Query(filter: #Predicate<ProjectService.Project> { $0.isArchived }, sort: \.updatedAt, order: .reverse)
+    private var allArchivedProjects: [ProjectService.Project]
+
+    private var projects: [ProjectService.Project] {
+        allArchivedProjects.filter { $0.projectType != nil }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Archived Projects").font(.headline)
+                Spacer()
+                Button("Done") { dismiss() }
+                    .keyboardShortcut(.defaultAction)
+            }
+            .padding()
+            if projects.isEmpty {
+                Text("Nothing archived.").foregroundStyle(.secondary).padding()
+            } else {
+                List(projects) { project in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(project.title)
+                            if let projectType = project.projectType {
+                                Text(projectType.rawValue).font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer()
+                        Button("Restore") {
+                            ProjectService.restore(project)
+                            try? context.save()
+                        }
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 360, minHeight: 300)
     }
 }
 

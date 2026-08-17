@@ -10,6 +10,10 @@ struct GigDetailView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \GigSetListService.Joke.createdAt) private var allJokes: [GigSetListService.Joke]
     @Query(sort: \GigSetListService.Chunk.createdAt) private var allChunks: [GigSetListService.Chunk]
+    /// Live @Query, not `gig.setListItems` read via `GigSetListService.items(in:)` — same class of
+    /// stale-list bug confirmed for Add Scene (see SceneListView.swift's doc comment); "Add to Set
+    /// List" has the identical shape (a new GigSetListItem inserted, inverse-linked to `gig`).
+    @Query(sort: \GigSetListService.GigSetListItem.order) private var allSetListItems: [GigSetListService.GigSetListItem]
 
     @State private var venue = ""
     @State private var show = ""
@@ -20,7 +24,7 @@ struct GigDetailView: View {
     @State private var afterGigNotes = ""
 
     private var setListItems: [GigSetListService.GigSetListItem] {
-        GigSetListService.items(in: gig)
+        allSetListItems.filter { $0.gig?.persistentModelID == gig.persistentModelID }
     }
     private var addableJokes: [GigSetListService.Joke] {
         let usedIDs = Set(setListItems.compactMap { $0.joke?.id })
