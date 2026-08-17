@@ -135,22 +135,30 @@ private struct BoardColumn: View {
 
     var body: some View {
         RetroPanel(title) {
-            if items.isEmpty {
-                Text(emptyMessage)
-                    .font(.caption)
-                    .foregroundStyle(RetroTheme.secondaryText)
-            } else {
-                VStack(spacing: 0) {
+            // `.frame(maxWidth: .infinity)` here (not just on the outer RetroPanel below) matters:
+            // without it, this VStack only sizes to its own content's natural width (the "Drag
+            // something here." text), and a plain `.frame()` on the OUTSIDE of RetroPanel reserves
+            // layout space but does not, by itself, extend the actual view/hit-test region to
+            // fill it — most of an empty column would silently not accept a drop at all.
+            VStack(alignment: .leading, spacing: 0) {
+                if items.isEmpty {
+                    Text(emptyMessage)
+                        .font(.caption)
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
                     ForEach(items) { item in
                         WeeklyItemCard(workItem: item)
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minWidth: 240, maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 240, maxWidth: .infinity, minHeight: 160, alignment: .top)
+        .background(isTargeted ? RetroTheme.accent.opacity(0.12) : .clear)
         .overlay(
-            Rectangle().strokeBorder(isTargeted ? RetroTheme.accent : .clear, lineWidth: 2)
+            Rectangle().strokeBorder(isTargeted ? RetroTheme.accent : .clear, lineWidth: 3)
         )
+        .contentShape(Rectangle())
         .dropDestination(for: DraggedWorkItemID.self) { dropped, _ in
             guard let dragged = dropped.first else { return false }
             onDrop(dragged.modelID)
@@ -158,6 +166,7 @@ private struct BoardColumn: View {
         } isTargeted: { targeted in
             isTargeted = targeted
         }
+        .animation(RetroTheme.interactionAnimation, value: isTargeted)
     }
 }
 
