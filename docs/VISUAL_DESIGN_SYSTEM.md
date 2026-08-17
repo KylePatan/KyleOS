@@ -1094,6 +1094,22 @@ built against this spec versus still pending.
     reachable from Home now reads `RetroTheme` tokens and the shared component set.
   - Verified: full build (`BUILD SUCCEEDED`), full test suite (409/409 passing), and live
     screenshots of all four Home tabs (Today, All Tasks, Calendar, Post It) in dark mode.
-  - Not yet built: everything else in this document — Writing/Stand Up/Clips/Sketches/Calendar/
-    Reports/Settings still use pre-spec styling; window-chrome details (§6, §12), menus/
-    scrollbars (§27–28), animation timing (§29), drag-and-drop visuals (§30) not yet addressed.
+- **2026-08-16**: Light-only palette (commit `63c5c32`) — Kyle: "white background... black and
+  dark blue writing... I don't like this dark mode stuff." `RetroTheme` is now one fixed light
+  palette (no dark-mode variant); `NSApplication.shared.appearance = .aqua` forced at launch so
+  native chrome matches too. Supersedes §23's original light/dark mapping.
+- **2026-08-16**: Polish pass (commit `6b830e4`) — Kyle: "more button-y... text a little bigger...
+  smoother and more natural" (confirmed: depth/motion, not rounder corners — §7's sharp-corner rule
+  stands). App-wide `.dynamicTypeSize(.xLarge)`; `RetroButtonStyle` got a real fill + soft lift
+  shadow + 120ms press animation; `RetroPanel` got the same shadow; `RetroTabs`/`RetroTopNav`
+  selection changes now animate.
+- **2026-08-16**: Full module-by-module reskin complete — every module now uses the component
+  system (commits `f97cce4` Writing, `3b76c84` Sketches, `8d79170` Stand Up, `7c7f696` Clips,
+  `269e6da` Calendar, `551a290` Reports, `fcfbab8` Settings placeholder). Along the way: fixed a
+  real bug in Sketches (an `.overlay` empty-state message was rendering on top of the board instead
+  of replacing it — garbled/unreadable) and two more instances of the stale-relationship-list bug
+  found during the Add Scene fix (Stand Up's "Add Joke"/"Add Chunk"). 418/418 tests passing
+  throughout; every module live-verified via screenshot before commit.
+  Not yet addressed: window-chrome details (§6, §12), menu/scrollbar styling (§27–28), animation
+  timing beyond button/tab presses (§29), drag-and-drop visuals (§30) — none of these have concrete
+  user-facing gaps reported yet, revisit if/when they do.
