@@ -14,50 +14,63 @@ struct GigListView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    TextField("Venue", text: $newVenue)
-                        .textFieldStyle(.roundedBorder)
-                    DatePicker("", selection: $newStartAt)
-                        .labelsHidden()
-                    Button("Add Gig", action: createGig)
-                        .disabled(newVenue.trimmingCharacters(in: .whitespaces).isEmpty)
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                RetroPanel {
+                    HStack {
+                        TextField("Venue", text: $newVenue)
+                            .retroInputStyle()
+                        DatePicker("", selection: $newStartAt)
+                            .labelsHidden()
+                        Button("Add Gig", action: createGig)
+                            .buttonStyle(.retroProminent)
+                            .disabled(newVenue.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
                 if gigs.isEmpty {
                     Text("No gigs yet. Add one to see it appear on the Calendar automatically.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    List {
-                        ForEach(gigs) { gig in
-                            HStack {
-                                NavigationLink(value: gig.persistentModelID) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(gig.venue)
-                                        HStack(spacing: 6) {
-                                            Text(summary(for: gig))
-                                            if GigService.needsAfterGigNotes(gig) {
-                                                Text("· Needs notes")
-                                                    .foregroundStyle(.orange)
+                    RetroPanel("Gigs") {
+                        VStack(spacing: 0) {
+                            ForEach(gigs) { gig in
+                                HStack {
+                                    NavigationLink(value: gig.persistentModelID) {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(gig.venue).foregroundStyle(RetroTheme.primaryText)
+                                            HStack(spacing: 6) {
+                                                Text(summary(for: gig))
+                                                if GigService.needsAfterGigNotes(gig) {
+                                                    Text("· Needs notes")
+                                                        .foregroundStyle(RetroTheme.warning)
+                                                }
                                             }
+                                            .font(.caption)
+                                            .foregroundStyle(RetroTheme.secondaryText)
                                         }
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
                                     }
+                                    .buttonStyle(.plain)
+                                    Spacer()
+                                    Button(role: .destructive) {
+                                        GigService.delete(gig, context: context)
+                                        try? context.save()
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
+                                    .buttonStyle(.retro)
                                 }
-                                Spacer()
-                                Button(role: .destructive) {
-                                    GigService.delete(gig, context: context)
-                                    try? context.save()
-                                } label: {
-                                    Image(systemName: "trash")
+                                .padding(.horizontal, RetroTheme.controlSpacing + 4)
+                                .padding(.vertical, RetroTheme.controlSpacing)
+                                .overlay(alignment: .bottom) {
+                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                 }
-                                .buttonStyle(.borderless)
                             }
                         }
                     }
                 }
+                Spacer(minLength: 0)
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
+            .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 if let gig = gigs.first(where: { $0.persistentModelID == id }) {
                     GigDetailView(gig: gig)

@@ -37,19 +37,16 @@ struct GigDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 header
-                Divider()
                 scheduleSection
-                Divider()
                 setListSection
-                Divider()
                 notesSection
-                Divider()
                 afterGigSection
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
+        .background(RetroTheme.background)
         .navigationTitle(gig.venue)
         .onAppear {
             venue = gig.venue
@@ -63,57 +60,60 @@ struct GigDetailView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TextField("Venue", text: $venue)
-                .font(.title3.bold())
-                .textFieldStyle(.plain)
-                .onChange(of: venue) {
-                    GigService.rename(gig, venue: venue)
-                    try? context.save()
-                }
-            TextField("Show", text: $show)
-                .textFieldStyle(.plain)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .onChange(of: show) {
-                    GigService.rename(gig, show: show)
-                    try? context.save()
-                }
-            TextField("Location", text: $location)
-                .textFieldStyle(.plain)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .onChange(of: location) {
-                    GigService.updateLocation(gig, location: location)
-                    try? context.save()
-                }
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                TextField("Venue", text: $venue)
+                    .font(.title3.bold())
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: venue) {
+                        GigService.rename(gig, venue: venue)
+                        try? context.save()
+                    }
+                TextField("Show", text: $show)
+                    .textFieldStyle(.plain)
+                    .font(.callout)
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .onChange(of: show) {
+                        GigService.rename(gig, show: show)
+                        try? context.save()
+                    }
+                TextField("Location", text: $location)
+                    .textFieldStyle(.plain)
+                    .font(.callout)
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .onChange(of: location) {
+                        GigService.updateLocation(gig, location: location)
+                        try? context.save()
+                    }
+            }
         }
     }
 
     private var scheduleSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            DatePicker("Start", selection: $startAt)
-                .onChange(of: startAt) {
-                    GigService.reschedule(gig, startAt: startAt, setLengthMinutes: setLengthMinutes)
-                    try? context.save()
-                }
-            Stepper("Set length: \(setLengthMinutes) min", value: $setLengthMinutes, in: 1...60, step: 1)
-                .onChange(of: setLengthMinutes) {
-                    GigService.reschedule(gig, startAt: startAt, setLengthMinutes: setLengthMinutes)
-                    try? context.save()
-                }
-            Text("Automatically appears on Calendar as a Stand-Up Gig.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        RetroPanel("Schedule") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                DatePicker("Start", selection: $startAt)
+                    .onChange(of: startAt) {
+                        GigService.reschedule(gig, startAt: startAt, setLengthMinutes: setLengthMinutes)
+                        try? context.save()
+                    }
+                Stepper("Set length: \(setLengthMinutes) min", value: $setLengthMinutes, in: 1...60, step: 1)
+                    .onChange(of: setLengthMinutes) {
+                        GigService.reschedule(gig, startAt: startAt, setLengthMinutes: setLengthMinutes)
+                        try? context.save()
+                    }
+                Text("Automatically appears on Calendar as a Stand-Up Gig.")
+                    .font(.caption)
+                    .foregroundStyle(RetroTheme.secondaryText)
+            }
         }
     }
 
     /// PRD §7.9: "show the planned set duration versus the gig's target set length."
     private var setListSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Set List").font(.headline)
-                Spacer()
+        RetroPanel("Set List") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 if !addableJokes.isEmpty || !addableChunks.isEmpty {
                     Menu("Add to Set List") {
                         if !addableChunks.isEmpty {
@@ -140,65 +140,68 @@ struct GigDetailView: View {
                     .menuStyle(.borderlessButton)
                     .fixedSize()
                 }
-            }
-            HStack(spacing: 12) {
-                Text("Planned: \(TimeFormatting.shortDuration(GigSetListService.plannedDurationSeconds(for: gig)))")
-                Text("Target: \(TimeFormatting.shortDuration(GigSetListService.targetDurationSeconds(for: gig)))")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            if setListItems.isEmpty {
-                Text("No set list yet. Add Jokes or Chunks to plan this gig's set.")
-                    .foregroundStyle(.secondary)
-            } else {
-                List {
-                    ForEach(setListItems) { item in
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack {
-                                Text(item.title)
-                                Spacer()
-                                Text(TimeFormatting.shortDuration(item.runtimeSeconds))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Button(role: .destructive) {
-                                    GigSetListService.removeItem(item, from: gig, context: context)
-                                    try? context.save()
-                                } label: {
-                                    Image(systemName: "minus.circle")
+                HStack(spacing: 12) {
+                    Text("Planned: \(TimeFormatting.shortDuration(GigSetListService.plannedDurationSeconds(for: gig)))")
+                    Text("Target: \(TimeFormatting.shortDuration(GigSetListService.targetDurationSeconds(for: gig)))")
+                }
+                .font(.caption)
+                .foregroundStyle(RetroTheme.secondaryText)
+                if setListItems.isEmpty {
+                    Text("No set list yet. Add Jokes or Chunks to plan this gig's set.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    List {
+                        ForEach(setListItems) { item in
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack {
+                                    Text(item.title).foregroundStyle(RetroTheme.primaryText)
+                                    Spacer()
+                                    Text(TimeFormatting.shortDuration(item.runtimeSeconds))
+                                        .font(.caption)
+                                        .foregroundStyle(RetroTheme.secondaryText)
+                                    Button(role: .destructive) {
+                                        GigSetListService.removeItem(item, from: gig, context: context)
+                                        try? context.save()
+                                    } label: {
+                                        Image(systemName: "minus.circle")
+                                    }
+                                    .buttonStyle(.retro)
                                 }
-                                .buttonStyle(.borderless)
+                                /// PRD §7.10: per-item "how'd this land" note, scoped to this gig's
+                                /// performance — bound directly to the model since each row is its
+                                /// own SwiftData object, not a single shared `@State`.
+                                TextField("How'd this land?", text: Binding(
+                                    get: { item.displayPerformanceNotes },
+                                    set: {
+                                        GigSetListService.updatePerformanceNotes(item, notes: $0)
+                                        try? context.save()
+                                    }
+                                ))
+                                .textFieldStyle(.plain)
+                                .font(.caption)
+                                .foregroundStyle(RetroTheme.secondaryText)
                             }
-                            /// PRD §7.10: per-item "how'd this land" note, scoped to this gig's
-                            /// performance — bound directly to the model since each row is its
-                            /// own SwiftData object, not a single shared `@State`.
-                            TextField("How'd this land?", text: Binding(
-                                get: { item.displayPerformanceNotes },
-                                set: {
-                                    GigSetListService.updatePerformanceNotes(item, notes: $0)
-                                    try? context.save()
-                                }
-                            ))
-                            .textFieldStyle(.plain)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                        }
+                        .onMove { source, destination in
+                            GigSetListService.reorderItems(in: gig, movingFromOffsets: source, toOffset: destination)
+                            try? context.save()
                         }
                     }
-                    .onMove { source, destination in
-                        GigSetListService.reorderItems(in: gig, movingFromOffsets: source, toOffset: destination)
-                        try? context.save()
-                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: max(100, CGFloat(setListItems.count) * 60 + 20))
                 }
-                .listStyle(.inset)
-                .frame(minHeight: 100, idealHeight: CGFloat(setListItems.count) * 60 + 20)
             }
         }
     }
 
     private var notesSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Notes").font(.headline)
+        RetroPanel("Notes") {
             TextField("Notes", text: $notes, axis: .vertical)
                 .textFieldStyle(.plain)
+                .foregroundStyle(RetroTheme.primaryText)
                 .onChange(of: notes) {
                     GigService.updateNotes(gig, notes: notes)
                     try? context.save()
@@ -212,16 +215,19 @@ struct GigDetailView: View {
     /// notification system (CLAUDE.md §9: don't prematurely build the reminder system).
     private var afterGigSection: some View {
         let needsNotes = GigService.needsAfterGigNotes(gig)
-        return VStack(alignment: .leading, spacing: 8) {
-            Text(needsNotes ? "How did the set go?" : "After the Gig")
-                .font(.headline)
-                .foregroundStyle(needsNotes ? .orange : .primary)
-            TextField("After-gig notes", text: $afterGigNotes, axis: .vertical)
-                .textFieldStyle(.plain)
-                .onChange(of: afterGigNotes) {
-                    GigService.updateAfterGigNotes(gig, notes: afterGigNotes)
-                    try? context.save()
-                }
+        return RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                Text(needsNotes ? "How did the set go?" : "After the Gig")
+                    .font(.headline)
+                    .foregroundStyle(needsNotes ? RetroTheme.warning : RetroTheme.primaryText)
+                TextField("After-gig notes", text: $afterGigNotes, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: afterGigNotes) {
+                        GigService.updateAfterGigNotes(gig, notes: afterGigNotes)
+                        try? context.save()
+                    }
+            }
         }
     }
 }

@@ -13,20 +13,35 @@ struct ChunkDetailView: View {
     @State private var title = ""
     @State private var notes = ""
 
+    /// Live @Query, not `ChunkService.jokes(in: chunk)` (which reads `chunk.jokes` off this
+    /// plain-held `chunk` reference) — same class of stale-list bug confirmed for Add Scene (see
+    /// SceneListView.swift's doc comment). "Add Joke" re-parents an *existing* Joke rather than
+    /// inserting a new one, but the underlying risk is identical: reading a to-many relationship
+    /// off a held parent isn't reliably observed when it changes via the child's own inverse
+    /// property. Query's own sort key is arbitrary — each computed property below re-sorts to
+    /// match what `ChunkService.jokes(in:)`/`looseJokes(in:)` used to (displayOrderWithinChunk,
+    /// createdAt respectively), so behavior stays identical, just reactive now.
+    @Query private var allJokes: [JokeService.Joke]
+
     private var memberJokes: [JokeService.Joke] {
-        ChunkService.jokes(in: chunk)
+        allJokes
+            .filter { $0.chunk?.persistentModelID == chunk.persistentModelID }
+            .sorted { $0.displayOrderWithinChunk < $1.displayOrderWithinChunk }
     }
     private var addableJokes: [JokeService.Joke] {
-        ChunkService.looseJokes(in: context)
+        allJokes
+            .filter { $0.chunk == nil && !$0.isArchived }
+            .sorted { $0.createdAt < $1.createdAt }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             header
-            Divider()
             jokesSection
+            Spacer(minLength: 0)
         }
-        .padding()
+        .padding(RetroTheme.sectionPadding)
+        .background(RetroTheme.background)
         .navigationTitle(chunk.title)
         .onAppear {
             title = chunk.title
@@ -35,46 +50,48 @@ struct ChunkDetailView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TextField("Chunk title", text: $title)
-                .font(.title3.bold())
-                .textFieldStyle(.plain)
-                .onChange(of: title) {
-                    ChunkService.rename(chunk, to: title)
-                    try? context.save()
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                TextField("Chunk title", text: $title)
+                    .font(.title3.bold())
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: title) {
+                        ChunkService.rename(chunk, to: title)
+                        try? context.save()
+                    }
+                TextField("Notes", text: $notes, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .font(WritingSurfaceFont.swiftUI(size: 13))
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .onChange(of: notes) {
+                        ChunkService.updateNotes(chunk, notes: notes)
+                        try? context.save()
+                    }
+                Picker("Status", selection: Binding(
+                    get: { chunk.status },
+                    set: { ChunkService.changeStatus(chunk, to: $0, context: context); try? context.save() }
+                )) {
+                    ForEach(JokeService.JokeStatus.allCases, id: \.self) { status in
+                        Text(status.rawValue).tag(status)
+                    }
                 }
-            TextField("Notes", text: $notes, axis: .vertical)
-                .textFieldStyle(.plain)
-                .font(WritingSurfaceFont.swiftUI(size: 13))
-                .foregroundStyle(.secondary)
-                .onChange(of: notes) {
-                    ChunkService.updateNotes(chunk, notes: notes)
-                    try? context.save()
-                }
-            Picker("Status", selection: Binding(
-                get: { chunk.status },
-                set: { ChunkService.changeStatus(chunk, to: $0, context: context); try? context.save() }
-            )) {
-                ForEach(JokeService.JokeStatus.allCases, id: \.self) { status in
-                    Text(status.rawValue).tag(status)
-                }
-            }
-            .frame(width: 160)
-            if timerController.state == .idle {
-                Button("Start Timer") {
-                    guard let workItem = try? WorkItemService.standUpWorkItem(for: chunk, context: context) else { return }
-                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
-                    try? context.save()
+                .frame(width: 160)
+                if timerController.state == .idle {
+                    Button("Start Timer") {
+                        guard let workItem = try? WorkItemService.standUpWorkItem(for: chunk, context: context) else { return }
+                        timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                        try? context.save()
+                    }
+                    .buttonStyle(.retroProminent)
                 }
             }
         }
     }
 
     private var jokesSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Jokes in this Chunk").font(.headline)
-                Spacer()
+        RetroPanel("Jokes in this Chunk") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 if !addableJokes.isEmpty {
                     Menu("Add Joke") {
                         ForEach(addableJokes) { joke in
@@ -87,37 +104,40 @@ struct ChunkDetailView: View {
                     .menuStyle(.borderlessButton)
                     .fixedSize()
                 }
-            }
-            if memberJokes.isEmpty {
-                Text("No jokes in this chunk yet.")
-                    .foregroundStyle(.secondary)
-            } else {
-                List {
-                    ForEach(memberJokes) { joke in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                if !joke.title.isEmpty {
-                                    Text(joke.title).font(.callout.bold())
+                if memberJokes.isEmpty {
+                    Text("No jokes in this chunk yet.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    List {
+                        ForEach(memberJokes) { joke in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    if !joke.title.isEmpty {
+                                        Text(joke.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+                                    }
+                                    Text(joke.text).font(.callout).lineLimit(2).foregroundStyle(RetroTheme.primaryText)
                                 }
-                                Text(joke.text).font(.callout).lineLimit(2)
+                                Spacer()
+                                Button(role: .destructive) {
+                                    ChunkService.removeJoke(joke, from: chunk)
+                                    try? context.save()
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                }
+                                .buttonStyle(.retro)
                             }
-                            Spacer()
-                            Button(role: .destructive) {
-                                ChunkService.removeJoke(joke, from: chunk)
-                                try? context.save()
-                            } label: {
-                                Image(systemName: "minus.circle")
-                            }
-                            .buttonStyle(.borderless)
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                        }
+                        .onMove { source, destination in
+                            ChunkService.reorderJokes(in: chunk, movingFromOffsets: source, toOffset: destination)
+                            try? context.save()
                         }
                     }
-                    .onMove { source, destination in
-                        ChunkService.reorderJokes(in: chunk, movingFromOffsets: source, toOffset: destination)
-                        try? context.save()
-                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: max(120, CGFloat(memberJokes.count) * 50 + 20))
                 }
-                .listStyle(.inset)
-                .frame(minHeight: 120, idealHeight: CGFloat(memberJokes.count) * 50 + 20)
             }
         }
     }

@@ -12,24 +12,35 @@ struct HeadlineSetDetailView: View {
     @State private var notes = ""
     @State private var targetMinutes = 60
 
+    /// Live @Query, not `HeadlineSetService.chunks(in:)`/`looseChunks(in:)` (which read
+    /// `headlineSet.chunks` off this plain-held reference) — same class of stale-list bug
+    /// confirmed for Add Scene (see SceneListView.swift's doc comment). Re-sorted in-memory to
+    /// match the original service functions' sort keys exactly.
+    @Query private var allChunks: [ChunkService.Chunk]
+
     private var memberChunks: [ChunkService.Chunk] {
-        HeadlineSetService.chunks(in: headlineSet)
+        allChunks
+            .filter { $0.headlineSet?.persistentModelID == headlineSet.persistentModelID }
+            .sorted { $0.displayOrderInHeadlineSet < $1.displayOrderInHeadlineSet }
     }
     private var addableChunks: [ChunkService.Chunk] {
-        HeadlineSetService.looseChunks(in: context)
+        allChunks
+            .filter { $0.headlineSet == nil }
+            .sorted { $0.createdAt < $1.createdAt }
     }
     private var totalRuntimeSeconds: Int {
         HeadlineSetService.totalRuntimeSeconds(for: headlineSet)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             header
             runtimeSummary
-            Divider()
             chunksSection
+            Spacer(minLength: 0)
         }
-        .padding()
+        .padding(RetroTheme.sectionPadding)
+        .background(RetroTheme.background)
         .navigationTitle(headlineSet.title)
         .onAppear {
             title = headlineSet.title
@@ -39,27 +50,30 @@ struct HeadlineSetDetailView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TextField("Headline set title", text: $title)
-                .font(.title3.bold())
-                .textFieldStyle(.plain)
-                .onChange(of: title) {
-                    HeadlineSetService.rename(headlineSet, to: title)
-                    try? context.save()
-                }
-            TextField("Notes", text: $notes, axis: .vertical)
-                .textFieldStyle(.plain)
-                .font(WritingSurfaceFont.swiftUI(size: 13))
-                .foregroundStyle(.secondary)
-                .onChange(of: notes) {
-                    HeadlineSetService.updateNotes(headlineSet, notes: notes)
-                    try? context.save()
-                }
-            Stepper("Target: \(targetMinutes) min", value: $targetMinutes, in: 0...180, step: 5)
-                .onChange(of: targetMinutes) {
-                    HeadlineSetService.updateTargetDuration(headlineSet, minutes: targetMinutes)
-                    try? context.save()
-                }
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                TextField("Headline set title", text: $title)
+                    .font(.title3.bold())
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: title) {
+                        HeadlineSetService.rename(headlineSet, to: title)
+                        try? context.save()
+                    }
+                TextField("Notes", text: $notes, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .font(WritingSurfaceFont.swiftUI(size: 13))
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .onChange(of: notes) {
+                        HeadlineSetService.updateNotes(headlineSet, notes: notes)
+                        try? context.save()
+                    }
+                Stepper("Target: \(targetMinutes) min", value: $targetMinutes, in: 0...180, step: 5)
+                    .onChange(of: targetMinutes) {
+                        HeadlineSetService.updateTargetDuration(headlineSet, minutes: targetMinutes)
+                        try? context.save()
+                    }
+            }
         }
     }
 
@@ -70,14 +84,12 @@ struct HeadlineSetDetailView: View {
             Text("Target: \(TimeFormatting.shortDuration(HeadlineSetService.targetDurationSeconds(for: headlineSet)))")
         }
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(RetroTheme.secondaryText)
     }
 
     private var chunksSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Chunks in this Set").font(.headline)
-                Spacer()
+        RetroPanel("Chunks in this Set") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 if !addableChunks.isEmpty {
                     Menu("Add Chunk") {
                         ForEach(addableChunks) { chunk in
@@ -90,37 +102,40 @@ struct HeadlineSetDetailView: View {
                     .menuStyle(.borderlessButton)
                     .fixedSize()
                 }
-            }
-            if memberChunks.isEmpty {
-                Text("No chunks in this set yet.")
-                    .foregroundStyle(.secondary)
-            } else {
-                List {
-                    ForEach(memberChunks) { chunk in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(chunk.title).font(.callout.bold())
-                                Text("\(ChunkService.jokes(in: chunk).count) joke\(ChunkService.jokes(in: chunk).count == 1 ? "" : "s") · \(TimeFormatting.shortDuration(chunk.runtimeSeconds ?? 0))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                if memberChunks.isEmpty {
+                    Text("No chunks in this set yet.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    List {
+                        ForEach(memberChunks) { chunk in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(chunk.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+                                    Text("\(ChunkService.jokes(in: chunk).count) joke\(ChunkService.jokes(in: chunk).count == 1 ? "" : "s") · \(TimeFormatting.shortDuration(chunk.runtimeSeconds ?? 0))")
+                                        .font(.caption)
+                                        .foregroundStyle(RetroTheme.secondaryText)
+                                }
+                                Spacer()
+                                Button(role: .destructive) {
+                                    HeadlineSetService.removeChunk(chunk, from: headlineSet)
+                                    try? context.save()
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                }
+                                .buttonStyle(.retro)
                             }
-                            Spacer()
-                            Button(role: .destructive) {
-                                HeadlineSetService.removeChunk(chunk, from: headlineSet)
-                                try? context.save()
-                            } label: {
-                                Image(systemName: "minus.circle")
-                            }
-                            .buttonStyle(.borderless)
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                        }
+                        .onMove { source, destination in
+                            HeadlineSetService.reorderChunks(in: headlineSet, movingFromOffsets: source, toOffset: destination)
+                            try? context.save()
                         }
                     }
-                    .onMove { source, destination in
-                        HeadlineSetService.reorderChunks(in: headlineSet, movingFromOffsets: source, toOffset: destination)
-                        try? context.save()
-                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: max(120, CGFloat(memberChunks.count) * 50 + 20))
                 }
-                .listStyle(.inset)
-                .frame(minHeight: 120, idealHeight: CGFloat(memberChunks.count) * 50 + 20)
             }
         }
     }

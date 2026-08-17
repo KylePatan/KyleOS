@@ -24,24 +24,21 @@ struct StandUpHomeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ActiveTimerBanner()
-                .padding(.horizontal)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
             if timerController.state == .idle {
                 Button("Start General Stand-Up Session") {
                     guard let workItem = try? WorkItemService.generalStandUpWorkItem(context: context) else { return }
                     timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
                     try? context.save()
                 }
-                .padding(.horizontal)
+                .buttonStyle(.retroProminent)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
             }
-            Picker("", selection: $selectedTab) {
-                ForEach(Tab.allCases) { tab in
-                    Text(tab.rawValue).tag(tab)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .padding()
-            .frame(maxWidth: 520)
+            RetroTabs(tabs: Tab.allCases.map { ($0, $0.rawValue) }, selection: $selectedTab)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
 
             switch selectedTab {
             case .jokeBoard: JokeBoardView()
@@ -50,6 +47,7 @@ struct StandUpHomeView: View {
             case .gigs: GigListView()
             }
         }
+        .background(RetroTheme.background)
         .navigationTitle("Stand Up")
         .task(id: navigator.pendingTarget) { selectTabForPendingTarget() }
     }

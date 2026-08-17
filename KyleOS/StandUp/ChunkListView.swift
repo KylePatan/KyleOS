@@ -13,43 +13,56 @@ struct ChunkListView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    TextField("New chunk title", text: $newChunkTitle)
-                        .textFieldStyle(.roundedBorder)
-                        .onSubmit(createChunk)
-                    Button("Add Chunk", action: createChunk)
-                        .disabled(newChunkTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                RetroPanel {
+                    HStack {
+                        TextField("New chunk title", text: $newChunkTitle)
+                            .retroInputStyle()
+                            .onSubmit(createChunk)
+                        Button("Add Chunk", action: createChunk)
+                            .buttonStyle(.retroProminent)
+                            .disabled(newChunkTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
                 if chunks.isEmpty {
                     Text("No chunks yet. Group related jokes into a Chunk once a theme emerges.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    List {
-                        ForEach(chunks) { chunk in
-                            HStack {
-                                NavigationLink(value: chunk.persistentModelID) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(chunk.title)
-                                        Text("\(ChunkService.jokes(in: chunk).count) joke\(ChunkService.jokes(in: chunk).count == 1 ? "" : "s") · \(chunk.status.rawValue)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                    RetroPanel("Chunks") {
+                        VStack(spacing: 0) {
+                            ForEach(chunks) { chunk in
+                                HStack {
+                                    NavigationLink(value: chunk.persistentModelID) {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(chunk.title).foregroundStyle(RetroTheme.primaryText)
+                                            Text("\(ChunkService.jokes(in: chunk).count) joke\(ChunkService.jokes(in: chunk).count == 1 ? "" : "s") · \(chunk.status.rawValue)")
+                                                .font(.caption)
+                                                .foregroundStyle(RetroTheme.secondaryText)
+                                        }
                                     }
+                                    .buttonStyle(.plain)
+                                    Spacer()
+                                    Button(role: .destructive) {
+                                        ChunkService.delete(chunk, context: context)
+                                        try? context.save()
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
+                                    .buttonStyle(.retro)
                                 }
-                                Spacer()
-                                Button(role: .destructive) {
-                                    ChunkService.delete(chunk, context: context)
-                                    try? context.save()
-                                } label: {
-                                    Image(systemName: "trash")
+                                .padding(.horizontal, RetroTheme.controlSpacing + 4)
+                                .padding(.vertical, RetroTheme.controlSpacing)
+                                .overlay(alignment: .bottom) {
+                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                 }
-                                .buttonStyle(.borderless)
                             }
                         }
                     }
                 }
+                Spacer(minLength: 0)
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
+            .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 if let chunk = chunks.first(where: { $0.persistentModelID == id }) {
                     ChunkDetailView(chunk: chunk)

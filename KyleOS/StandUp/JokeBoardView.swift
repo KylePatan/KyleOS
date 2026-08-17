@@ -27,25 +27,29 @@ struct JokeBoardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             quickCapture
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: RetroTheme.sectionSpacing) {
                 ForEach(JokeService.JokeStatus.allCases, id: \.self) { status in
                     column(for: status)
                 }
             }
         }
-        .padding()
+        .padding(RetroTheme.sectionPadding)
+        .background(RetroTheme.background)
     }
 
     /// PRD §7.3: "+ Joke Idea should require only the idea text."
     private var quickCapture: some View {
-        HStack {
-            TextField("New joke idea", text: $newIdeaText)
-                .textFieldStyle(.roundedBorder)
-                .onSubmit(capture)
-            Button("Add Joke Idea", action: capture)
-                .disabled(newIdeaText.trimmingCharacters(in: .whitespaces).isEmpty)
+        RetroPanel {
+            HStack {
+                TextField("New joke idea", text: $newIdeaText)
+                    .retroInputStyle()
+                    .onSubmit(capture)
+                Button("Add Joke Idea", action: capture)
+                    .buttonStyle(.retroProminent)
+                    .disabled(newIdeaText.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
         }
     }
 
@@ -58,25 +62,28 @@ struct JokeBoardView: View {
     }
 
     private func column(for status: JokeService.JokeStatus) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(status.rawValue).font(.headline)
-            let items = jokes(for: status)
+        let items = jokes(for: status)
+        return RetroPanel(status.rawValue) {
             if items.isEmpty {
                 Text("No jokes here yet.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
                 List {
                     ForEach(items) { joke in
                         JokeCard(joke: joke, otherStatuses: JokeService.JokeStatus.allCases.filter { $0 != status })
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
                     }
                     .onMove { source, destination in
                         JokeService.reorder(withStatus: status, movingFromOffsets: source, toOffset: destination, in: context)
                         try? context.save()
                     }
                 }
-                .listStyle(.inset)
-                .frame(minHeight: 160, idealHeight: CGFloat(items.count) * 70 + 20)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .frame(height: max(160, CGFloat(items.count) * 70 + 20))
             }
         }
         .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)
@@ -97,6 +104,7 @@ private struct JokeCard: View {
             TextField("Title (optional)", text: $title)
                 .textFieldStyle(.plain)
                 .font(.caption.bold())
+                .foregroundStyle(RetroTheme.primaryText)
                 .onChange(of: title) {
                     JokeService.rename(joke, title: title)
                     try? context.save()
@@ -104,6 +112,7 @@ private struct JokeCard: View {
             TextField("Joke text", text: $text, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(WritingSurfaceFont.swiftUI(size: 13))
+                .foregroundStyle(RetroTheme.primaryText)
                 .onChange(of: text) {
                     JokeService.updateText(joke, text: text)
                     try? context.save()
@@ -131,7 +140,7 @@ private struct JokeCard: View {
                     } label: {
                         Image(systemName: "timer")
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.retro)
                 }
                 Button(role: .destructive) {
                     JokeService.archive(joke)
@@ -139,11 +148,12 @@ private struct JokeCard: View {
                 } label: {
                     Image(systemName: "archivebox")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.retro)
             }
             .font(.caption)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
         .onAppear {
             title = joke.title
             text = joke.text
