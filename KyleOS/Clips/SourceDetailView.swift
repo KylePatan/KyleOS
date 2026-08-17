@@ -28,15 +28,14 @@ struct SourceDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 header
-                Divider()
                 fileSection
-                Divider()
                 clipsSection
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
+        .background(RetroTheme.background)
         .navigationTitle(source.title)
         .onAppear {
             title = source.title
@@ -50,56 +49,61 @@ struct SourceDetailView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TextField("Source title", text: $title)
-                .font(.title3.bold())
-                .textFieldStyle(.plain)
-                .onChange(of: title) {
-                    SourceService.rename(source, to: title)
-                    try? context.save()
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                TextField("Source title", text: $title)
+                    .font(.title3.bold())
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: title) {
+                        SourceService.rename(source, to: title)
+                        try? context.save()
+                    }
+                TextField("Location", text: $location)
+                    .textFieldStyle(.plain)
+                    .font(.callout)
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .onChange(of: location) {
+                        SourceService.updateLocation(source, location: location)
+                        try? context.save()
+                    }
+                Toggle("Recording date", isOn: $hasRecordingDate)
+                    .onChange(of: hasRecordingDate) {
+                        SourceService.updateRecordingDate(source, date: hasRecordingDate ? recordingDate : nil)
+                        try? context.save()
+                    }
+                if hasRecordingDate {
+                    DatePicker("", selection: $recordingDate, displayedComponents: .date)
+                        .labelsHidden()
+                        .onChange(of: recordingDate) {
+                            SourceService.updateRecordingDate(source, date: recordingDate)
+                            try? context.save()
+                        }
                 }
-            TextField("Location", text: $location)
-                .textFieldStyle(.plain)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .onChange(of: location) {
-                    SourceService.updateLocation(source, location: location)
-                    try? context.save()
-                }
-            Toggle("Recording date", isOn: $hasRecordingDate)
-                .onChange(of: hasRecordingDate) {
-                    SourceService.updateRecordingDate(source, date: hasRecordingDate ? recordingDate : nil)
-                    try? context.save()
-                }
-            if hasRecordingDate {
-                DatePicker("", selection: $recordingDate, displayedComponents: .date)
-                    .labelsHidden()
-                    .onChange(of: recordingDate) {
-                        SourceService.updateRecordingDate(source, date: recordingDate)
+                TextField("Notes", text: $notes, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .font(.callout)
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .onChange(of: notes) {
+                        SourceService.updateNotes(source, notes: notes)
                         try? context.save()
                     }
             }
-            TextField("Notes", text: $notes, axis: .vertical)
-                .textFieldStyle(.plain)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .onChange(of: notes) {
-                    SourceService.updateNotes(source, notes: notes)
-                    try? context.save()
-                }
         }
     }
 
     private var fileSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Footage").font(.headline)
+        RetroPanel("Footage") {
             if let reference = source.fileReference {
-                Text(reference.displayName)
-                Text(reference.lastKnownAvailable ? reference.originalPath : "File currently unavailable")
-                    .font(.caption)
-                    .foregroundStyle(reference.lastKnownAvailable ? Color.secondary : Color.orange)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(reference.displayName).foregroundStyle(RetroTheme.primaryText)
+                    Text(reference.lastKnownAvailable ? reference.originalPath : "File currently unavailable")
+                        .font(.caption)
+                        .foregroundStyle(reference.lastKnownAvailable ? RetroTheme.secondaryText : RetroTheme.warning)
+                }
             } else {
                 Button("Attach Footage File…", action: attachFile)
+                    .buttonStyle(.retro)
             }
         }
     }
@@ -115,43 +119,49 @@ struct SourceDetailView: View {
     }
 
     private var clipsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                TextField("New clip title", text: $newClipTitle)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(createClip)
-                Button("Add Clip", action: createClip)
-                    .disabled(newClipTitle.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
-            Text("Clips").font(.headline)
-            if clips.isEmpty {
-                Text("No clips identified yet.")
-                    .foregroundStyle(.secondary)
-            } else {
-                List {
-                    ForEach(clips) { clip in
-                        HStack {
-                            NavigationLink(value: ClipRoute(id: clip.persistentModelID)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(clip.title)
-                                    Text(clip.status.rawValue)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+        RetroPanel("Clips") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                HStack {
+                    TextField("New clip title", text: $newClipTitle)
+                        .retroInputStyle()
+                        .onSubmit(createClip)
+                    Button("Add Clip", action: createClip)
+                        .buttonStyle(.retroProminent)
+                        .disabled(newClipTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+                if clips.isEmpty {
+                    Text("No clips identified yet.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    List {
+                        ForEach(clips) { clip in
+                            HStack {
+                                NavigationLink(value: ClipRoute(id: clip.persistentModelID)) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(clip.title).foregroundStyle(RetroTheme.primaryText)
+                                        Text(clip.status.rawValue)
+                                            .font(.caption)
+                                            .foregroundStyle(RetroTheme.secondaryText)
+                                    }
                                 }
+                                .buttonStyle(.plain)
+                                Spacer()
+                                Button(role: .destructive) {
+                                    ClipService.delete(clip, context: context)
+                                    try? context.save()
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                                .buttonStyle(.retro)
                             }
-                            Spacer()
-                            Button(role: .destructive) {
-                                ClipService.delete(clip, context: context)
-                                try? context.save()
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                            .buttonStyle(.borderless)
+                            .listRowBackground(RetroTheme.panelBackground)
+                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
                         }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: max(120, CGFloat(clips.count) * 50 + 20))
                 }
-                .listStyle(.inset)
-                .frame(minHeight: 120, idealHeight: CGFloat(clips.count) * 50 + 20)
             }
         }
     }

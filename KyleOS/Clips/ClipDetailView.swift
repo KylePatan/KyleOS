@@ -24,21 +24,17 @@ struct ClipDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 header
-                Divider()
                 timerSection
-                Divider()
                 timestampsSection
-                Divider()
                 statusSection
-                Divider()
                 relatedMaterialSection
-                Divider()
                 notesSection
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
+        .background(RetroTheme.background)
         .navigationTitle(clip.title)
         .onAppear {
             title = clip.title
@@ -56,27 +52,30 @@ struct ClipDetailView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TextField("Clip title", text: $title)
-                .font(.title3.bold())
-                .textFieldStyle(.plain)
-                .onChange(of: title) {
-                    ClipService.rename(clip, to: title)
-                    try? context.save()
-                }
-            TextField("Description", text: $clipDescription, axis: .vertical)
-                .textFieldStyle(.plain)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .onChange(of: clipDescription) {
-                    ClipService.updateDescription(clip, description: clipDescription)
-                    try? context.save()
-                }
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                TextField("Clip title", text: $title)
+                    .font(.title3.bold())
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: title) {
+                        ClipService.rename(clip, to: title)
+                        try? context.save()
+                    }
+                TextField("Description", text: $clipDescription, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .font(.callout)
+                    .foregroundStyle(RetroTheme.secondaryText)
+                    .onChange(of: clipDescription) {
+                        ClipService.updateDescription(clip, description: clipDescription)
+                        try? context.save()
+                    }
+            }
         }
     }
 
     private var timerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             ActiveTimerBanner()
             if timerController.state == .idle {
                 Button("Start Timer") {
@@ -84,21 +83,21 @@ struct ClipDetailView: View {
                     timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
                     try? context.save()
                 }
+                .buttonStyle(.retroProminent)
             }
         }
     }
 
     private var timestampsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Source Timestamps").font(.headline)
+        RetroPanel("Source Timestamps") {
             HStack {
                 TextField("Start (sec)", text: $startSecondsText)
-                    .textFieldStyle(.roundedBorder)
+                    .retroInputStyle()
                     .frame(width: 100)
                     .onChange(of: startSecondsText) { saveTimestamps() }
-                Text("–")
+                Text("–").foregroundStyle(RetroTheme.secondaryText)
                 TextField("End (sec)", text: $endSecondsText)
-                    .textFieldStyle(.roundedBorder)
+                    .retroInputStyle()
                     .frame(width: 100)
                     .onChange(of: endSecondsText) { saveTimestamps() }
             }
@@ -115,36 +114,38 @@ struct ClipDetailView: View {
     }
 
     private var statusSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Picker("Status", selection: Binding(
-                get: { clip.status },
-                set: {
-                    ClipService.changeStatus(clip, to: $0, context: context)
-                    try? context.save()
-                }
-            )) {
-                ForEach(ClipService.ClipStatus.allCases, id: \.self) { status in
-                    Text(status.rawValue).tag(status)
-                }
-            }
-            .frame(width: 260)
-            Stepper("Progress: \(progress)%", value: $progress, in: 0...100, step: 5)
-                .onChange(of: progress) {
-                    ClipService.updateProgress(clip, progress: progress)
-                    try? context.save()
-                }
-            Toggle("Post date", isOn: $hasPostDate)
-                .onChange(of: hasPostDate) {
-                    ClipService.setPostDate(clip, date: hasPostDate ? postDate : nil)
-                    try? context.save()
-                }
-            if hasPostDate {
-                DatePicker("", selection: $postDate, displayedComponents: .date)
-                    .labelsHidden()
-                    .onChange(of: postDate) {
-                        ClipService.setPostDate(clip, date: postDate)
+        RetroPanel("Status") {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                Picker("Status", selection: Binding(
+                    get: { clip.status },
+                    set: {
+                        ClipService.changeStatus(clip, to: $0, context: context)
                         try? context.save()
                     }
+                )) {
+                    ForEach(ClipService.ClipStatus.allCases, id: \.self) { status in
+                        Text(status.rawValue).tag(status)
+                    }
+                }
+                .frame(width: 260)
+                Stepper("Progress: \(progress)%", value: $progress, in: 0...100, step: 5)
+                    .onChange(of: progress) {
+                        ClipService.updateProgress(clip, progress: progress)
+                        try? context.save()
+                    }
+                Toggle("Post date", isOn: $hasPostDate)
+                    .onChange(of: hasPostDate) {
+                        ClipService.setPostDate(clip, date: hasPostDate ? postDate : nil)
+                        try? context.save()
+                    }
+                if hasPostDate {
+                    DatePicker("", selection: $postDate, displayedComponents: .date)
+                        .labelsHidden()
+                        .onChange(of: postDate) {
+                            ClipService.setPostDate(clip, date: postDate)
+                            try? context.save()
+                        }
+                }
             }
         }
     }
@@ -156,8 +157,7 @@ struct ClipDetailView: View {
 
     /// PRD §8.3: "related Joke/Chunk reference."
     private var relatedMaterialSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Related Material").font(.headline)
+        RetroPanel("Related Material") {
             HStack {
                 Menu(linkedJokeLabel) {
                     Button("None") {
@@ -193,21 +193,25 @@ struct ClipDetailView: View {
     }
 
     private var notesSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Notes").font(.headline)
-            TextField("Notes", text: $notes, axis: .vertical)
-                .textFieldStyle(.plain)
-                .onChange(of: notes) {
-                    ClipService.updateNotes(clip, notes: notes)
-                    try? context.save()
-                }
-            Text("Editing Notes").font(.headline)
-            TextField("Editing notes", text: $editingNotes, axis: .vertical)
-                .textFieldStyle(.plain)
-                .onChange(of: editingNotes) {
-                    ClipService.updateEditingNotes(clip, notes: editingNotes)
-                    try? context.save()
-                }
+        RetroPanel {
+            VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                Text("Notes").font(.headline).foregroundStyle(RetroTheme.primaryText)
+                TextField("Notes", text: $notes, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: notes) {
+                        ClipService.updateNotes(clip, notes: notes)
+                        try? context.save()
+                    }
+                Text("Editing Notes").font(.headline).foregroundStyle(RetroTheme.primaryText)
+                TextField("Editing notes", text: $editingNotes, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(RetroTheme.primaryText)
+                    .onChange(of: editingNotes) {
+                        ClipService.updateEditingNotes(clip, notes: editingNotes)
+                        try? context.save()
+                    }
+            }
         }
     }
 }

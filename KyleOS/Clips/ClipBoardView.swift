@@ -15,34 +15,32 @@ struct ClipBoardView: View {
 
     var body: some View {
         ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: RetroTheme.sectionSpacing) {
                 ForEach(ClipService.BoardLane.allCases, id: \.self) { lane in
                     column(for: lane)
                 }
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
+        .background(RetroTheme.background)
     }
 
     private func column(for lane: ClipService.BoardLane) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(lane.rawValue).font(.headline)
-            let items = clips(in: lane)
+        let items = clips(in: lane)
+        return RetroPanel(lane.rawValue) {
             if items.isEmpty {
                 Text("No clips here.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                List {
+                VStack(spacing: 0) {
                     ForEach(items) { clip in
                         ClipCard(clip: clip, otherLanes: ClipService.BoardLane.allCases.filter { $0 != lane })
                     }
                 }
-                .listStyle(.inset)
-                .frame(minHeight: 160, idealHeight: CGFloat(items.count) * 60 + 20)
             }
         }
-        .frame(minWidth: 200, maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -68,11 +66,11 @@ private struct ClipCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(clip.title).font(.callout.bold())
+            Text(clip.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
             if let sourceTitle = clip.source?.title {
                 Text(sourceTitle)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
             Menu("Move to") {
                 ForEach(otherLanes, id: \.self) { lane in
@@ -86,7 +84,11 @@ private struct ClipCard: View {
             .fixedSize()
             .font(.caption)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+        }
     }
 }
 

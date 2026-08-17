@@ -17,15 +17,9 @@ struct ClipsHomeView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Picker("", selection: $selectedTab) {
-                ForEach(Tab.allCases) { tab in
-                    Text(tab.rawValue).tag(tab)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .padding()
-            .frame(maxWidth: 360)
+            RetroTabs(tabs: Tab.allCases.map { ($0, $0.rawValue) }, selection: $selectedTab)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
 
             switch selectedTab {
             case .sources: SourceListView()
@@ -33,6 +27,7 @@ struct ClipsHomeView: View {
             case .readyQueue: ClipReadyQueueView()
             }
         }
+        .background(RetroTheme.background)
         .navigationTitle("Clips")
         .task(id: navigator.pendingTarget) { selectTabForPendingTarget() }
     }

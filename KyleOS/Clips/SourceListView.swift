@@ -17,43 +17,56 @@ struct SourceListView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    TextField("New source title", text: $newSourceTitle)
-                        .textFieldStyle(.roundedBorder)
-                        .onSubmit(createSource)
-                    Button("Add Source", action: createSource)
-                        .disabled(newSourceTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                RetroPanel {
+                    HStack {
+                        TextField("New source title", text: $newSourceTitle)
+                            .retroInputStyle()
+                            .onSubmit(createSource)
+                        Button("Add Source", action: createSource)
+                            .buttonStyle(.retroProminent)
+                            .disabled(newSourceTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
                 if sources.isEmpty {
                     Text("No sources yet. Add one to start identifying clips from footage.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    List {
-                        ForEach(sources) { source in
-                            HStack {
-                                NavigationLink(value: SourceRoute(id: source.persistentModelID)) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(source.title)
-                                        Text("\(ClipService.clips(in: source).count) clip\(ClipService.clips(in: source).count == 1 ? "" : "s")")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                    RetroPanel("Sources") {
+                        VStack(spacing: 0) {
+                            ForEach(sources) { source in
+                                HStack {
+                                    NavigationLink(value: SourceRoute(id: source.persistentModelID)) {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(source.title).foregroundStyle(RetroTheme.primaryText)
+                                            Text("\(ClipService.clips(in: source).count) clip\(ClipService.clips(in: source).count == 1 ? "" : "s")")
+                                                .font(.caption)
+                                                .foregroundStyle(RetroTheme.secondaryText)
+                                        }
                                     }
+                                    .buttonStyle(.plain)
+                                    Spacer()
+                                    Button(role: .destructive) {
+                                        SourceService.delete(source, context: context)
+                                        try? context.save()
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
+                                    .buttonStyle(.retro)
                                 }
-                                Spacer()
-                                Button(role: .destructive) {
-                                    SourceService.delete(source, context: context)
-                                    try? context.save()
-                                } label: {
-                                    Image(systemName: "trash")
+                                .padding(.horizontal, RetroTheme.controlSpacing + 4)
+                                .padding(.vertical, RetroTheme.controlSpacing)
+                                .overlay(alignment: .bottom) {
+                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                 }
-                                .buttonStyle(.borderless)
                             }
                         }
                     }
                 }
+                Spacer(minLength: 0)
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
+            .background(RetroTheme.background)
             .navigationDestination(for: SourceRoute.self) { route in
                 if let source = sources.first(where: { $0.persistentModelID == route.id }) {
                     SourceDetailView(source: source)

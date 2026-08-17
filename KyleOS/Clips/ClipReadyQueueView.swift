@@ -26,32 +26,34 @@ struct ClipReadyQueueView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 Text("\(buffer.count + scheduled.count) piece\(buffer.count + scheduled.count == 1 ? "" : "s") ready to post")
                     .font(.title3.bold())
+                    .foregroundStyle(RetroTheme.primaryText)
 
                 section(title: "Production Backlog", clips: backlog, emptyText: "Nothing in progress.") { clip in
                     Text(ClipService.boardLane(for: clip.status).rawValue)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
 
                 section(title: "Ready Content Buffer", clips: buffer, emptyText: "No finished pieces waiting yet.") { _ in
                     Text("No post date set")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RetroTheme.secondaryText)
                 }
 
                 section(title: "Scheduled Posts", clips: scheduled, emptyText: "Nothing scheduled yet.") { clip in
                     if let date = clip.postDate {
                         Text(date.formatted(date: .abbreviated, time: .omitted))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(RetroTheme.secondaryText)
                     }
                 }
             }
-            .padding()
+            .padding(RetroTheme.sectionPadding)
         }
+        .background(RetroTheme.background)
     }
 
     @ViewBuilder
@@ -61,27 +63,31 @@ struct ClipReadyQueueView: View {
         emptyText: String,
         @ViewBuilder detail: @escaping (ClipService.Clip) -> Detail
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(title) (\(clips.count))").font(.headline)
+        RetroPanel("\(title) (\(clips.count))") {
             if clips.isEmpty {
                 Text(emptyText)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                ForEach(clips) { clip in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(clip.title)
-                            if let sourceTitle = clip.source?.title {
-                                Text(sourceTitle)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
+                VStack(spacing: 0) {
+                    ForEach(clips) { clip in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(clip.title).foregroundStyle(RetroTheme.primaryText)
+                                if let sourceTitle = clip.source?.title {
+                                    Text(sourceTitle)
+                                        .font(.caption2)
+                                        .foregroundStyle(RetroTheme.secondaryText)
+                                }
                             }
+                            Spacer()
+                            detail(clip)
                         }
-                        Spacer()
-                        detail(clip)
+                        .padding(.vertical, RetroTheme.controlSpacing / 2)
+                        .overlay(alignment: .bottom) {
+                            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+                        }
                     }
-                    .padding(.vertical, 2)
                 }
             }
         }
