@@ -88,6 +88,18 @@ struct WritingProjectDetailView: View {
                         }
                     }
                     .frame(width: 160)
+                    DeadlineControl(
+                        dueAt: project.deadline?.dueAt,
+                        isHard: project.deadline?.isHard ?? true,
+                        onSet: { dueAt, isHard in
+                            DeadlineService.setDeadline(for: project, label: project.title, dueAt: dueAt, isHard: isHard, context: context)
+                            try? context.save()
+                        },
+                        onRemove: {
+                            DeadlineService.removeDeadline(for: project, context: context)
+                            try? context.save()
+                        }
+                    )
                     Button(role: .destructive) {
                         isShowingArchiveConfirmation = true
                     } label: {
@@ -95,14 +107,9 @@ struct WritingProjectDetailView: View {
                     }
                     .buttonStyle(.retro)
                 }
-                HStack(spacing: 12) {
-                    if let deadline = project.deadline {
-                        Text("Deadline: \(deadline.dueAt.formatted(date: .abbreviated, time: .omitted))")
-                    }
-                    Text("Total time: \(TimeFormatting.shortDuration(HomeService.totalLoggedSeconds(for: project)))")
-                }
-                .font(.caption)
-                .foregroundStyle(RetroTheme.secondaryText)
+                Text("Total time: \(TimeFormatting.shortDuration(HomeService.totalLoggedSeconds(for: project)))")
+                    .font(.caption)
+                    .foregroundStyle(RetroTheme.secondaryText)
             }
         }
     }
@@ -129,23 +136,32 @@ struct WritingProjectDetailView: View {
                 } else {
                     VStack(spacing: 0) {
                         ForEach(documents) { document in
-                            NavigationLink(value: DocumentRoute(id: document.persistentModelID)) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(document.title).foregroundStyle(RetroTheme.primaryText)
-                                        Text("\(document.documentType.rawValue) · \(document.displayDraftLabel)")
-                                            .font(.caption)
-                                            .foregroundStyle(RetroTheme.secondaryText)
+                            HStack {
+                                NavigationLink(value: DocumentRoute(id: document.persistentModelID)) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(document.title).foregroundStyle(RetroTheme.primaryText)
+                                            Text("\(document.documentType.rawValue) · \(document.displayDraftLabel)")
+                                                .font(.caption)
+                                                .foregroundStyle(RetroTheme.secondaryText)
+                                        }
+                                        Spacer()
                                     }
-                                    Spacer()
+                                    .contentShape(Rectangle())
                                 }
-                                .padding(.vertical, RetroTheme.controlSpacing)
-                                .contentShape(Rectangle())
-                                .overlay(alignment: .bottom) {
-                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+                                .buttonStyle(.plain)
+                                Button(role: .destructive) {
+                                    DocumentService.delete(document, context: context)
+                                    try? context.save()
+                                } label: {
+                                    Image(systemName: "trash")
                                 }
+                                .buttonStyle(.retro)
                             }
-                            .buttonStyle(.plain)
+                            .padding(.vertical, RetroTheme.controlSpacing)
+                            .overlay(alignment: .bottom) {
+                                Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+                            }
                         }
                     }
                 }

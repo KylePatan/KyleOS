@@ -19,16 +19,42 @@ struct ProseEditorView: View {
     @State private var isShowingDraftHistory = false
     private let autosave = AutosaveController()
 
+    /// Kyle (2026-08-17): "each thing created individually... should have an ability to add a
+    /// deadline." A Document's Deadline lives on its WorkItem, same object "Start Timer" already
+    /// lazily finds-or-creates — reused here so setting a deadline works even before any timing
+    /// has happened, not just after.
+    @Query private var allWorkItems: [WorkItemService.WorkItem]
+
+    private var workItem: WorkItemService.WorkItem? {
+        allWorkItems.first { $0.document?.persistentModelID == document.persistentModelID }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             ActiveTimerBanner()
-            if timerController.state == .idle {
-                Button("Start Timer") {
-                    guard let workItem = try? WorkItemService.writingWorkItem(for: document, context: context) else { return }
-                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
-                    try? context.save()
+            HStack {
+                if timerController.state == .idle {
+                    Button("Start Timer") {
+                        guard let workItem = try? WorkItemService.writingWorkItem(for: document, context: context) else { return }
+                        timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                        try? context.save()
+                    }
+                    .buttonStyle(.retroProminent)
                 }
-                .buttonStyle(.retroProminent)
+                DeadlineControl(
+                    dueAt: workItem?.deadline?.dueAt,
+                    isHard: workItem?.deadline?.isHard ?? true,
+                    onSet: { dueAt, isHard in
+                        guard let resolvedWorkItem = try? WorkItemService.writingWorkItem(for: document, context: context) else { return }
+                        DeadlineService.setDeadline(for: resolvedWorkItem, label: document.title, dueAt: dueAt, isHard: isHard, context: context)
+                        try? context.save()
+                    },
+                    onRemove: {
+                        guard let workItem else { return }
+                        DeadlineService.removeDeadline(for: workItem, context: context)
+                        try? context.save()
+                    }
+                )
             }
             TextEditor(text: $editorText)
                 .font(WritingSurfaceFont.swiftUI(size: 14))

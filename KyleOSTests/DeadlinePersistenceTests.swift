@@ -161,6 +161,77 @@ final class DeadlinePersistenceTests: XCTestCase {
         XCTAssertNil(survivor?.deadline)
     }
 
+    func testSettingADeadlineTwiceUpdatesInPlaceRatherThanOrphaning() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let first = DeadlineService.setDeadline(for: project, label: "Draft", dueAt: .now, context: context)
+        try context.save()
+
+        let newDate = Date(timeIntervalSinceNow: 86400 * 5)
+        let second = DeadlineService.setDeadline(for: project, label: "Final", dueAt: newDate, context: context)
+        try context.save()
+
+        XCTAssertEqual(first.id, second.id, "Setting a deadline again on the same Project must update the existing one, not create a new one")
+        XCTAssertEqual(project.deadline?.label, "Final")
+        XCTAssertEqual(second.dueAt.timeIntervalSince1970, newDate.timeIntervalSince1970, accuracy: 1)
+
+        let allDeadlines = try context.fetch(FetchDescriptor<DeadlineService.Deadline>())
+        XCTAssertEqual(allDeadlines.count, 1, "No orphaned Deadline should be left behind from the first call")
+    }
+
+    func testSettingADeadlineTwiceDoesNotDuplicateItsCalendarEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        DeadlineService.setDeadline(for: project, label: "Draft", dueAt: .now, context: context)
+        try context.save()
+
+        let newDate = Date(timeIntervalSinceNow: 86400 * 5)
+        DeadlineService.setDeadline(for: project, label: "Final", dueAt: newDate, context: context)
+        try context.save()
+
+        XCTAssertEqual(project.deadline?.calendarEvents.count, 1)
+        XCTAssertEqual(project.deadline?.calendarEvents.first?.notes, "Final")
+        let allEvents = try context.fetch(FetchDescriptor<CalendarEventService.CalendarEvent>())
+        XCTAssertEqual(allEvents.filter { $0.eventType == .hardDeadline }.count, 1)
+    }
+
+    func testEditingAHardDeadlineToSoftRemovesItsCalendarEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let deadline = DeadlineService.setDeadline(for: project, label: "Draft", dueAt: .now, isHard: true, context: context)
+        try context.save()
+        XCTAssertEqual(deadline.calendarEvents.count, 1)
+
+        DeadlineService.setDeadline(for: project, label: "Draft", dueAt: .now, isHard: false, context: context)
+        try context.save()
+
+        XCTAssertTrue(deadline.calendarEvents.isEmpty, "Editing a deadline back to soft must remove its now-inapplicable Calendar Event")
+    }
+
+    func testRemoveDeadlineDeletesItAndItsCalendarEvent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        DeadlineService.setDeadline(for: project, label: "Draft", dueAt: .now, context: context)
+        try context.save()
+
+        DeadlineService.removeDeadline(for: project, context: context)
+        try context.save()
+
+        XCTAssertNil(project.deadline)
+        let remainingDeadlines = try context.fetch(FetchDescriptor<DeadlineService.Deadline>())
+        XCTAssertTrue(remainingDeadlines.isEmpty)
+        let remainingEvents = try context.fetch(FetchDescriptor<CalendarEventService.CalendarEvent>())
+        XCTAssertTrue(remainingEvents.filter { $0.eventType == .hardDeadline }.isEmpty)
+    }
+
     func testUpcomingSortsByDueDateAndExcludesPast() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

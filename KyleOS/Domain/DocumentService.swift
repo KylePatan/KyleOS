@@ -32,6 +32,14 @@ enum DocumentService {
         document.updatedAt = .now
     }
 
+    /// Kyle: "everything you create, you have an option to remove" — same delete pattern already
+    /// applied to Acts, Scenes, Chunks, Headline Sets, Gigs, and Sources. Drafts/Acts/ScriptBlocks
+    /// cascade-delete with the Document; a linked WorkItem (and its Deadline/CalendarEvent, if any)
+    /// is nullified rather than deleted, consistent with this codebase's orphan-don't-delete default.
+    static func delete(_ document: Document, context: ModelContext) {
+        context.delete(document)
+    }
+
     static func documents(for project: Project, in context: ModelContext) throws -> [Document] {
         let projectID = project.id
         let descriptor = FetchDescriptor<Document>(

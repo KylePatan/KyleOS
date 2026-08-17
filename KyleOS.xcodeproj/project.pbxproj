@@ -45,6 +45,7 @@
 		2EFE655F08CE1F07A301CB0A /* SourceServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C5CDBE46872A0E0FD33CD8 /* SourceServiceTests.swift */; };
 		2F877317691F404F62173786 /* MonthCalendarServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5A12EDF34A5FF515C0D8DA /* MonthCalendarServiceTests.swift */; };
 		2F99D8B063AA1EF887DCB910 /* CreativeCapacityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEBDA6AF784F5931DE830C5C /* CreativeCapacityService.swift */; };
+		30C9D0518251FC5A70F58343 /* DeadlineControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94980A34EE4BA8BA83217A0B /* DeadlineControl.swift */; };
 		324E98AEE069C37398B76F62 /* KyleOSSchemaV11.swift in Sources */ = {isa = PBXBuildFile; fileRef = E025BCBDB4BAC1888B4038AF /* KyleOSSchemaV11.swift */; };
 		353166ABFBF7406F5F3F015A /* FinishSessionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F070CFB1807E813ABCC7B7DE /* FinishSessionPrompt.swift */; };
 		3580D79DED65CDAE0D20C296 /* RetroStatusBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5636B6352B27B8104A557D8 /* RetroStatusBar.swift */; };
@@ -296,6 +297,7 @@
 		927D2BFE0A22A5B5FCFF5CA0 /* ProseEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProseEditorView.swift; sourceTree = "<group>"; };
 		9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventPersistenceTests.swift; sourceTree = "<group>"; };
 		93149EDDDDBA7F8981CD8D7B /* SourceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListView.swift; sourceTree = "<group>"; };
+		94980A34EE4BA8BA83217A0B /* DeadlineControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineControl.swift; sourceTree = "<group>"; };
 		9C03488FFD5B66DD40893E94 /* WritingRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingRoute.swift; sourceTree = "<group>"; };
 		9C3F1B880C49922F5FA48DF1 /* RetroTabs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroTabs.swift; sourceTree = "<group>"; };
 		9D9A5C83517F88DE4D86E509 /* PlannedSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedSessionService.swift; sourceTree = "<group>"; };
@@ -408,6 +410,7 @@
 		434F323B8C2E09804E85A230 /* RetroUI */ = {
 			isa = PBXGroup;
 			children = (
+				94980A34EE4BA8BA83217A0B /* DeadlineControl.swift */,
 				D29FAC72928350F9584B073F /* RetroBevel.swift */,
 				9DF0C7A1A27A8E63910163A3 /* RetroButtonStyle.swift */,
 				91261356F734A608C9069EDE /* RetroInputStyle.swift */,
@@ -863,6 +866,7 @@
 				2F99D8B063AA1EF887DCB910 /* CreativeCapacityService.swift in Sources */,
 				80EAE83E7EE0097A2D6CF202 /* CreativeCapacityWidget.swift in Sources */,
 				7005BA8B40E36310C65FE638 /* DayJobScheduleService.swift in Sources */,
+				30C9D0518251FC5A70F58343 /* DeadlineControl.swift in Sources */,
 				415DEECE4EAFDC406A72FE31 /* DeadlineService.swift in Sources */,
 				2B8D7011ECB9BAD35BDD79D8 /* DetachedWindowRootView.swift in Sources */,
 				A00054157F6B0B02A179B362 /* DetachedWindowTarget.swift in Sources */,
