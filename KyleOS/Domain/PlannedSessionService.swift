@@ -65,6 +65,14 @@ enum PlannedSessionService {
         session.updatedAt = .now
     }
 
+    /// Dragging a Weekly Board item back to "To Do" (`WeeklyBoardView`) means "I changed my mind
+    /// about scheduling this," not "this happened but got cancelled" — deletes outright rather
+    /// than `markCancelled`, so the WorkItem returns cleanly to the unscheduled ranked list instead
+    /// of leaving a cancelled-session record behind for something that was never actually worked.
+    static func delete(_ session: PlannedSession, context: ModelContext) {
+        context.delete(session)
+    }
+
     static func sessions(for workItem: WorkItem, in context: ModelContext) throws -> [PlannedSession] {
         let workItemID = workItem.id
         let descriptor = FetchDescriptor<PlannedSession>(

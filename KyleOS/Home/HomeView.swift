@@ -35,10 +35,6 @@ struct HomeView: View {
         SchedulingService.rankedItems(from: allWorkItems)
     }
 
-    private var todayItems: [HomeService.WorkItem] {
-        Array(rankedItems.prefix(10).map(\.workItem))
-    }
-
     /// Only surfaced once per app session — once Kyle resolves a tie (or the underlying data
     /// changes enough that it's no longer actually tied), don't keep re-prompting on every view
     /// refresh for what's effectively the same decision.
@@ -60,7 +56,7 @@ struct HomeView: View {
 
             switch selectedTab {
             case .today:
-                todayContent
+                weeklyBoardContent
             case .allTasks:
                 AllTasksView()
             case .calendar:
@@ -105,27 +101,15 @@ struct HomeView: View {
         }
     }
 
-    private var todayContent: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-                CreativeCapacityWidget()
-
-                if todayItems.isEmpty {
-                    // PRD §4.9: an empty/blocked day isn't failure — say so plainly.
-                    Text("Nothing scheduled. Enjoy the break, or start something from Projects.")
-                        .foregroundStyle(RetroTheme.secondaryText)
-                        .padding(.top, RetroTheme.controlSpacing)
-                } else {
-                    RetroPanel("Today") {
-                        VStack(spacing: 0) {
-                            ForEach(todayItems) { item in
-                                TodayItemCard(workItem: item)
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(RetroTheme.sectionPadding)
+    /// Kyle (2026-08-17): "Don't just have 'today' in home. Let's extend that with a weekly
+    /// calendar" — see `WeeklyBoardView`'s own doc comment for the full design. Capacity stays
+    /// pinned above the board since it's still a same-day-relevant number, not a per-column one.
+    private var weeklyBoardContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            CreativeCapacityWidget()
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.sectionPadding)
+            WeeklyBoardView(allWorkItems: allWorkItems)
         }
     }
 }

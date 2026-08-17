@@ -14,9 +14,9 @@
 		0563882F5E5EFE36B6108D4E /* KyleOSSchemaV15.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF2BA7F9F4820A38C7132875 /* KyleOSSchemaV15.swift */; };
 		082D48916634694CA25E04B8 /* ChunkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A343326ABA806B7ED4EE3C44 /* ChunkServiceTests.swift */; };
 		0832C630D3538FB41F166A6E /* FocusTimerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7EA9D04BAF8F260ABCB478 /* FocusTimerController.swift */; };
+		0A96B0AB2FA6D7A286850BCC /* WeeklyBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575D877F4F1CA9AF505158C2 /* WeeklyBoardView.swift */; };
 		0BA8F3C50B213E971E3471E3 /* KyleOSSchemaV28.swift in Sources */ = {isa = PBXBuildFile; fileRef = 624FF0C0CD872858E5B2E73D /* KyleOSSchemaV28.swift */; };
 		0D049C85D7308F2E05E3C986 /* GigSetListServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38C3303FCAF9339CEE93C68 /* GigSetListServiceTests.swift */; };
-		12A2398EC9AF8FEED6F29653 /* TodayItemCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */; };
 		12A8B2FBB431ED4C58C0575C /* FileReferenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB76812141269FB271CEAC48 /* FileReferenceService.swift */; };
 		13BA1AFF32FC2D756B9A4B79 /* ActiveTimerStateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86BE4B502217DE2581E07FC7 /* ActiveTimerStateServiceTests.swift */; };
 		156B71C7DA166DB15A6924FE /* FocusTimerSessionLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3522C8B1A80D72FCC6071D2 /* FocusTimerSessionLength.swift */; };
@@ -221,7 +221,6 @@
 		1F2D18652770DF0748E0E0B6 /* GigDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GigDetailView.swift; sourceTree = "<group>"; };
 		20C969DBFA6EDB51C379E79F /* JokeBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JokeBoardView.swift; sourceTree = "<group>"; };
 		2245AF51F43F2E8BDD6097CC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayItemCard.swift; sourceTree = "<group>"; };
 		252C0322C3D5A27BFED68814 /* TimerRecoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRecoveryService.swift; sourceTree = "<group>"; };
 		25AB6E3B8BAFED8E629DBD01 /* SketchProductionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchProductionService.swift; sourceTree = "<group>"; };
 		27D6194C1261A3FE3D72A7E0 /* HomeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeServiceTests.swift; sourceTree = "<group>"; };
@@ -252,6 +251,7 @@
 		52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV19.swift; sourceTree = "<group>"; };
 		5549899F778178FEA1D06182 /* RetroTopNav.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroTopNav.swift; sourceTree = "<group>"; };
 		554DE9F8F27BA7EEA233E4BA /* CascadeReschedulingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CascadeReschedulingServiceTests.swift; sourceTree = "<group>"; };
+		575D877F4F1CA9AF505158C2 /* WeeklyBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyBoardView.swift; sourceTree = "<group>"; };
 		59E199DA7890341CDC60AA6C /* HeadlineSetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadlineSetDetailView.swift; sourceTree = "<group>"; };
 		5A49DFCFB01F66015F55750C /* WorkTypeDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkTypeDefaultTests.swift; sourceTree = "<group>"; };
 		5A725F810620AC8F10C06B5F /* KyleOSSchemaV26.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV26.swift; sourceTree = "<group>"; };
@@ -688,7 +688,7 @@
 				522D786A6B687BD929FB976C /* QuickAddButton.swift */,
 				02002FD6C8910B81AD5533DE /* SchedulingTieBreakPrompt.swift */,
 				DF53CB376ECB46AE2DF923C8 /* TimeFormatting.swift */,
-				23A80BB73FB22D7FB46E23D2 /* TodayItemCard.swift */,
+				575D877F4F1CA9AF505158C2 /* WeeklyBoardView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -965,7 +965,7 @@
 				22EDC9BB071ADAB7D676A14A /* StandUpHomeView.swift in Sources */,
 				B06008B8DC9529C5D92122C2 /* TimeFormatting.swift in Sources */,
 				ADE256727B597B171F59EB5E /* TimerRecoveryService.swift in Sources */,
-				12A2398EC9AF8FEED6F29653 /* TodayItemCard.swift in Sources */,
+				0A96B0AB2FA6D7A286850BCC /* WeeklyBoardView.swift in Sources */,
 				C0495A8136146413B39B9E82 /* WorkItemService.swift in Sources */,
 				8AA271F45558077C103A36ED /* WorkSessionService.swift in Sources */,
 				4874182D08BB3DF20BEA4063 /* WorkTypeDefaultService.swift in Sources */,
