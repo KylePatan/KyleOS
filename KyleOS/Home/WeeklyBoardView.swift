@@ -213,14 +213,15 @@ private struct WeeklyItemCard: View {
                 .disabled(timerController.state != .idle)
                 .help("Start Timer")
             }
-            if let dueAt = workItem.deadline?.dueAt {
-                Text("Due \(dueAt.formatted(date: .abbreviated, time: .omitted))")
-                    .font(.caption2)
-                    .foregroundStyle(RetroTheme.warning)
-            }
-            Text("\(workItem.progress)%")
+            Text(TimeFormatting.dueLabel(for: workItem.deadline?.dueAt))
                 .font(.caption2)
-                .foregroundStyle(RetroTheme.secondaryText)
+                .foregroundStyle(workItem.deadline == nil ? RetroTheme.secondaryText : RetroTheme.warning)
+            HStack(spacing: 6) {
+                RetroProgressBar(percent: workItem.progress)
+                Text("\(workItem.progress)%")
+                    .font(.caption2)
+                    .foregroundStyle(RetroTheme.secondaryText)
+            }
         }
         .padding(.vertical, RetroTheme.controlSpacing)
         .overlay(alignment: .bottom) {

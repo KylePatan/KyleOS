@@ -100,6 +100,7 @@
 		8AA271F45558077C103A36ED /* WorkSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F8DE3C067BF6A377085202 /* WorkSessionService.swift */; };
 		8AC7B4F94D5A982E5A7F2A05 /* KyleOSSchemaV6.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0995BC51ECCA3979C67CA0 /* KyleOSSchemaV6.swift */; };
 		8B8FEC497EB9B5D9EF2376E6 /* SidebarDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C9B9B594B11A2A7AC4104F /* SidebarDestination.swift */; };
+		8BBA27B957DFBD9269916B10 /* RetroProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97ECDE3F94E658B1FEE55BFE /* RetroProgressBar.swift */; };
 		903D0A6BBD210FB3788E68D0 /* HistoryEventServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D3FED139B90EBB99C21F3F /* HistoryEventServiceTests.swift */; };
 		914C7F66ED89430E89A2756F /* HeadlineSetListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B83C2A48E8B8D10FA4AEF59 /* HeadlineSetListView.swift */; };
 		9199D8FE9809A0977141B1EB /* RetroListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45EC5A26D41120ABF3592182 /* RetroListRow.swift */; };
@@ -298,6 +299,7 @@
 		9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventPersistenceTests.swift; sourceTree = "<group>"; };
 		93149EDDDDBA7F8981CD8D7B /* SourceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListView.swift; sourceTree = "<group>"; };
 		94980A34EE4BA8BA83217A0B /* DeadlineControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineControl.swift; sourceTree = "<group>"; };
+		97ECDE3F94E658B1FEE55BFE /* RetroProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroProgressBar.swift; sourceTree = "<group>"; };
 		9C03488FFD5B66DD40893E94 /* WritingRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingRoute.swift; sourceTree = "<group>"; };
 		9C3F1B880C49922F5FA48DF1 /* RetroTabs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroTabs.swift; sourceTree = "<group>"; };
 		9D9A5C83517F88DE4D86E509 /* PlannedSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedSessionService.swift; sourceTree = "<group>"; };
@@ -417,6 +419,7 @@
 				45EC5A26D41120ABF3592182 /* RetroListRow.swift */,
 				C4F8CE022DB7140EEF3616C3 /* RetroPageHeader.swift */,
 				B61ED7A12BA97563EEC31FBA /* RetroPanel.swift */,
+				97ECDE3F94E658B1FEE55BFE /* RetroProgressBar.swift */,
 				B5636B6352B27B8104A557D8 /* RetroStatusBar.swift */,
 				9C3F1B880C49922F5FA48DF1 /* RetroTabs.swift */,
 				63CEAD592DD80A73EA2A79E4 /* RetroTheme.swift */,
@@ -943,6 +946,7 @@
 				9199D8FE9809A0977141B1EB /* RetroListRow.swift in Sources */,
 				9851895F0ECD34AE2EF3CF3C /* RetroPageHeader.swift in Sources */,
 				EF8E613C6E009793AF6F381F /* RetroPanel.swift in Sources */,
+				8BBA27B957DFBD9269916B10 /* RetroProgressBar.swift in Sources */,
 				3580D79DED65CDAE0D20C296 /* RetroStatusBar.swift in Sources */,
 				C17A99401CB25ED3E12861A9 /* RetroTabs.swift in Sources */,
 				CB178461B6E1916B25A68EB3 /* RetroTheme.swift in Sources */,
