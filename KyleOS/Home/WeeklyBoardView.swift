@@ -41,13 +41,13 @@ struct WeeklyBoardView: View {
         allPlannedSessions.filter { $0.status == .scheduled }
     }
 
-    private var scheduledWorkItemIDs: Set<PersistentIdentifier> {
-        Set(activeSessions.compactMap { $0.workItem?.persistentModelID })
+    private var scheduledWorkItemIDs: Set<UUID> {
+        Set(activeSessions.compactMap { $0.workItem?.id })
     }
 
     private var toDoItems: [HomeService.WorkItem] {
         let scheduled = scheduledWorkItemIDs
-        return rankedWorkItems.filter { !scheduled.contains($0.persistentModelID) }
+        return rankedWorkItems.filter { !scheduled.contains($0.id) }
     }
 
     private func items(forDayOffset offset: Int) -> [HomeService.WorkItem] {
@@ -56,9 +56,9 @@ struct WeeklyBoardView: View {
         let idsForDay = Set(
             activeSessions
                 .filter { $0.scheduledAt >= dayStart && $0.scheduledAt < dayEnd }
-                .compactMap { $0.workItem?.persistentModelID }
+                .compactMap { $0.workItem?.id }
         )
-        return rankedWorkItems.filter { idsForDay.contains($0.persistentModelID) }
+        return rankedWorkItems.filter { idsForDay.contains($0.id) }
     }
 
     private func label(forDayOffset offset: Int) -> String {
@@ -82,21 +82,21 @@ struct WeeklyBoardView: View {
         }
     }
 
-    private func resolvedWorkItem(_ id: PersistentIdentifier) -> HomeService.WorkItem? {
-        allWorkItems.first { $0.persistentModelID == id }
+    private func resolvedWorkItem(_ id: UUID) -> HomeService.WorkItem? {
+        allWorkItems.first { $0.id == id }
     }
 
-    private func unschedule(_ workItemID: PersistentIdentifier) {
-        guard let session = activeSessions.first(where: { $0.workItem?.persistentModelID == workItemID }) else { return }
+    private func unschedule(_ workItemID: UUID) {
+        guard let session = activeSessions.first(where: { $0.workItem?.id == workItemID }) else { return }
         PlannedSessionService.delete(session, context: context)
         try? context.save()
     }
 
-    private func schedule(_ workItemID: PersistentIdentifier, onDayOffset offset: Int) {
+    private func schedule(_ workItemID: UUID, onDayOffset offset: Int) {
         guard let workItem = resolvedWorkItem(workItemID),
               let dayStart = calendar.date(byAdding: .day, value: offset, to: today) else { return }
         let scheduledAt = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: dayStart) ?? dayStart
-        if let existing = activeSessions.first(where: { $0.workItem?.persistentModelID == workItemID }) {
+        if let existing = activeSessions.first(where: { $0.workItem?.id == workItemID }) {
             PlannedSessionService.reschedule(existing, to: scheduledAt)
         } else {
             PlannedSessionService.schedule(
@@ -110,26 +110,11 @@ struct WeeklyBoardView: View {
     }
 }
 
-/// The drag payload — just enough to re-resolve the real WorkItem on drop. In-process only (drag
-/// source and drop destination are both this same view), so the UTType needs no Info.plist export
-/// declaration.
-private struct DraggedWorkItemID: Codable, Transferable {
-    let modelID: PersistentIdentifier
-
-    static var transferRepresentation: some TransferRepresentation {
-        CodableRepresentation(contentType: .kyleOSWorkItem)
-    }
-}
-
-private extension UTType {
-    static var kyleOSWorkItem: UTType { UTType(exportedAs: "com.kylepatan.KyleOS.workitem") }
-}
-
 private struct BoardColumn: View {
     let title: String
     let items: [HomeService.WorkItem]
     let emptyMessage: String
-    let onDrop: (PersistentIdentifier) -> Void
+    let onDrop: (UUID) -> Void
 
     @State private var isTargeted = false
 
@@ -159,12 +144,22 @@ private struct BoardColumn: View {
             Rectangle().strokeBorder(isTargeted ? RetroTheme.accent : .clear, lineWidth: 3)
         )
         .contentShape(Rectangle())
-        .dropDestination(for: DraggedWorkItemID.self) { dropped, _ in
-            guard let dragged = dropped.first else { return false }
-            onDrop(dragged.modelID)
+        // `.draggable`/`.dropDestination` (SwiftUI's newer Transferable-based API) turned out
+        // unreliable on macOS here — a real user drag started (per Kyle) but never registered a
+        // drop, and a follow-up attempt to widen the hit-test region made it stop recognizing the
+        // drag at all. `onDrag`/`onDrop` + `NSItemProvider` is the older, AppKit-backed mechanism
+        // with a much longer macOS track record — switched to it instead of continuing to patch
+        // the newer API blind (this session's automation can start a drag but not verify a real
+        // NSDraggingSession end-to-end, so every fix here has to be judged from Kyle's own report).
+        .onDrop(of: [.text], isTargeted: $isTargeted) { providers in
+            guard let provider = providers.first else { return false }
+            _ = provider.loadObject(ofClass: NSString.self) { reading, _ in
+                guard let string = reading as? String, let workItemID = UUID(uuidString: string) else { return }
+                DispatchQueue.main.async {
+                    onDrop(workItemID)
+                }
+            }
             return true
-        } isTargeted: { targeted in
-            isTargeted = targeted
         }
         .animation(RetroTheme.interactionAnimation, value: isTargeted)
     }
@@ -181,11 +176,11 @@ private struct WeeklyItemCard: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .top) {
                 // A nested Button here (rather than onTapGesture) would compete with this card's
-                // own .draggable() gesture for the same touch — exactly the "two competing drag/
-                // gesture mechanisms" risk JokeBoardView's doc comment flagged when it chose not
-                // to use draggable/dropDestination at all. A plain tap gesture on non-Button
-                // content coexists with .draggable() cleanly; only the Play button below (a real,
-                // small, distinct hit target) stays an actual Button.
+                // own onDrag gesture for the same touch — exactly the "two competing drag/gesture
+                // mechanisms" risk JokeBoardView's doc comment flagged when it chose not to use
+                // drag-and-drop at all. A plain tap gesture on non-Button content coexists with
+                // onDrag cleanly; only the Play button below (a real, small, distinct hit target)
+                // stays an actual Button.
                 VStack(alignment: .leading, spacing: 1) {
                     Text(workItem.workspace.rawValue.uppercased())
                         .font(.caption2.bold())
@@ -231,7 +226,9 @@ private struct WeeklyItemCard: View {
         .overlay(alignment: .bottom) {
             Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
         }
-        .draggable(DraggedWorkItemID(modelID: workItem.persistentModelID))
+        .onDrag {
+            NSItemProvider(object: workItem.id.uuidString as NSString)
+        }
     }
 
     private func navigateToWorkItem() {
