@@ -62,4 +62,12 @@ enum WorkTypeDefaultService {
     static func all(in context: ModelContext) throws -> [WorkTypeDefault] {
         try context.fetch(FetchDescriptor<WorkTypeDefault>(sortBy: [SortDescriptor(\.name)]))
     }
+
+    /// Kyle: "everything you create, you have an option to remove" — same delete pattern as
+    /// every other list this session. A deleted Work Type Default just means new Work Items of
+    /// that name fall back to `WorkItemService`'s generic estimate instead of a seeded one;
+    /// existing Work Items are untouched (they only ever read the default once, at creation).
+    static func delete(_ workType: WorkTypeDefault, context: ModelContext) {
+        context.delete(workType)
+    }
 }

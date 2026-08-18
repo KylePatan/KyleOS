@@ -43,7 +43,7 @@ struct RootView: View {
         case .reports:
             ReportsView()
         case .settings:
-            PlaceholderDestinationView(destination: .settings)
+            SettingsView()
         }
     }
 }
