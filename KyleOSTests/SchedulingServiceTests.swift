@@ -28,6 +28,55 @@ final class SchedulingServiceTests: XCTestCase {
         XCTAssertEqual(ranked.first?.workItem.title, "Due Tomorrow")
     }
 
+    /// Kyle (2026-08-18): "add some detail to what gets done first - when things should get
+    /// posted." Two deadlines on the same calendar day, hours apart, must rank by time rather than
+    /// tie — the whole point of letting a deadline carry a real time of day now.
+    func testSameDayDeadlinesRankByTimeOfDayNotAsATie() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let calendar = Calendar.current
+        let now = Date()
+        let tomorrowMorning = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: calendar.date(byAdding: .day, value: 1, to: now)!)!
+        let tomorrowEvening = calendar.date(bySettingHour: 17, minute: 0, second: 0, of: calendar.date(byAdding: .day, value: 1, to: now)!)!
+
+        let morningItem = try WorkItemService.createWorkItem(
+            title: "Morning Post", workspace: .clips, workTypeName: "Clip Posting", in: project, context: context
+        )
+        DeadlineService.setDeadline(for: morningItem, label: "Morning", dueAt: tomorrowMorning, context: context)
+        let eveningItem = try WorkItemService.createWorkItem(
+            title: "Evening Post", workspace: .clips, workTypeName: "Clip Posting", in: project, context: context
+        )
+        DeadlineService.setDeadline(for: eveningItem, label: "Evening", dueAt: tomorrowEvening, context: context)
+        try context.save()
+
+        let ranked = SchedulingService.rankedItems(from: [eveningItem, morningItem], now: now)
+
+        XCTAssertEqual(ranked.first?.workItem.title, "Morning Post", "The earlier same-day deadline should rank first, not tie")
+        XCTAssertNil(SchedulingService.topTie(in: ranked), "8 hours apart is well outside the tie margin")
+    }
+
+    func testDeadlinesWithinTheTieMarginStillCountAsATie() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let now = Date()
+
+        let first = try WorkItemService.createWorkItem(
+            title: "First", workspace: .clips, workTypeName: "Clip Posting", in: project, context: context
+        )
+        DeadlineService.setDeadline(for: first, label: "First", dueAt: Date(timeIntervalSinceNow: 86400), context: context)
+        let second = try WorkItemService.createWorkItem(
+            title: "Second", workspace: .clips, workTypeName: "Clip Posting", in: project, context: context
+        )
+        DeadlineService.setDeadline(for: second, label: "Second", dueAt: Date(timeIntervalSinceNow: 86400 + 60), context: context)
+        try context.save()
+
+        let ranked = SchedulingService.rankedItems(from: [first, second], now: now)
+
+        XCTAssertNotNil(SchedulingService.topTie(in: ranked), "A minute apart is still within the tie margin")
+    }
+
     func testQuickWinBoostRanksSmallRemainingEffortAboveLargeAtEqualPriority() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

@@ -151,7 +151,7 @@ struct SketchDetailView: View {
                         savePostDate(hasPostDate ? postDate : nil)
                     }
                 if hasPostDate {
-                    DatePicker("", selection: $postDate, displayedComponents: .date)
+                    DatePicker("", selection: $postDate, displayedComponents: [.date, .hourAndMinute])
                         .labelsHidden()
                         .onChange(of: postDate) {
                             savePostDate(postDate)

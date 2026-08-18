@@ -227,7 +227,7 @@ private struct PostItRowSheet: View {
             Toggle("Confirmed post date", isOn: $hasConfirmedDate)
                 .onChange(of: hasConfirmedDate) { save() }
             if hasConfirmedDate {
-                DatePicker("Post date", selection: $confirmedDate, displayedComponents: .date)
+                DatePicker("Post date", selection: $confirmedDate, displayedComponents: [.date, .hourAndMinute])
                     .onChange(of: confirmedDate) { save() }
             }
             TextField("Platform", text: $platform)

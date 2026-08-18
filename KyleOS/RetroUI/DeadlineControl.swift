@@ -11,6 +11,15 @@ import SwiftUI
 /// etc.) and passes that through invisibly, keeping the control itself a single button, matching
 /// Kyle's own framing ("a button"). `Deadline.notes`/`isConfirmed` exist in the model and can be
 /// surfaced later if wanted; not built here since nothing asked for them yet.
+///
+/// Kyle (2026-08-18): "We should have the ability to set a timer [time]. This way it'll show up on
+/// the calendar and it'll be able to add some detail to what gets done first." `dueAt` was always
+/// a full `Date` end-to-end (`DeadlineService`/`CalendarEventService` never truncated it, and
+/// `MonthCalendarView` already formats `event.startAt` with `.hour().minute()`) — the only thing
+/// missing was letting the user actually pick a time; the picker was date-only. Now `[.date,
+/// .hourAndMinute]`, so a chosen time flows through to Calendar for free and gives
+/// `SchedulingService.score` real same-day granularity to rank by (see that file's own doc
+/// comment on the deadline term).
 struct DeadlineControl: View {
     /// Kyle (2026-08-17): once a screen shows more than one deadline (e.g. a Clip's separate
     /// Editing and Subtitling deadlines), a generic "Set Deadline" on both is ambiguous — `nil`
@@ -45,7 +54,7 @@ struct DeadlineControl: View {
 
     private var dueButtonText: String {
         guard let dueAt else { return "" }
-        let formatted = dueAt.formatted(date: .abbreviated, time: .omitted)
+        let formatted = dueAt.formatted(date: .abbreviated, time: .shortened)
         return label.map { "\($0) due \(formatted)" } ?? "Due \(formatted)"
     }
 
@@ -129,7 +138,7 @@ struct DeadlineControl: View {
             Text(editorTitle)
                 .font(.headline)
                 .foregroundStyle(RetroTheme.primaryText)
-            DatePicker("Due", selection: $draftDate, displayedComponents: .date)
+            DatePicker("Due", selection: $draftDate, displayedComponents: [.date, .hourAndMinute])
             Toggle("Hard deadline", isOn: $draftIsHard)
             Text(draftIsHard
                 ? "Appears on Calendar as a commitment, and feeds the Scheduling Engine's urgency."

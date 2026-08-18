@@ -13,6 +13,11 @@ import SwiftUI
 ///
 /// Deliberately its own small control rather than reusing `DeadlineControl` — that control exposes
 /// a hard/soft toggle that `setConfirmedPostDate` ignores (a Post Date is always hard/locked).
+///
+/// Kyle (2026-08-18): "We should have the ability to set a timer [time]... it'll show up on the
+/// calendar and... add some detail to what gets done first - when things should get posted." Same
+/// motivation/fix as `DeadlineControl`'s own doc comment — `confirmedPostDate` was always a full
+/// `Date`, just never editable past day-granularity in the popover.
 struct PostDateControl: View {
     enum Subject {
         case clip(ClipService.Clip)
@@ -51,7 +56,7 @@ struct PostDateControl: View {
                 .foregroundStyle(RetroTheme.primaryText)
             }
             .buttonStyle(.retroCompact)
-            .help(currentDate.map { "Post \($0.formatted(date: .abbreviated, time: .omitted))" } ?? "Set post date")
+            .help(currentDate.map { "Post \($0.formatted(date: .abbreviated, time: .shortened))" } ?? "Set post date")
 
             if let recommended {
                 Button {
@@ -63,7 +68,7 @@ struct PostDateControl: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(RetroTheme.accent)
-                .help("Recommended: \(recommended.formatted(date: .abbreviated, time: .omitted)) — tap to set")
+                .help("Recommended: \(recommended.formatted(date: .abbreviated, time: .shortened)) — tap to set")
             }
         }
         .popover(isPresented: $isEditing) { editor }
@@ -72,7 +77,7 @@ struct PostDateControl: View {
     private var editor: some View {
         VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             Text("Post Date").font(.headline).foregroundStyle(RetroTheme.primaryText)
-            DatePicker("Date", selection: $draftDate, displayedComponents: .date)
+            DatePicker("Date", selection: $draftDate, displayedComponents: [.date, .hourAndMinute])
             Text("Static once set — appears on Calendar and To Do, and won't move unless changed here.")
                 .font(.caption)
                 .foregroundStyle(RetroTheme.secondaryText)

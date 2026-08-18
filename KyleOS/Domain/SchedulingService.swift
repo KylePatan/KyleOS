@@ -59,6 +59,17 @@ enum SchedulingService {
     /// caller doesn't have today's actual remaining Creative Capacity on hand.
     static let defaultQuickWinThresholdMinutes = 120
 
+    /// Kyle (2026-08-18): "We should have the ability to set a timer [time]... add some detail to
+    /// what gets done first - when things should get posted." The deadline term used to compare
+    /// `dueAt` at whole-calendar-day granularity (`dateComponents([.day], ...)`), so two deadlines
+    /// on the same calendar day always scored identically regardless of time of day — now a raw
+    /// fractional-day interval (`timeIntervalSince(now) / 86400`), so a 9am deadline outscores a
+    /// 5pm deadline the same day by `(8/24) * deadlineDecayPerDay` ≈ 33 points, comfortably above
+    /// `tieMargin` (2.0) — a real ranking difference, not a coin flip. Items due within ~29 minutes
+    /// of each other (`tieMargin / deadlineDecayPerDay` days) still land inside the tie margin and
+    /// still prompt via `topTie`/`SchedulingTieBreakPrompt` — this doesn't touch Decision Gate B's
+    /// "the user gets to choose as the tie-break" behavior for genuine ties, it just stops
+    /// same-day-different-time deadlines from being treated as one by default.
     static func score(
         _ workItem: WorkItem,
         quickWinThresholdMinutes: Int = defaultQuickWinThresholdMinutes,
@@ -68,7 +79,7 @@ enum SchedulingService {
         var total = 0.0
 
         if let dueAt = workItem.deadline?.dueAt {
-            let daysUntil = Double(calendar.dateComponents([.day], from: now, to: dueAt).day ?? 0)
+            let daysUntil = dueAt.timeIntervalSince(now) / 86400
             total += max(deadlineBaseScore - daysUntil * deadlineDecayPerDay, 0)
         }
 
