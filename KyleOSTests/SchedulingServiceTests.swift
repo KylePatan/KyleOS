@@ -226,22 +226,31 @@ final class SchedulingServiceTests: XCTestCase {
         XCTAssertGreaterThan(itemA.priority, itemB.priority)
     }
 
-    func testResolveTieDoesNotExceedMaximumPriority() throws {
+    /// Regression test for a real bug found in a preventative review (2026-08-18), not from an
+    /// observed bad ranking: `resolveTie` used to cap the boosted priority at 5, but `priority`'s
+    /// only other writer (`AllTasksView`'s drag-reorder, via `HomeService.reorderedPriorities`)
+    /// assigns every item in the list a distinct value up to `count - 1` — unbounded, not a small
+    /// 1-5 scale. On any list bigger than ~6 items, the old cap would silently *lower* the chosen
+    /// item's priority back to 5 instead of raising it above the other item.
+    func testResolveTieOutranksBothItemsEvenWithLargeListDerivedPriorities() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
 
+        // Priorities as they'd actually look partway down a 20-item All Tasks list after a drag
+        // reorder (HomeService.reorderedPriorities assigns count-1-index, not a bounded 1-5 scale).
         let itemA = try WorkItemService.createWorkItem(
-            title: "Item A", workspace: .writing, workTypeName: "Outline", in: project, priority: 5, context: context
+            title: "Item A", workspace: .writing, workTypeName: "Outline", in: project, priority: 18, context: context
         )
         let itemB = try WorkItemService.createWorkItem(
-            title: "Item B", workspace: .writing, workTypeName: "Outline", in: project, priority: 5, context: context
+            title: "Item B", workspace: .writing, workTypeName: "Outline", in: project, priority: 19, context: context
         )
         try context.save()
 
         SchedulingService.resolveTie(choosing: itemA, over: itemB)
         try context.save()
 
-        XCTAssertEqual(itemA.priority, 5)
+        XCTAssertEqual(itemA.priority, 20, "One more than the higher of the two, not capped")
+        XCTAssertGreaterThan(itemA.priority, itemB.priority)
     }
 }

@@ -135,8 +135,18 @@ enum SchedulingService {
     /// the tie-breaker" (Decision Gate B). Reuses the existing priority mechanism rather than a
     /// new "pinned for today" field: a real choice about what matters more should persist beyond
     /// a single session, the same as any other manual priority change.
+    ///
+    /// Found during a preventative Scheduling Engine review (2026-08-18), not from an observed bad
+    /// ranking: `priority`'s *only* other writer is `AllTasksView`'s drag-reorder
+    /// (`HomeService.reorderedPriorities`), which assigns every item in the list a distinct value
+    /// from `count - 1` down to `0` — i.e. unbounded, scaling with list size, not a small 1-5
+    /// scale. The old `min(..., 5)` cap here meant that on any list bigger than ~6 items, resolving
+    /// a tie would silently *lower* the chosen item's priority back down to 5 instead of raising
+    /// it — the opposite of "the user's choice becomes the tie-break." No cap now: the chosen item
+    /// simply becomes one more than the higher of the two, correctly outranking both regardless of
+    /// list size, matching drag-reorder's own ordinal semantics.
     static func resolveTie(choosing chosen: WorkItem, over other: WorkItem) {
-        let boosted = min(max(chosen.priority, other.priority) + 1, 5)
+        let boosted = max(chosen.priority, other.priority) + 1
         WorkItemService.setPriority(chosen, to: boosted)
     }
 }

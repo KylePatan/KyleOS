@@ -24,11 +24,12 @@ import SwiftData
 ///
 /// Deliberately scoped to ONE real trigger this increment: `CreativeCapacityService.setOverride`
 /// lowering a day's capacity (wired into `CalendarHomeView`). Other capacity-shrinking moments —
-/// a new Busy CalendarEvent (PRD §4.4 says these should reduce capacity, but
-/// `CreativeCapacityService.todaysCapacity` doesn't actually implement that reduction yet — a
-/// separate, pre-existing gap, not something to silently fix here), a new Gig, a DayJobOverride
-/// — are real future call sites, not built here. Not scope creep to defer; matches every other
-/// module's own "narrowest real slice first" pattern this session.
+/// a new Gig, a DayJobOverride — are real future call sites, not built here. Not scope creep to
+/// defer; matches every other module's own "narrowest real slice first" pattern this session. A
+/// new Busy Personal/Time-Off CalendarEvent is no longer one of the deferred cases: since this
+/// calls `CreativeCapacityService.todaysCapacity` directly (below), it started reducing each
+/// lookahead day's capacity for those automatically the moment that gap was fixed (2026-08-18) —
+/// no change needed here.
 enum CascadeReschedulingService {
     typealias PlannedSession = KyleOSSchemaV31.PlannedSession
     typealias CalendarEvent = KyleOSSchemaV31.CalendarEvent

@@ -36,6 +36,36 @@ final class CascadeReschedulingServiceTests: XCTestCase {
         XCTAssertEqual(result.moves.first?.session.id, lowSession.id)
     }
 
+    /// Confirms the 2026-08-18 Creative Capacity fix (Personal/Time-Off events reduce baseline)
+    /// actually reaches cascade rescheduling, not just `CreativeCapacityService`'s own tests —
+    /// this file's own doc comment used to explicitly call that gap out as one of the deferred
+    /// cases; it isn't anymore since this calls `todaysCapacity` directly.
+    func testBusyPersonalEventReducesCascadeCapacityAndPushesASession() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+        let settings = try SettingsService.currentSettings(in: context)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2, weekendHours: 2, standUpNightBonusHours: 0)
+
+        let workItem = try makeWorkItem(priority: 3, in: project, context: context)
+        let today = Date()
+        let session = PlannedSessionService.schedule(for: workItem, at: today, durationMinutes: 90, context: context)
+        try context.save()
+
+        // A 2-hour personal event today leaves only 0h of the 2h baseline for a 90-minute session.
+        let personalEvent = CalendarEventService.createEvent(
+            type: .personal, startAt: today, endAt: today.addingTimeInterval(3600 * 2), context: context
+        )
+
+        let result = CascadeReschedulingService.reflow(
+            startingFrom: today, settings: settings, calendarEvents: [personalEvent], capacityOverrides: [],
+            allSessions: [session]
+        )
+
+        XCTAssertFalse(Calendar.current.isDate(session.scheduledAt, inSameDayAs: today), "No capacity left today once the personal event is subtracted")
+        XCTAssertEqual(result.moves.count, 1)
+    }
+
     func testLockedSessionsNeverMoveButStillCountAgainstCapacity() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
