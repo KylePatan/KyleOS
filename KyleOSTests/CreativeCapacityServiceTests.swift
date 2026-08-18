@@ -251,6 +251,102 @@ final class CreativeCapacityServiceTests: XCTestCase {
     /// Pre-migration rows have `weekendCreativeCapacityHours == nil` — `displayWeekendCreativeCapacityHours`
     /// falls back to the weekday value so existing users see an unchanged weekend baseline until
     /// they explicitly set one (the V8-lesson-safe pattern, same as `displayPostsPerWeekTarget`).
+    /// PRD §4.4: "Personal calendar events and all-day time-off events reduce available capacity."
+    /// A known gap until 2026-08-18 — only Gigs and manual overrides reduced the baseline before.
+    func testPersonalEventTodayReducesBaselineByItsDuration() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+
+        let personalEvent = CalendarEventService.createEvent(
+            type: .personal, startAt: now, endAt: now.addingTimeInterval(3600 * 2), context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [personalEvent], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 0.5, accuracy: 0.01, "2.5h baseline - 2h personal event")
+    }
+
+    func testAllDayTimeOffEventZeroesTheBaseline() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfDay = calendar.startOfDay(for: now)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+
+        let timeOff = CalendarEventService.createEvent(
+            type: .unavailableTimeOff, startAt: startOfDay, endAt: endOfDay, isAllDay: true, context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [timeOff], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 0)
+    }
+
+    func testAvailableMarkedPersonalEventDoesNotReduceCapacity() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+
+        let looseReminder = CalendarEventService.createEvent(
+            type: .personal, startAt: now, endAt: now.addingTimeInterval(3600 * 2), availability: .available, context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [looseReminder], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 2.5, "An .available event doesn't actually block time")
+    }
+
+    func testPersonalEventOnADifferentDayDoesNotReduceCapacity() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+        let tomorrow = Date(timeIntervalSinceNow: 86400)
+
+        let personalEvent = CalendarEventService.createEvent(
+            type: .personal, startAt: tomorrow, endAt: tomorrow.addingTimeInterval(3600 * 2), context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [personalEvent], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 2.5)
+    }
+
+    func testDayJobAndCreativeWorkSessionEventsDoNotReduceCapacity() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+
+        let dayJob = CalendarEventService.createEvent(type: .dayJob, startAt: now, endAt: now.addingTimeInterval(3600 * 8), context: context)
+        let workSession = CalendarEventService.createEvent(type: .creativeWorkSession, startAt: now, endAt: now.addingTimeInterval(3600), context: context)
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [dayJob, workSession], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 2.5, "Day Job is already baked into the baseline itself; Creative Work Session isn't a capacity-reducing type")
+    }
+
+    func testPersonalEventReductionCombinesWithGigNightReduction() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let now = Date()
+
+        let gigEvent = CalendarEventService.createEvent(type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context)
+        let personalEvent = CalendarEventService.createEvent(
+            type: .personal, startAt: now, endAt: now.addingTimeInterval(3600), context: context
+        )
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [gigEvent, personalEvent], plannedSessions: [], now: now)
+
+        XCTAssertEqual(summary.baselineHours, 0.5, accuracy: 0.01, "2.5h - 1h gig-night reduction - 1h personal event")
+    }
+
     func testWeekendFallsBackToWeekdayHoursWhenNeverSet() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

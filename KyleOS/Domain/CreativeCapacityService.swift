@@ -8,8 +8,16 @@ import SwiftData
 enum CreativeCapacityService {
     typealias AppSettings = KyleOSSchemaV31.AppSettings
     typealias CalendarEvent = KyleOSSchemaV31.CalendarEvent
+    typealias CalendarEventType = KyleOSSchemaV31.CalendarEventType
+    typealias Availability = KyleOSSchemaV31.Availability
     typealias PlannedSession = KyleOSSchemaV31.PlannedSession
     typealias CapacityOverride = KyleOSSchemaV31.CapacityOverride
+
+    /// PRD §4.4: "Personal calendar events and all-day time-off events reduce available capacity."
+    /// Only these two types count — Day Job is already baked into the weekday/weekend baseline
+    /// itself (not derived from its own CalendarEvent), and a Stand-Up Gig has its own separate,
+    /// differently-shaped reduction (`standUpNightBonusHours`) right below.
+    private static let capacityReducingEventTypes: Set<CalendarEventType> = [.personal, .unavailableTimeOff]
 
     struct Summary: Equatable {
         let baselineHours: Double
@@ -34,6 +42,15 @@ enum CreativeCapacityService {
     /// to zero or increasing it for a free day." An override is the user's own stated number for
     /// that specific day — used directly as the baseline, bypassing the Settings/gig-night
     /// calculation entirely rather than adjusting it further.
+    ///
+    /// Kyle (2026-08-18): flagged as a known, deliberately-deferred gap in `CURRENT_PHASE.md` —
+    /// "Personal calendar events and all-day time-off events reduce available capacity" (§4.4)
+    /// wasn't implemented; only Gigs and manual overrides reduced the baseline. Reduces baseline by
+    /// each `.busy` Personal/Unavailable event's actual overlap with today (clipped to
+    /// [startOfDay, endOfDay) — an all-day event's `startAt`/`endAt` span the full day, so it
+    /// naturally zeroes the baseline rather than needing special-case handling). An event marked
+    /// `.available` doesn't reduce capacity — same distinction real calendar apps make between a
+    /// loosely-scheduled reminder and something that actually blocks time.
     static func todaysCapacity(
         settings: AppSettings,
         events: [CalendarEvent],
@@ -60,8 +77,21 @@ enum CreativeCapacityService {
         if hasGigToday {
             baseline = max(baseline - settings.standUpNightBonusHours, 0)
         }
+        baseline = max(baseline - personalEventReductionHours(events: events, calendar: calendar, now: now), 0)
 
         return Summary(baselineHours: baseline, scheduledHours: scheduledHours)
+    }
+
+    private static func personalEventReductionHours(events: [CalendarEvent], calendar: Calendar, now: Date) -> Double {
+        let startOfDay = calendar.startOfDay(for: now)
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else { return 0 }
+        return events
+            .filter { capacityReducingEventTypes.contains($0.eventType) && $0.availability == .busy }
+            .reduce(0.0) { total, event in
+                let overlapStart = max(event.startAt, startOfDay)
+                let overlapEnd = min(event.endAt, endOfDay)
+                return total + max(overlapEnd.timeIntervalSince(overlapStart), 0) / 3600
+            }
     }
 
     static func override(for date: Date, in context: ModelContext, calendar: Calendar = .current) throws -> CapacityOverride? {
