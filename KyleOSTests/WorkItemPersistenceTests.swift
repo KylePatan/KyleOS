@@ -168,6 +168,78 @@ final class WorkItemPersistenceTests: XCTestCase {
         XCTAssertNil(survivor?.clip)
     }
 
+    // MARK: - Clip stage WorkItems (2026-08-17: separate deadlines per production stage)
+
+    func testClipSubtitlingWorkItemIsDistinctFromClipEditingWorkItem() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+
+        let editing = try WorkItemService.clipWorkItem(for: clip, context: context)
+        let subtitling = try WorkItemService.clipSubtitlingWorkItem(for: clip, context: context)
+        try context.save()
+
+        XCTAssertNotEqual(editing.id, subtitling.id)
+        XCTAssertEqual(editing.workTypeName, "Clip Editing")
+        XCTAssertEqual(subtitling.workTypeName, "Clip Subtitling")
+        XCTAssertEqual(subtitling.clip?.id, clip.id)
+    }
+
+    func testClipSubtitlingWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+
+        let first = try WorkItemService.clipSubtitlingWorkItem(for: clip, context: context)
+        try context.save()
+        let second = try WorkItemService.clipSubtitlingWorkItem(for: clip, context: context)
+
+        XCTAssertEqual(first.id, second.id)
+    }
+
+    func testClipPostingWorkItemIsDistinctFromEditingAndSubtitling() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+
+        let editing = try WorkItemService.clipWorkItem(for: clip, context: context)
+        let subtitling = try WorkItemService.clipSubtitlingWorkItem(for: clip, context: context)
+        let posting = try WorkItemService.clipPostingWorkItem(for: clip, context: context)
+        try context.save()
+
+        let allIDs = Set([editing.id, subtitling.id, posting.id])
+        XCTAssertEqual(allIDs.count, 3, "Editing, Subtitling, and Posting must each get their own WorkItem")
+        XCTAssertEqual(posting.workTypeName, "Clip Posting")
+    }
+
+    func testEditingAndSubtitlingDeadlinesOnTheSameClipAreIndependent() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airline Bit", in: source, context: context)
+        try context.save()
+
+        let editing = try WorkItemService.clipWorkItem(for: clip, context: context)
+        let subtitling = try WorkItemService.clipSubtitlingWorkItem(for: clip, context: context)
+        let editingDue = Date(timeIntervalSinceNow: 86400 * 2)
+        let subtitlingDue = Date(timeIntervalSinceNow: 86400 * 5)
+        DeadlineService.setDeadline(for: editing, label: "Finish editing", dueAt: editingDue, context: context)
+        DeadlineService.setDeadline(for: subtitling, label: "Finish subtitling", dueAt: subtitlingDue, context: context)
+        try context.save()
+
+        let editingDeadline = try XCTUnwrap(editing.deadline)
+        let subtitlingDeadline = try XCTUnwrap(subtitling.deadline)
+        XCTAssertEqual(editingDeadline.dueAt.timeIntervalSince1970, editingDue.timeIntervalSince1970, accuracy: 1)
+        XCTAssertEqual(subtitlingDeadline.dueAt.timeIntervalSince1970, subtitlingDue.timeIntervalSince1970, accuracy: 1)
+        XCTAssertNotEqual(editingDeadline.id, subtitlingDeadline.id)
+    }
+
     func testSketchEditingWorkItemCreatesOneLinkedToTheProjectOnFirstCall() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

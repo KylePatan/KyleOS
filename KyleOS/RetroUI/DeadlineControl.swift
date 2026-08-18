@@ -12,6 +12,11 @@ import SwiftUI
 /// Kyle's own framing ("a button"). `Deadline.notes`/`isConfirmed` exist in the model and can be
 /// surfaced later if wanted; not built here since nothing asked for them yet.
 struct DeadlineControl: View {
+    /// Kyle (2026-08-17): once a screen shows more than one deadline (e.g. a Clip's separate
+    /// Editing and Subtitling deadlines), a generic "Set Deadline" on both is ambiguous — `nil`
+    /// preserves the original generic wording exactly, unchanged, for every call site that
+    /// existed before this.
+    var label: String? = nil
     let dueAt: Date?
     let isHard: Bool
     let onSet: (_ dueAt: Date, _ isHard: Bool) -> Void
@@ -20,6 +25,21 @@ struct DeadlineControl: View {
     @State private var isEditing = false
     @State private var draftDate = Date.now
     @State private var draftIsHard = true
+
+    private var setButtonText: String {
+        label.map { "Set \($0) Deadline" } ?? "Set Deadline"
+    }
+
+    private var dueButtonText: String {
+        guard let dueAt else { return "" }
+        let formatted = dueAt.formatted(date: .abbreviated, time: .omitted)
+        return label.map { "\($0) due \(formatted)" } ?? "Due \(formatted)"
+    }
+
+    private var editorTitle: String {
+        let action = dueAt == nil ? "Set" : "Edit"
+        return label.map { "\(action) \($0) Deadline" } ?? "\(action) Deadline"
+    }
 
     var body: some View {
         HStack(spacing: RetroTheme.controlSpacing) {
@@ -31,7 +51,7 @@ struct DeadlineControl: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: isHard ? "calendar.badge.exclamationmark" : "calendar")
-                        Text("Due \(dueAt.formatted(date: .abbreviated, time: .omitted))")
+                        Text(dueButtonText)
                     }
                     // RetroButtonStyle sets its own foregroundStyle on the label internally, so an
                     // outer .foregroundStyle()/.tint() on the Button itself has no effect — color
@@ -50,7 +70,7 @@ struct DeadlineControl: View {
                     draftIsHard = true
                     isEditing = true
                 } label: {
-                    Label("Set Deadline", systemImage: "calendar.badge.plus")
+                    Label(setButtonText, systemImage: "calendar.badge.plus")
                 }
                 .buttonStyle(.retro)
             }
@@ -60,7 +80,7 @@ struct DeadlineControl: View {
 
     private var editor: some View {
         VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
-            Text(dueAt == nil ? "Set Deadline" : "Edit Deadline")
+            Text(editorTitle)
                 .font(.headline)
                 .foregroundStyle(RetroTheme.primaryText)
             DatePicker("Due", selection: $draftDate, displayedComponents: .date)

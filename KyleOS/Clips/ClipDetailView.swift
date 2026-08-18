@@ -13,11 +13,18 @@ struct ClipDetailView: View {
     @Query(sort: \ClipService.Chunk.createdAt) private var allChunks: [ClipService.Chunk]
 
     /// Kyle (2026-08-17): deadlines belong on "each thing created individually," not just
-    /// Projects — same lazy-WorkItem pattern as ProseEditorView/ChunkDetailView.
+    /// Projects — same lazy-WorkItem pattern as ProseEditorView/ChunkDetailView. Extended the same
+    /// day to separate named deadlines per production stage ("finish editing", "finish
+    /// subtitling"), so a Clip now has up to three WorkItems (Editing/Subtitling/Posting,
+    /// distinguished by workTypeName — see WorkItemService's doc comment on `clipWorkItem`).
     @Query private var allWorkItems: [WorkItemService.WorkItem]
 
-    private var workItem: WorkItemService.WorkItem? {
-        allWorkItems.first { $0.clip?.persistentModelID == clip.persistentModelID }
+    private var editingWorkItem: WorkItemService.WorkItem? {
+        allWorkItems.first { $0.clip?.persistentModelID == clip.persistentModelID && $0.workTypeName == "Clip Editing" }
+    }
+
+    private var subtitlingWorkItem: WorkItemService.WorkItem? {
+        allWorkItems.first { $0.clip?.persistentModelID == clip.persistentModelID && $0.workTypeName == "Clip Subtitling" }
     }
 
     @State private var title = ""
@@ -85,26 +92,46 @@ struct ClipDetailView: View {
     private var timerSection: some View {
         VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
             ActiveTimerBanner()
-            HStack {
-                if timerController.state == .idle {
-                    Button("Start Timer") {
-                        guard let workItem = try? WorkItemService.clipWorkItem(for: clip, context: context) else { return }
-                        timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
-                        try? context.save()
-                    }
-                    .buttonStyle(.retroProminent)
+            if timerController.state == .idle {
+                Button("Start Timer") {
+                    guard let workItem = try? WorkItemService.clipWorkItem(for: clip, context: context) else { return }
+                    timerController.start(workItem: workItem, targetDurationMinutes: nil, progressBefore: workItem.progress, context: context)
+                    try? context.save()
                 }
+                .buttonStyle(.retroProminent)
+            }
+            // Kyle (2026-08-17): "add a deadline to finish editing" / "add a deadline to finish
+            // subtitling" — two separately-labeled, separately-trackable deadlines rather than one
+            // generic one, each on its own WorkItem so it ranks into the Weekly Board's To Do
+            // independently.
+            HStack {
                 DeadlineControl(
-                    dueAt: workItem?.deadline?.dueAt,
-                    isHard: workItem?.deadline?.isHard ?? true,
+                    label: "Editing",
+                    dueAt: editingWorkItem?.deadline?.dueAt,
+                    isHard: editingWorkItem?.deadline?.isHard ?? true,
                     onSet: { dueAt, isHard in
                         guard let resolvedWorkItem = try? WorkItemService.clipWorkItem(for: clip, context: context) else { return }
-                        DeadlineService.setDeadline(for: resolvedWorkItem, label: clip.title, dueAt: dueAt, isHard: isHard, context: context)
+                        DeadlineService.setDeadline(for: resolvedWorkItem, label: "Finish editing: \(clip.title)", dueAt: dueAt, isHard: isHard, context: context)
                         try? context.save()
                     },
                     onRemove: {
-                        guard let workItem else { return }
-                        DeadlineService.removeDeadline(for: workItem, context: context)
+                        guard let editingWorkItem else { return }
+                        DeadlineService.removeDeadline(for: editingWorkItem, context: context)
+                        try? context.save()
+                    }
+                )
+                DeadlineControl(
+                    label: "Subtitling",
+                    dueAt: subtitlingWorkItem?.deadline?.dueAt,
+                    isHard: subtitlingWorkItem?.deadline?.isHard ?? true,
+                    onSet: { dueAt, isHard in
+                        guard let resolvedWorkItem = try? WorkItemService.clipSubtitlingWorkItem(for: clip, context: context) else { return }
+                        DeadlineService.setDeadline(for: resolvedWorkItem, label: "Finish subtitling: \(clip.title)", dueAt: dueAt, isHard: isHard, context: context)
+                        try? context.save()
+                    },
+                    onRemove: {
+                        guard let subtitlingWorkItem else { return }
+                        DeadlineService.removeDeadline(for: subtitlingWorkItem, context: context)
                         try? context.save()
                     }
                 )
@@ -159,19 +186,41 @@ struct ClipDetailView: View {
                     }
                 Toggle("Post date", isOn: $hasPostDate)
                     .onChange(of: hasPostDate) {
-                        ClipService.setPostDate(clip, date: hasPostDate ? postDate : nil)
-                        try? context.save()
+                        savePostDate(hasPostDate ? postDate : nil)
                     }
                 if hasPostDate {
                     DatePicker("", selection: $postDate, displayedComponents: .date)
                         .labelsHidden()
                         .onChange(of: postDate) {
-                            ClipService.setPostDate(clip, date: postDate)
-                            try? context.save()
+                            savePostDate(postDate)
                         }
+                } else if let recommended = PostingItemService.recommendedPostDate(in: context) {
+                    // Kyle (2026-08-17): "have the recommended post dates" — confirmed to mean
+                    // "depending on the settings for when we should post [the weekly posting-goal
+                    // Stepper in Post It] - it slots it into there." A starting suggestion, not a
+                    // persistent nag — disappears once a real date is set.
+                    Button {
+                        postDate = recommended
+                        hasPostDate = true
+                        savePostDate(recommended)
+                    } label: {
+                        Text("Recommended: \(recommended.formatted(date: .abbreviated, time: .omitted))")
+                    }
+                    .buttonStyle(.retro)
                 }
             }
         }
+    }
+
+    /// Kyle (2026-08-17): post dates should "show up in my calendar - as well as my to do," and
+    /// this screen's own Toggle+DatePicker used to call `ClipService.setPostDate` directly —
+    /// bypassing `PostingItem` (and its Calendar/To-Do sync) entirely, even though the Post It tab
+    /// on Home already managed post dates through it. Routing through `PostingItemService` here
+    /// instead unifies both into the one real source of truth.
+    private func savePostDate(_ date: Date?) {
+        let item = PostingItemService.findOrCreate(for: clip, context: context)
+        PostingItemService.setConfirmedPostDate(item, date: date, context: context)
+        try? context.save()
     }
 
     private var linkedJokeLabel: String {

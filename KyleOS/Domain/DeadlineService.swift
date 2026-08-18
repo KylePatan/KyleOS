@@ -17,6 +17,7 @@ enum DeadlineService {
     typealias Deadline = KyleOSSchemaV30.Deadline
     typealias Project = KyleOSSchemaV30.Project
     typealias WorkItem = KyleOSSchemaV30.WorkItem
+    typealias CalendarEventType = KyleOSSchemaV30.CalendarEventType
 
     /// Editable, not just settable once — a UI "Set/Edit Deadline" control calling this on every
     /// save must not silently orphan the previous Deadline (and its CalendarEvent) each time.
@@ -44,6 +45,10 @@ enum DeadlineService {
         return deadline
     }
 
+    /// `calendarEventType` lets a caller tag the synced event as something more specific than a
+    /// generic Hard Deadline — e.g. Post Date (Kyle, 2026-08-17: post dates should "show up in my
+    /// calendar" with the right label, not read as an ordinary deadline). Purely cosmetic/
+    /// classification; the underlying Deadline/lock/ranking behavior is identical either way.
     @discardableResult
     static func setDeadline(
         for workItem: WorkItem,
@@ -51,16 +56,17 @@ enum DeadlineService {
         dueAt: Date,
         isHard: Bool = true,
         notes: String = "",
+        calendarEventType: CalendarEventType = .hardDeadline,
         context: ModelContext
     ) -> Deadline {
         if let existing = workItem.deadline {
-            update(existing, label: label, dueAt: dueAt, isHard: isHard, notes: notes, context: context)
+            update(existing, label: label, dueAt: dueAt, isHard: isHard, notes: notes, calendarEventType: calendarEventType, context: context)
             return existing
         }
         let deadline = Deadline(label: label, dueAt: dueAt, isHard: isHard, notes: notes, workItem: workItem)
         context.insert(deadline)
         workItem.deadline = deadline
-        syncCalendarEvent(for: deadline, context: context)
+        syncCalendarEvent(for: deadline, calendarEventType: calendarEventType, context: context)
         return deadline
     }
 
@@ -86,6 +92,7 @@ enum DeadlineService {
         dueAt: Date,
         isHard: Bool,
         notes: String,
+        calendarEventType: CalendarEventType = .hardDeadline,
         context: ModelContext
     ) {
         deadline.label = label
@@ -93,7 +100,7 @@ enum DeadlineService {
         deadline.isHard = isHard
         deadline.notes = notes
         deadline.updatedAt = .now
-        syncCalendarEvent(for: deadline, context: context)
+        syncCalendarEvent(for: deadline, calendarEventType: calendarEventType, context: context)
     }
 
     /// A deliberate Deadline reschedule is the source of truth — unlike a direct calendar drag,
@@ -136,10 +143,11 @@ enum DeadlineService {
         return try context.fetch(descriptor)
     }
 
-    /// Creates the `.hardDeadline` event the first time a deadline goes hard, updates that same
-    /// event in place on later edits (rather than creating a duplicate every time), and removes
-    /// it outright if the deadline is edited back to soft.
-    private static func syncCalendarEvent(for deadline: Deadline, context: ModelContext) {
+    /// Creates the calendar event the first time a deadline goes hard, updates that same event in
+    /// place on later edits (rather than creating a duplicate every time, and re-tagging its type
+    /// in case a caller's `calendarEventType` changed), and removes it outright if the deadline is
+    /// edited back to soft.
+    private static func syncCalendarEvent(for deadline: Deadline, calendarEventType: CalendarEventType = .hardDeadline, context: ModelContext) {
         guard deadline.isHard else {
             deadline.calendarEvents.forEach { context.delete($0) }
             return
@@ -148,10 +156,11 @@ enum DeadlineService {
             event.startAt = deadline.dueAt
             event.endAt = deadline.dueAt
             event.notes = deadline.label
+            event.eventType = calendarEventType
             event.updatedAt = .now
         } else {
             CalendarEventService.createEvent(
-                type: .hardDeadline,
+                type: calendarEventType,
                 startAt: deadline.dueAt,
                 endAt: deadline.dueAt,
                 isHardCommitment: true,

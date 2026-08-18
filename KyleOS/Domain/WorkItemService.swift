@@ -219,22 +219,88 @@ enum WorkItemService {
     /// unlike Stand-Up, the PRD never mentions a "general" untargeted Clips session, so there's
     /// no `generalClipsWorkItem` counterpart to `generalStandUpWorkItem`. Lazily finds or
     /// creates, same pattern as `standUpWorkItem`.
+    /// `workTypeName` is now part of the lookup, not just the created value — Kyle (2026-08-17)
+    /// asked for separate named deadlines per production stage ("finish editing", "finish
+    /// subtitling"), which means a Clip can have more than one WorkItem now. Filtering only by
+    /// `clip.id` (the original, single-WorkItem-per-clip shape) would make this and the new
+    /// per-stage factories below ambiguous about which WorkItem they're each supposed to find or
+    /// create. Existing data is unaffected — every WorkItem this factory ever created already has
+    /// `workTypeName == "Clip Editing"`.
     static func clipWorkItem(for clip: Clip, context: ModelContext) throws -> WorkItem {
         let clipID = clip.id
+        let workTypeName = "Clip Editing"
         if let existing = try context.fetch(
-            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.clip?.id == clipID })
+            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.clip?.id == clipID && $0.workTypeName == workTypeName })
         ).first {
             return existing
         }
         let workItem = WorkItem(
             title: clip.title,
             workspace: .clips,
-            workTypeName: "Clip Editing",
+            workTypeName: workTypeName,
             project: nil
         )
         workItem.clip = clip
         context.insert(workItem)
         return workItem
+    }
+
+    /// Same lazy find-or-create shape as `clipWorkItem`, scoped to the Subtitling stage
+    /// specifically so it carries its own independent Deadline.
+    static func clipSubtitlingWorkItem(for clip: Clip, context: ModelContext) throws -> WorkItem {
+        let clipID = clip.id
+        let workTypeName = "Clip Subtitling"
+        if let existing = try context.fetch(
+            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.clip?.id == clipID && $0.workTypeName == workTypeName })
+        ).first {
+            return existing
+        }
+        let workItem = WorkItem(
+            title: "\(clip.title) — Subtitling",
+            workspace: .clips,
+            workTypeName: workTypeName,
+            project: nil
+        )
+        workItem.clip = clip
+        context.insert(workItem)
+        return workItem
+    }
+
+    /// Exists purely as an anchor for the Post Date Deadline (`PostingItemService.
+    /// setConfirmedPostDate`) so a confirmed post date can reuse the same Deadline/CalendarEvent/
+    /// ranking pipeline as every other deadline — no separate "Start Timer" or UI of its own.
+    static func clipPostingWorkItem(for clip: Clip, context: ModelContext) throws -> WorkItem {
+        let clipID = clip.id
+        let workTypeName = "Clip Posting"
+        if let existing = try context.fetch(
+            FetchDescriptor<WorkItem>(predicate: #Predicate { $0.clip?.id == clipID && $0.workTypeName == workTypeName })
+        ).first {
+            return existing
+        }
+        let workItem = WorkItem(
+            title: "\(clip.title) — Post",
+            workspace: .clips,
+            workTypeName: workTypeName,
+            project: nil
+        )
+        workItem.clip = clip
+        context.insert(workItem)
+        return workItem
+    }
+
+    /// Sketch-side counterpart to `clipPostingWorkItem`, same anchor-only purpose.
+    static func sketchPostingWorkItem(for project: Project, context: ModelContext) throws -> WorkItem {
+        let workTypeName = "Sketch Posting"
+        if let existing = try workItems(for: project, in: context).first(where: { $0.workTypeName == workTypeName }) {
+            return existing
+        }
+        return try createWorkItem(
+            title: "\(project.title) — Post",
+            workspace: .sketches,
+            workTypeName: workTypeName,
+            in: project,
+            context: context
+        )
     }
 
     /// PRD §9.7: "Cumulative project time should include Writing and later production/post-
