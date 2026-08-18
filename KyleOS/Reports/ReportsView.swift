@@ -12,7 +12,23 @@ import SwiftData
 /// (reconstructed from the HistoryEvent log) — see `ReportService`'s own doc comment for the
 /// reasoning behind the last two.
 struct ReportsView: View {
+    /// Kyle (2026-08-18): "simplify... how clunky the information is presented" — Reports was one
+    /// long scroll of 12 always-stacked panels, several of them empty most weeks. Grouped into the
+    /// same tab pattern every other Home-style screen already uses (StandUpHomeView/WritingHomeView/
+    /// ClipsHomeView's `RetroTabs`), by PRD section family, so a given visit only shows what's
+    /// actually relevant to what the user's looking for — the date range picker stays pinned above
+    /// the tabs since it filters all of them, not scrolled away with whichever tab is selected.
+    private enum Tab: String, CaseIterable, Identifiable {
+        case overview = "Overview"
+        case work = "Work"
+        case standUp = "Stand Up"
+        case production = "Production"
+        case posting = "Posting"
+        var id: String { rawValue }
+    }
+
     @Environment(\.modelContext) private var context
+    @State private var selectedTab: Tab = .overview
 
     @State private var rangeOption: ReportService.DateRangeOption = .thisWeek
     @State private var customStart = Date.now
@@ -40,48 +56,39 @@ struct ReportsView: View {
         ReportService.interval(for: rangeOption, customStart: customStart, customEnd: customEnd)
     }
 
+    /// Whether a tab has anything to show right now — used to hide empty tabs from the strip
+    /// entirely rather than let the user land on a blank pane (most weeks have no Sketches
+    /// activity, for instance).
+    private func hasContent(_ tab: Tab) -> Bool {
+        switch tab {
+        case .overview: return summary != nil || !breakdown.isEmpty || plannedVsActual != nil
+        case .work: return !estimateAccuracy.isEmpty || !stalledWorkItems.isEmpty || !recentActivity.isEmpty || !projectProgress.isEmpty
+        case .standUp: return standUpReport != nil
+        case .production: return clipsReport != nil || !sketchTransitions.isEmpty || sketchesEditingSeconds > 0 || !readyBufferTrend.isEmpty
+        case .posting: return postingReport != nil
+        }
+    }
+
+    private var visibleTabs: [Tab] {
+        let withContent = Tab.allCases.filter(hasContent)
+        return withContent.isEmpty ? [.overview] : withContent
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-                rangePicker
-                if let summary {
-                    RetroPanel("Summary") { summaryGrid(summary) }
+        VStack(alignment: .leading, spacing: 0) {
+            rangePicker
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
+            RetroTabs(tabs: visibleTabs.map { ($0, $0.rawValue) }, selection: $selectedTab)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.top, RetroTheme.controlSpacing)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                    tabContent
                 }
-                if !breakdown.isEmpty {
-                    RetroPanel("Time by Workspace") { workspaceBreakdownSection }
-                }
-                if let plannedVsActual {
-                    RetroPanel("Planned vs Actual") { plannedVsActualSection(plannedVsActual) }
-                }
-                if !estimateAccuracy.isEmpty {
-                    RetroPanel("Estimate Accuracy — Completed This Range") { estimateAccuracySection }
-                }
-                if !stalledWorkItems.isEmpty {
-                    RetroPanel("Not Worked On Recently (14+ days)") { stalledWorkSection }
-                }
-                if !recentActivity.isEmpty {
-                    RetroPanel("Recent Activity") { recentActivitySection }
-                }
-                if let standUpReport {
-                    RetroPanel("Stand Up") { standUpReportSection(standUpReport) }
-                }
-                if let clipsReport {
-                    RetroPanel("Clips") { clipsReportSection(clipsReport) }
-                }
-                if !sketchTransitions.isEmpty || sketchesEditingSeconds > 0 {
-                    RetroPanel("Sketches") { sketchesReportSection }
-                }
-                if let postingReport {
-                    RetroPanel("Posting") { postingReportSection(postingReport) }
-                }
-                if !projectProgress.isEmpty {
-                    RetroPanel("Project Progress") { projectProgressSection }
-                }
-                if !readyBufferTrend.isEmpty {
-                    RetroPanel("Ready Buffer Trend") { readyBufferTrendSection }
-                }
+                .padding(RetroTheme.sectionPadding)
             }
-            .padding(RetroTheme.sectionPadding)
         }
         .background(RetroTheme.background)
         .navigationTitle("Reports")
@@ -89,6 +96,72 @@ struct ReportsView: View {
         .onChange(of: rangeOption) { reload() }
         .onChange(of: customStart) { if rangeOption == .custom { reload() } }
         .onChange(of: customEnd) { if rangeOption == .custom { reload() } }
+        .onChange(of: visibleTabs) { if !visibleTabs.contains(selectedTab) { selectedTab = visibleTabs[0] } }
+    }
+
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case .overview:
+            if let summary {
+                RetroPanel("Summary") { summaryGrid(summary) }
+            }
+            if !breakdown.isEmpty {
+                RetroPanel("Time by Workspace") { workspaceBreakdownSection }
+            }
+            if let plannedVsActual {
+                RetroPanel("Planned vs Actual") { plannedVsActualSection(plannedVsActual) }
+            }
+            if !hasContent(.overview) {
+                emptyTabMessage
+            }
+        case .work:
+            if !estimateAccuracy.isEmpty {
+                RetroPanel("Estimate Accuracy — Completed This Range") { estimateAccuracySection }
+            }
+            if !stalledWorkItems.isEmpty {
+                RetroPanel("Not Worked On Recently (14+ days)") { stalledWorkSection }
+            }
+            if !recentActivity.isEmpty {
+                RetroPanel("Recent Activity") { recentActivitySection }
+            }
+            if !projectProgress.isEmpty {
+                RetroPanel("Project Progress") { projectProgressSection }
+            }
+            if !hasContent(.work) {
+                emptyTabMessage
+            }
+        case .standUp:
+            if let standUpReport {
+                RetroPanel("Stand Up") { standUpReportSection(standUpReport) }
+            } else {
+                emptyTabMessage
+            }
+        case .production:
+            if let clipsReport {
+                RetroPanel("Clips") { clipsReportSection(clipsReport) }
+            }
+            if !sketchTransitions.isEmpty || sketchesEditingSeconds > 0 {
+                RetroPanel("Sketches") { sketchesReportSection }
+            }
+            if !readyBufferTrend.isEmpty {
+                RetroPanel("Ready Buffer Trend") { readyBufferTrendSection }
+            }
+            if !hasContent(.production) {
+                emptyTabMessage
+            }
+        case .posting:
+            if let postingReport {
+                RetroPanel("Posting") { postingReportSection(postingReport) }
+            } else {
+                emptyTabMessage
+            }
+        }
+    }
+
+    private var emptyTabMessage: some View {
+        Text("Nothing to report here for this range yet.")
+            .foregroundStyle(RetroTheme.secondaryText)
     }
 
     private var rangePicker: some View {
