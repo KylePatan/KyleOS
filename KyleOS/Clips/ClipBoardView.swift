@@ -198,7 +198,7 @@ private struct ClipCard: View {
                     compact: true,
                     compactIcon: "captions.bubble"
                 )
-                PostDateControl(clip: clip)
+                PostDateControl(subject: .clip(clip))
                 Spacer(minLength: 0)
             }
         }
@@ -210,98 +210,6 @@ private struct ClipCard: View {
         .onDrag {
             NSItemProvider(object: clip.id.uuidString as NSString)
         }
-    }
-}
-
-/// Compact Post Date editor for board/card use — same underlying action as ClipDetailView's own
-/// Post Date section (`PostingItemService.setConfirmedPostDate`, so Calendar/To Do sync and the
-/// "static once confirmed" behavior are identical), just condensed into an icon+short-date pill
-/// (see `DeadlineControl.compact`'s doc comment for why this pattern exists — same "sleeker
-/// presentation, not a new aesthetic" motivation, 2026-08-18). Deliberately its own small control
-/// rather than reusing `DeadlineControl` — that control exposes a hard/soft toggle that
-/// `setConfirmedPostDate` ignores (a Post Date is always hard/locked), which would show a control
-/// with no real effect. The Recommended quick-set is now a small plain-text hint next to the pill
-/// rather than a second full bordered button — one tap still sets it immediately.
-private struct PostDateControl: View {
-    let clip: ClipService.Clip
-    @Environment(\.modelContext) private var context
-
-    @State private var isEditing = false
-    @State private var draftDate = Date.now
-
-    private var recommended: Date? {
-        clip.postDate == nil ? PostingItemService.recommendedPostDate(in: context) : nil
-    }
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Button {
-                draftDate = clip.postDate ?? recommended ?? .now
-                isEditing = true
-            } label: {
-                HStack(spacing: 3) {
-                    Image(systemName: "paperplane")
-                    if let date = clip.postDate {
-                        Text(date.formatted(.dateTime.month(.abbreviated).day()))
-                    }
-                }
-                .foregroundStyle(RetroTheme.primaryText)
-            }
-            .buttonStyle(.retroCompact)
-            .help(clip.postDate.map { "Post \($0.formatted(date: .abbreviated, time: .omitted))" } ?? "Set post date")
-
-            if let recommended {
-                Button {
-                    savePostDate(recommended)
-                } label: {
-                    Text(recommended.formatted(.dateTime.month(.abbreviated).day()))
-                        .font(.caption2)
-                        .underline()
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(RetroTheme.accent)
-                .help("Recommended: \(recommended.formatted(date: .abbreviated, time: .omitted)) — tap to set")
-            }
-        }
-        .popover(isPresented: $isEditing) { editor }
-    }
-
-    private var editor: some View {
-        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
-            Text("Post Date").font(.headline).foregroundStyle(RetroTheme.primaryText)
-            DatePicker("Date", selection: $draftDate, displayedComponents: .date)
-            Text("Static once set — appears on Calendar and To Do, and won't move unless changed here.")
-                .font(.caption)
-                .foregroundStyle(RetroTheme.secondaryText)
-                .frame(maxWidth: 220, alignment: .leading)
-            HStack {
-                if clip.postDate != nil {
-                    Button(role: .destructive) {
-                        savePostDate(nil)
-                        isEditing = false
-                    } label: {
-                        Text("Remove")
-                    }
-                    .buttonStyle(.retro)
-                }
-                Spacer()
-                Button("Save") {
-                    savePostDate(draftDate)
-                    isEditing = false
-                }
-                .buttonStyle(.retroProminent)
-                .keyboardShortcut(.defaultAction)
-            }
-        }
-        .padding(RetroTheme.sectionPadding)
-        .frame(width: 260)
-        .background(RetroTheme.panelBackground)
-    }
-
-    private func savePostDate(_ date: Date?) {
-        let item = PostingItemService.findOrCreate(for: clip, context: context)
-        PostingItemService.setConfirmedPostDate(item, date: date, context: context)
-        try? context.save()
     }
 }
 

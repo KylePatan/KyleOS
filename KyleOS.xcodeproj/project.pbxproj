@@ -182,6 +182,7 @@
 		FCE5195B792BD8646AA80253 /* KyleOSSchemaV22.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15224FB43759F4D958E53F9C /* KyleOSSchemaV22.swift */; };
 		FD6CDCB8E487687EA35A4149 /* KyleOSSchemaV20.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6ED48BAF8D9BAF6D289699 /* KyleOSSchemaV20.swift */; };
 		FDC29563036BDA9019F9DD08 /* SceneServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40EE0C2E331EB60518EC087 /* SceneServiceTests.swift */; };
+		FE57F7854D9B007DDBA738DB /* PostDateControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376B47050A3C7043E3228074 /* PostDateControl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -238,6 +239,7 @@
 		2E4C4089E7FC5E791FCD907E /* KyleOSSchemaV10.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV10.swift; sourceTree = "<group>"; };
 		2F6D90F7A3C6A6A11FB8B049 /* GigListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GigListView.swift; sourceTree = "<group>"; };
 		308D27EF6CF8E299C7CFDFA5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		376B47050A3C7043E3228074 /* PostDateControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDateControl.swift; sourceTree = "<group>"; };
 		38DA5EF5526C3ECFAFC0267B /* ReportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportService.swift; sourceTree = "<group>"; };
 		39082292F413B0865540E801 /* ExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportServiceTests.swift; sourceTree = "<group>"; };
 		3B329BF7E07F1430773368F9 /* MonthCalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthCalendarService.swift; sourceTree = "<group>"; };
@@ -417,6 +419,7 @@
 			isa = PBXGroup;
 			children = (
 				94980A34EE4BA8BA83217A0B /* DeadlineControl.swift */,
+				376B47050A3C7043E3228074 /* PostDateControl.swift */,
 				D29FAC72928350F9584B073F /* RetroBevel.swift */,
 				9DF0C7A1A27A8E63910163A3 /* RetroButtonStyle.swift */,
 				91261356F734A608C9069EDE /* RetroInputStyle.swift */,
@@ -947,6 +950,7 @@
 				BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */,
 				F2E8144028E4FCC941D1F75E /* PlaceholderDestinationView.swift in Sources */,
 				E832ACA1B33B82DDE5D13C33 /* PlannedSessionService.swift in Sources */,
+				FE57F7854D9B007DDBA738DB /* PostDateControl.swift in Sources */,
 				B49CC98822C5966A5ED918AB /* PostItView.swift in Sources */,
 				48253A1F4095DF04543DE5A3 /* PostingCadenceService.swift in Sources */,
 				7B14DFBC7E949FC7EFF75655 /* PostingItemService.swift in Sources */,

@@ -148,19 +148,27 @@ struct SketchDetailView: View {
                 }
                 Toggle("Post date", isOn: $hasPostDate)
                     .onChange(of: hasPostDate) {
-                        SketchProductionService.setPostDate(for: project, date: hasPostDate ? postDate : nil, context: context)
-                        try? context.save()
+                        savePostDate(hasPostDate ? postDate : nil)
                     }
                 if hasPostDate {
                     DatePicker("", selection: $postDate, displayedComponents: .date)
                         .labelsHidden()
                         .onChange(of: postDate) {
-                            SketchProductionService.setPostDate(for: project, date: postDate, context: context)
-                            try? context.save()
+                            savePostDate(postDate)
                         }
                 }
             }
         }
+    }
+
+    /// Kyle (2026-08-18): fixed alongside the Sketch Board's own Post Date control — this used to
+    /// call `SketchProductionService.setPostDate` directly, bypassing `PostingItemService` (and
+    /// its Calendar/To-Do sync) entirely, the exact bug `ClipDetailView`'s Post Date toggle had
+    /// before its 2026-08-17 fix. Routed through the same real source of truth here too.
+    private func savePostDate(_ date: Date?) {
+        let item = PostingItemService.findOrCreate(for: project, context: context)
+        PostingItemService.setConfirmedPostDate(item, date: date, context: context)
+        try? context.save()
     }
 
     /// PRD §9.3: "The shoot automatically appears on Calendar and generally acts as a hard

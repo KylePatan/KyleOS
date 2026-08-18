@@ -190,6 +190,31 @@ final class PostingItemServiceTests: XCTestCase {
         XCTAssertTrue(event.isHardCommitment)
     }
 
+    /// The Clip-side sync above already had coverage; the Sketch-side branch of the exact same
+    /// `setConfirmedPostDate` function did not — a real gap, since `SketchBoardView`/
+    /// `SketchDetailView` called `SketchProductionService.setPostDate` directly until 2026-08-18,
+    /// bypassing this sync entirely for every real Sketch. Now that both UI call sites route
+    /// through here, this is the regression guard for that fix.
+    func testSetConfirmedPostDateCreatesALockedPostDateCalendarEventForASketch() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+        let item = PostingItemService.findOrCreate(for: project, context: context)
+        let date = Date(timeIntervalSinceNow: 86400 * 5)
+
+        PostingItemService.setConfirmedPostDate(item, date: date, context: context)
+        try context.save()
+
+        let events = try context.fetch(FetchDescriptor<CalendarEventService.CalendarEvent>())
+        let event = try XCTUnwrap(events.first { $0.eventType == .postDate })
+        XCTAssertEqual(event.startAt.timeIntervalSince1970, date.timeIntervalSince1970, accuracy: 1)
+        XCTAssertTrue(event.isLocked, "A confirmed post date is 'static and do not change' from the moment it's set")
+        XCTAssertTrue(event.isHardCommitment)
+        let syncedDate = try XCTUnwrap(SketchProductionService.postDate(for: project), "Stays in sync with the pre-existing SketchProduction.postDate field too")
+        XCTAssertEqual(syncedDate.timeIntervalSince1970, date.timeIntervalSince1970, accuracy: 1)
+    }
+
     func testClearingAConfirmedPostDateRemovesItsCalendarEvent() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

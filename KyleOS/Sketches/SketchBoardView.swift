@@ -83,8 +83,6 @@ private struct SketchCard: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.openWindow) private var openWindow
-    @State private var hasPostDate = false
-    @State private var postDate = Date.now
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -102,22 +100,13 @@ private struct SketchCard: View {
                 .buttonStyle(.retro)
                 .help("Open in a new window")
             }
-            Toggle("Post date", isOn: $hasPostDate)
-                .font(.caption)
-                .foregroundStyle(RetroTheme.secondaryText)
-                .onChange(of: hasPostDate) {
-                    SketchProductionService.setPostDate(for: project, date: hasPostDate ? postDate : nil, context: context)
-                    try? context.save()
-                }
-            if hasPostDate {
-                DatePicker("", selection: $postDate, displayedComponents: .date)
-                    .labelsHidden()
-                    .font(.caption)
-                    .onChange(of: postDate) {
-                        SketchProductionService.setPostDate(for: project, date: postDate, context: context)
-                        try? context.save()
-                    }
-            }
+            // Kyle (2026-08-18): "simplify... how clunky the information is presented" — this used
+            // to be a Toggle+full-DatePicker (2 rows) calling `SketchProductionService.setPostDate`
+            // directly, which also meant a Sketch's Post Date never synced to Calendar/To-Do (the
+            // exact bug `ClipDetailView` had before its 2026-08-17 fix). The shared
+            // `PostDateControl` (KyleOS/RetroUI/PostDateControl.swift) fixes both at once: one
+            // compact pill, routed through `PostingItemService.setConfirmedPostDate`.
+            PostDateControl(subject: .sketch(project))
             Menu("Move to") {
                 ForEach(otherStatuses, id: \.self) { status in
                     Button(status.rawValue) {
@@ -134,12 +123,6 @@ private struct SketchCard: View {
         .padding(.vertical, RetroTheme.controlSpacing)
         .overlay(alignment: .bottom) {
             Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
-        }
-        .onAppear {
-            if let date = SketchProductionService.postDate(for: project) {
-                postDate = date
-                hasPostDate = true
-            }
         }
     }
 }
