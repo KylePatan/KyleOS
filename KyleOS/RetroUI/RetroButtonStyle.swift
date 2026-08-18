@@ -7,13 +7,20 @@ import SwiftUI
 /// text (Kyle, 2026-08-16: "more button-y... a little smoother and more natural").
 struct RetroButtonStyle: ButtonStyle {
     var prominent: Bool = false
+    /// Kyle (2026-08-18): "i do not like how clunky the information is presented... simplify...
+    /// just when presenting the information, not a full re-do of the aesthetic." A smaller-
+    /// footprint variant for dense contexts (board cards with several actions stacked together) —
+    /// same fill/bevel/border language as the standard button, just tighter padding and a smaller
+    /// font, so several of these read as one compact toolbar strip instead of stacked full-size
+    /// buttons. Opt-in only; every existing call site keeps the standard size unchanged.
+    var compact: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.callout.weight(.medium))
+            .font(compact ? .caption.weight(.medium) : .callout.weight(.medium))
             .foregroundStyle(prominent ? RetroTheme.accentText : RetroTheme.primaryText)
-            .padding(.horizontal, RetroTheme.sectionPadding)
-            .padding(.vertical, RetroTheme.controlSpacing)
+            .padding(.horizontal, compact ? RetroTheme.controlSpacing : RetroTheme.sectionPadding)
+            .padding(.vertical, compact ? RetroTheme.controlSpacing / 2 : RetroTheme.controlSpacing)
             .background(prominent ? RetroTheme.accent : RetroTheme.buttonBackground)
             .overlay(RetroBevel(isPressed: configuration.isPressed))
             .overlay(Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
@@ -30,4 +37,6 @@ extension ButtonStyle where Self == RetroButtonStyle {
     /// Primary action — uses the accent color, reserved for the one clear default action in a
     /// given context (Save, Add, etc.).
     static var retroProminent: RetroButtonStyle { RetroButtonStyle(prominent: true) }
+    /// Dense contexts only (board cards) — see `compact`'s own doc comment.
+    static var retroCompact: RetroButtonStyle { RetroButtonStyle(compact: true) }
 }

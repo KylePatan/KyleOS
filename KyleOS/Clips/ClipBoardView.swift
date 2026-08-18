@@ -158,6 +158,11 @@ private struct ClipCard: View {
                     .foregroundStyle(RetroTheme.secondaryText)
             }
 
+            // Kyle (2026-08-18): "simplify... how clunky the information is presented." Editing,
+            // Subtitling, and Post used to be 2 stacked rows of full-width, full-text buttons —
+            // now one row of compact icon+short-date pills (`.compact`/`.retroCompact`), each
+            // still opening the exact same editor popover, with the full description available on
+            // hover via `.help()` instead of spelled out on the button itself.
             HStack(spacing: RetroTheme.controlSpacing) {
                 DeadlineControl(
                     label: "Editing",
@@ -172,7 +177,9 @@ private struct ClipCard: View {
                         guard let editingWorkItem else { return }
                         DeadlineService.removeDeadline(for: editingWorkItem, context: context)
                         try? context.save()
-                    }
+                    },
+                    compact: true,
+                    compactIcon: "pencil"
                 )
                 DeadlineControl(
                     label: "Subtitling",
@@ -187,11 +194,13 @@ private struct ClipCard: View {
                         guard let subtitlingWorkItem else { return }
                         DeadlineService.removeDeadline(for: subtitlingWorkItem, context: context)
                         try? context.save()
-                    }
+                    },
+                    compact: true,
+                    compactIcon: "captions.bubble"
                 )
+                PostDateControl(clip: clip)
+                Spacer(minLength: 0)
             }
-
-            PostDateControl(clip: clip)
         }
         .padding(.horizontal, RetroTheme.controlSpacing + 4)
         .padding(.vertical, RetroTheme.controlSpacing)
@@ -206,10 +215,13 @@ private struct ClipCard: View {
 
 /// Compact Post Date editor for board/card use — same underlying action as ClipDetailView's own
 /// Post Date section (`PostingItemService.setConfirmedPostDate`, so Calendar/To Do sync and the
-/// "static once confirmed" behavior are identical), just condensed into a popover button instead
-/// of an inline Toggle+DatePicker. Deliberately its own small control rather than reusing
-/// `DeadlineControl` — that control exposes a hard/soft toggle that `setConfirmedPostDate` ignores
-/// (a Post Date is always hard/locked), which would show a control with no real effect.
+/// "static once confirmed" behavior are identical), just condensed into an icon+short-date pill
+/// (see `DeadlineControl.compact`'s doc comment for why this pattern exists — same "sleeker
+/// presentation, not a new aesthetic" motivation, 2026-08-18). Deliberately its own small control
+/// rather than reusing `DeadlineControl` — that control exposes a hard/soft toggle that
+/// `setConfirmedPostDate` ignores (a Post Date is always hard/locked), which would show a control
+/// with no real effect. The Recommended quick-set is now a small plain-text hint next to the pill
+/// rather than a second full bordered button — one tap still sets it immediately.
 private struct PostDateControl: View {
     let clip: ClipService.Clip
     @Environment(\.modelContext) private var context
@@ -217,44 +229,38 @@ private struct PostDateControl: View {
     @State private var isEditing = false
     @State private var draftDate = Date.now
 
+    private var recommended: Date? {
+        clip.postDate == nil ? PostingItemService.recommendedPostDate(in: context) : nil
+    }
+
     var body: some View {
-        HStack(spacing: RetroTheme.controlSpacing) {
-            if let date = clip.postDate {
-                Button {
-                    draftDate = date
-                    isEditing = true
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar.badge.checkmark")
-                        Text("Post \(date.formatted(date: .abbreviated, time: .omitted))")
+        HStack(spacing: 4) {
+            Button {
+                draftDate = clip.postDate ?? recommended ?? .now
+                isEditing = true
+            } label: {
+                HStack(spacing: 3) {
+                    Image(systemName: "paperplane")
+                    if let date = clip.postDate {
+                        Text(date.formatted(.dateTime.month(.abbreviated).day()))
                     }
-                    .foregroundStyle(RetroTheme.primaryText)
                 }
-                .buttonStyle(.retro)
-                Button(role: .destructive) {
-                    savePostDate(nil)
-                } label: {
-                    Image(systemName: "xmark.circle")
-                }
-                .buttonStyle(.retro)
-                .help("Remove post date")
-            } else {
-                if let recommended = PostingItemService.recommendedPostDate(in: context) {
-                    Button {
-                        savePostDate(recommended)
-                    } label: {
-                        Text("Recommended: \(recommended.formatted(date: .abbreviated, time: .omitted))")
-                    }
-                    .buttonStyle(.retro)
-                }
+                .foregroundStyle(RetroTheme.primaryText)
+            }
+            .buttonStyle(.retroCompact)
+            .help(clip.postDate.map { "Post \($0.formatted(date: .abbreviated, time: .omitted))" } ?? "Set post date")
+
+            if let recommended {
                 Button {
-                    draftDate = PostingItemService.recommendedPostDate(in: context) ?? .now
-                    isEditing = true
+                    savePostDate(recommended)
                 } label: {
-                    Image(systemName: "calendar.badge.plus")
+                    Text(recommended.formatted(.dateTime.month(.abbreviated).day()))
+                        .font(.caption2)
+                        .underline()
                 }
-                .buttonStyle(.retro)
-                .help("Set post date")
+                .buttonStyle(.plain)
+                .foregroundStyle(RetroTheme.accent)
+                .help("Recommended: \(recommended.formatted(date: .abbreviated, time: .omitted)) — tap to set")
             }
         }
         .popover(isPresented: $isEditing) { editor }
@@ -269,6 +275,15 @@ private struct PostDateControl: View {
                 .foregroundStyle(RetroTheme.secondaryText)
                 .frame(maxWidth: 220, alignment: .leading)
             HStack {
+                if clip.postDate != nil {
+                    Button(role: .destructive) {
+                        savePostDate(nil)
+                        isEditing = false
+                    } label: {
+                        Text("Remove")
+                    }
+                    .buttonStyle(.retro)
+                }
                 Spacer()
                 Button("Save") {
                     savePostDate(draftDate)

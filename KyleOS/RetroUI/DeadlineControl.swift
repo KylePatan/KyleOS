@@ -22,6 +22,19 @@ struct DeadlineControl: View {
     let onSet: (_ dueAt: Date, _ isHard: Bool) -> Void
     let onRemove: () -> Void
 
+    /// Kyle (2026-08-18): "simplify... just when presenting the information, not a full re-do of
+    /// the aesthetic." Board cards (several deadlines stacked next to other controls) need a much
+    /// smaller footprint than a full-sentence button — compact mode swaps the wordy "Set Editing
+    /// Deadline"/"Editing due Aug 20" text for an identifying icon (`compactIcon`) + a short date,
+    /// moves Remove into the popover instead of a second always-visible button, and relies on
+    /// `.help()` for the full text a normal button would have spelled out. Opt-in — every existing
+    /// call site (ClipDetailView, SketchDetailView, etc.) is unchanged.
+    var compact: Bool = false
+    /// Only meaningful when `compact` is true — the icon identifying *what* this deadline is for
+    /// (e.g. "pencil" for an Editing deadline), since compact mode drops the descriptive label
+    /// text that normally conveys that.
+    var compactIcon: String = "calendar"
+
     @State private var isEditing = false
     @State private var draftDate = Date.now
     @State private var draftIsHard = true
@@ -41,7 +54,23 @@ struct DeadlineControl: View {
         return label.map { "\(action) \($0) Deadline" } ?? "\(action) Deadline"
     }
 
+    private var compactHelpText: String {
+        guard let dueAt else { return setButtonText }
+        return dueButtonText
+    }
+
     var body: some View {
+        Group {
+            if compact {
+                compactBody
+            } else {
+                fullBody
+            }
+        }
+        .popover(isPresented: $isEditing) { editor }
+    }
+
+    private var fullBody: some View {
         HStack(spacing: RetroTheme.controlSpacing) {
             if let dueAt {
                 Button {
@@ -75,7 +104,24 @@ struct DeadlineControl: View {
                 .buttonStyle(.retro)
             }
         }
-        .popover(isPresented: $isEditing) { editor }
+    }
+
+    private var compactBody: some View {
+        Button {
+            draftDate = dueAt ?? .now
+            draftIsHard = dueAt == nil ? true : isHard
+            isEditing = true
+        } label: {
+            HStack(spacing: 3) {
+                Image(systemName: compactIcon)
+                if let dueAt {
+                    Text(dueAt.formatted(.dateTime.month(.abbreviated).day()))
+                }
+            }
+            .foregroundStyle(dueAt == nil ? RetroTheme.primaryText : (isHard ? RetroTheme.warning : RetroTheme.primaryText))
+        }
+        .buttonStyle(.retroCompact)
+        .help(compactHelpText)
     }
 
     private var editor: some View {
@@ -92,6 +138,15 @@ struct DeadlineControl: View {
                 .foregroundStyle(RetroTheme.secondaryText)
                 .frame(maxWidth: 220, alignment: .leading)
             HStack {
+                if compact, dueAt != nil {
+                    Button(role: .destructive) {
+                        onRemove()
+                        isEditing = false
+                    } label: {
+                        Text("Remove")
+                    }
+                    .buttonStyle(.retro)
+                }
                 Spacer()
                 Button("Save") {
                     onSet(draftDate, draftIsHard)
