@@ -18,6 +18,8 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertEqual(settings.dayJobEndHour, 17)
         XCTAssertEqual(settings.weekdayCreativeCapacityHours, 2.5)
         XCTAssertEqual(settings.standUpNightBonusHours, 1.0)
+        XCTAssertNil(settings.weekendCreativeCapacityHours, "Unset until the user explicitly configures a weekend value")
+        XCTAssertEqual(settings.displayWeekendCreativeCapacityHours, 2.5, "Falls back to the weekday default")
     }
 
     func testCurrentSettingsNeverCreatesASecondRow() throws {
@@ -40,7 +42,7 @@ final class SettingsPersistenceTests: XCTestCase {
 
         let settings = try SettingsService.currentSettings(in: context)
         SettingsService.updateDayJobSchedule(settings, weekdays: [2, 3, 4, 5, 6, 7], startHour: 9, endHour: 18)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 3, standUpNightBonusHours: 1.5)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 3, weekendHours: 6, standUpNightBonusHours: 1.5)
         try context.save()
 
         let reloaded = try SettingsService.currentSettings(in: context)
@@ -48,6 +50,7 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertEqual(reloaded.dayJobStartHour, 9)
         XCTAssertEqual(reloaded.dayJobEndHour, 18)
         XCTAssertEqual(reloaded.weekdayCreativeCapacityHours, 3)
+        XCTAssertEqual(reloaded.weekendCreativeCapacityHours, 6)
         XCTAssertEqual(reloaded.standUpNightBonusHours, 1.5)
     }
 }

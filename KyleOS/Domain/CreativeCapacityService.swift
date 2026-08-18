@@ -6,10 +6,10 @@ import SwiftData
 /// are explicitly "planning assumptions, not hard restrictions" (§4.4's own words) — a simple
 /// baseline-minus-scheduled calculation, not a precise minute-by-minute free/busy derivation.
 enum CreativeCapacityService {
-    typealias AppSettings = KyleOSSchemaV30.AppSettings
-    typealias CalendarEvent = KyleOSSchemaV30.CalendarEvent
-    typealias PlannedSession = KyleOSSchemaV30.PlannedSession
-    typealias CapacityOverride = KyleOSSchemaV30.CapacityOverride
+    typealias AppSettings = KyleOSSchemaV31.AppSettings
+    typealias CalendarEvent = KyleOSSchemaV31.CalendarEvent
+    typealias PlannedSession = KyleOSSchemaV31.PlannedSession
+    typealias CapacityOverride = KyleOSSchemaV31.CapacityOverride
 
     struct Summary: Equatable {
         let baselineHours: Double
@@ -51,7 +51,9 @@ enum CreativeCapacityService {
             return Summary(baselineHours: override.hours, scheduledHours: scheduledHours, isOverridden: true)
         }
 
-        var baseline = settings.weekdayCreativeCapacityHours
+        let weekday = calendar.component(.weekday, from: now)
+        let isWeekend = weekday == 1 || weekday == 7
+        var baseline = isWeekend ? settings.displayWeekendCreativeCapacityHours : settings.weekdayCreativeCapacityHours
         let hasGigToday = events.contains {
             $0.eventType == .standUpGig && calendar.isDate($0.startAt, inSameDayAs: now)
         }

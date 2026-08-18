@@ -14,9 +14,28 @@ final class WorkTypeDefaultTests: XCTestCase {
         try context.save()
 
         let all = try WorkTypeDefaultService.all(in: context)
-        XCTAssertEqual(all.count, 2)
         XCTAssertEqual(all.first { $0.name == "Outline" }?.defaultEstimateHours, 1.5)
         XCTAssertEqual(all.first { $0.name == "Short Story" }?.defaultEstimateHours, 3.0)
+    }
+
+    /// Kyle (2026-08-17): "there also should have EVERY type of creative thing that we can then
+    /// add timing to" — every real `workTypeName` string `WorkItemService`/`Document.documentType`
+    /// actually produces must have a seeded row to tune from Settings.
+    func testSeedingCoversEveryRealWorkTypeNameTheAppGenerates() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        try WorkTypeDefaultService.seedKnownDefaultsIfNeeded(in: context)
+        try context.save()
+
+        let names = Set(try WorkTypeDefaultService.all(in: context).map(\.name))
+        let expected = [
+            "Script", "Prose", "Act Outline", "Scene Outline", "Notes", "Series Bible", "One Pager", "Custom",
+            "Stand-Up Development", "Clip Editing", "Clip Subtitling", "Clip Posting", "Sketch Editing", "Sketch Posting",
+        ]
+        for name in expected {
+            XCTAssertTrue(names.contains(name), "Missing seeded Work Type Default for \"\(name)\"")
+        }
     }
 
     func testSeedingTwiceDoesNotDuplicate() throws {
@@ -28,7 +47,10 @@ final class WorkTypeDefaultTests: XCTestCase {
         try context.save()
 
         let all = try WorkTypeDefaultService.all(in: context)
-        XCTAssertEqual(all.count, 2, "Seeding twice must not create duplicate rows")
+        let firstCount = all.count
+        try WorkTypeDefaultService.seedKnownDefaultsIfNeeded(in: context)
+        try context.save()
+        XCTAssertEqual(try WorkTypeDefaultService.all(in: context).count, firstCount, "Seeding twice must not create duplicate rows")
     }
 
     func testCreatingACustomWorkTypeDefaultPersists() throws {

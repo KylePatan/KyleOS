@@ -19,6 +19,7 @@ struct SettingsView: View {
     @State private var dayJobStartHour = 8
     @State private var dayJobEndHour = 17
     @State private var weekdayCapacityHours = 2.5
+    @State private var weekendCapacityHours = 2.5
     @State private var standUpNightBonusHours = 1.0
     @State private var postsPerWeekTarget = 3
 
@@ -50,6 +51,7 @@ struct SettingsView: View {
         dayJobStartHour = settings.dayJobStartHour
         dayJobEndHour = settings.dayJobEndHour
         weekdayCapacityHours = settings.weekdayCreativeCapacityHours
+        weekendCapacityHours = settings.displayWeekendCreativeCapacityHours
         standUpNightBonusHours = settings.standUpNightBonusHours
         postsPerWeekTarget = settings.displayPostsPerWeekTarget
     }
@@ -105,6 +107,8 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 Stepper("Weekday capacity: \(weekdayCapacityHours.formatted(.number.precision(.fractionLength(0...1))))h", value: $weekdayCapacityHours, in: 0...12, step: 0.5)
                     .onChange(of: weekdayCapacityHours) { saveCreativeCapacity() }
+                Stepper("Weekend capacity: \(weekendCapacityHours.formatted(.number.precision(.fractionLength(0...1))))h", value: $weekendCapacityHours, in: 0...12, step: 0.5)
+                    .onChange(of: weekendCapacityHours) { saveCreativeCapacity() }
                 Stepper("Stand-Up night bonus: +\(standUpNightBonusHours.formatted(.number.precision(.fractionLength(0...1))))h", value: $standUpNightBonusHours, in: 0...12, step: 0.5)
                     .onChange(of: standUpNightBonusHours) { saveCreativeCapacity() }
             }
@@ -114,7 +118,7 @@ struct SettingsView: View {
 
     private func saveCreativeCapacity() {
         guard let settings = try? SettingsService.currentSettings(in: context) else { return }
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: weekdayCapacityHours, standUpNightBonusHours: standUpNightBonusHours)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: weekdayCapacityHours, weekendHours: weekendCapacityHours, standUpNightBonusHours: standUpNightBonusHours)
         try? context.save()
     }
 

@@ -30,10 +30,10 @@ import SwiftData
 /// — are real future call sites, not built here. Not scope creep to defer; matches every other
 /// module's own "narrowest real slice first" pattern this session.
 enum CascadeReschedulingService {
-    typealias PlannedSession = KyleOSSchemaV30.PlannedSession
-    typealias CalendarEvent = KyleOSSchemaV30.CalendarEvent
-    typealias AppSettings = KyleOSSchemaV30.AppSettings
-    typealias CapacityOverride = KyleOSSchemaV30.CapacityOverride
+    typealias PlannedSession = KyleOSSchemaV31.PlannedSession
+    typealias CalendarEvent = KyleOSSchemaV31.CalendarEvent
+    typealias AppSettings = KyleOSSchemaV31.AppSettings
+    typealias CapacityOverride = KyleOSSchemaV31.CapacityOverride
 
     struct Move {
         let session: PlannedSession

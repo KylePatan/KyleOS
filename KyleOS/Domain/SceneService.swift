@@ -16,10 +16,10 @@ import SwiftData
 /// choice doesn't block it — a split view can show an Act Outline pane and a Scene Outline pane
 /// of the same underlying Acts/Scenes without them being separate Documents.
 enum SceneService {
-    typealias Scene = KyleOSSchemaV30.Scene
-    typealias SceneLocationType = KyleOSSchemaV30.SceneLocationType
-    typealias Act = KyleOSSchemaV30.Act
-    typealias Document = KyleOSSchemaV30.Document
+    typealias Scene = KyleOSSchemaV31.Scene
+    typealias SceneLocationType = KyleOSSchemaV31.SceneLocationType
+    typealias Act = KyleOSSchemaV31.Act
+    typealias Document = KyleOSSchemaV31.Document
 
     @discardableResult
     static func createScene(in act: Act, context: ModelContext) -> Scene {

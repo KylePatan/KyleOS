@@ -6,7 +6,9 @@ import SwiftData
 /// Sketch project (WritingProjectType.sketch + ProjectStatus.finished, both existing fields —
 /// see SketchProductionService's doc comment) appears here automatically, grouped by its
 /// production status. Same "explicit Move to… menu, not a competing drag gesture" choice as
-/// JokeBoardView/ClipBoardView (CLAUDE.md §13, documented implementation choice).
+/// JokeBoardView (CLAUDE.md §13, documented implementation choice). ClipBoardView itself moved off
+/// this pattern on 2026-08-17 (Kyle: "like the home page, the clip page has to be completely
+/// draggable") — not extended here since Sketches wasn't part of that request.
 struct SketchBoardView: View {
     @Environment(\.modelContext) private var context
     @Environment(AppNavigationController.self) private var navigator

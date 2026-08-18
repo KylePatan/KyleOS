@@ -21,7 +21,7 @@ enum DeepLinkTarget: Equatable {
     /// the exact same resolution: a Project either is a Sketch (`projectType == .sketch`) or a
     /// plain Writing project; Stand-Up material is a Chunk, a loose Joke, or neither (a general,
     /// untargeted session, which has nowhere specific to go).
-    static func forWorkItem(_ workItem: KyleOSSchemaV30.WorkItem) -> DeepLinkTarget? {
+    static func forWorkItem(_ workItem: KyleOSSchemaV31.WorkItem) -> DeepLinkTarget? {
         if let project = workItem.project {
             return project.projectType == .sketch
                 ? .sketchProject(project.persistentModelID)

@@ -1551,4 +1551,46 @@ final class SchemaMigrationTests: XCTestCase {
             XCTAssertEqual(events.first?.newValue, "New")
         }
     }
+
+    func testStoreWrittenUnderV30OpensCleanlyAsV31WithDataIntact() throws {
+        let storeURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("KyleOSMigrationV30Test-\(UUID().uuidString)")
+            .appendingPathComponent("Store.sqlite")
+        try FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent()) }
+
+        // Write a store using ONLY the V30 schema shape — AppSettings has no
+        // weekendCreativeCapacityHours yet.
+        do {
+            let container = try ModelContainer(
+                for: Schema(versionedSchema: KyleOSSchemaV30.self),
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+            let settings = KyleOSSchemaV30.AppSettings(weekdayCreativeCapacityHours: 3.5)
+            context.insert(settings)
+            try context.save()
+        }
+
+        // Reopen with the full migration plan, as the real app does.
+        do {
+            let container = try ModelContainer(
+                for: PersistenceController.schema,
+                migrationPlan: KyleOSMigrationPlan.self,
+                configurations: [ModelConfiguration(url: storeURL)]
+            )
+            let context = ModelContext(container)
+
+            let settings = try SettingsService.currentSettings(in: context)
+            XCTAssertEqual(settings.weekdayCreativeCapacityHours, 3.5, "Pre-existing field must survive untouched")
+            XCTAssertNil(settings.weekendCreativeCapacityHours, "New optional field should default to nil, not crash or fabricate data")
+            XCTAssertEqual(settings.displayWeekendCreativeCapacityHours, 3.5, "Falls back to the weekday value until explicitly set")
+
+            // The new field must actually be usable post-migration, not just present.
+            SettingsService.updateCreativeCapacity(settings, weekdayHours: 3.5, weekendHours: 6.0, standUpNightBonusHours: 1.0)
+            try context.save()
+
+            XCTAssertEqual(settings.weekendCreativeCapacityHours, 6.0)
+        }
+    }
 }

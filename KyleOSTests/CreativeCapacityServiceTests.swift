@@ -51,7 +51,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 0.5, standUpNightBonusHours: 1.0)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 0.5, weekendHours: 0.5, standUpNightBonusHours: 1.0)
         let now = Date()
 
         let gigEvent = CalendarEventService.createEvent(
@@ -204,6 +204,63 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [], overrides: [], now: now)
         XCTAssertEqual(summary.baselineHours, 2.5)
         XCTAssertFalse(summary.isOverridden)
+    }
+
+    /// Kyle (2026-08-17): "if there's a weekday capacity there should be an option for a weekend
+    /// capacity." Uses `nextDate(after:matching:)` for a guaranteed Saturday/Sunday/Tuesday
+    /// rather than depending on whatever day the test happens to run on.
+    func testWeekendUsesWeekendCapacityHoursNotWeekday() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2.5, weekendHours: 5.0, standUpNightBonusHours: 1.0)
+        let calendar = Calendar.current
+        let saturday = calendar.nextDate(after: .now, matching: DateComponents(weekday: 7), matchingPolicy: .nextTime, direction: .forward)!
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [], now: saturday)
+
+        XCTAssertEqual(summary.baselineHours, 5.0)
+    }
+
+    func testSundayAlsoUsesWeekendCapacityHours() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2.5, weekendHours: 5.0, standUpNightBonusHours: 1.0)
+        let calendar = Calendar.current
+        let sunday = calendar.nextDate(after: .now, matching: DateComponents(weekday: 1), matchingPolicy: .nextTime, direction: .forward)!
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [], now: sunday)
+
+        XCTAssertEqual(summary.baselineHours, 5.0)
+    }
+
+    func testWeekdayStillUsesWeekdayCapacityHoursWithWeekendSet() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2.5, weekendHours: 5.0, standUpNightBonusHours: 1.0)
+        let calendar = Calendar.current
+        let tuesday = calendar.nextDate(after: .now, matching: DateComponents(weekday: 3), matchingPolicy: .nextTime, direction: .forward)!
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [], now: tuesday)
+
+        XCTAssertEqual(summary.baselineHours, 2.5)
+    }
+
+    /// Pre-migration rows have `weekendCreativeCapacityHours == nil` — `displayWeekendCreativeCapacityHours`
+    /// falls back to the weekday value so existing users see an unchanged weekend baseline until
+    /// they explicitly set one (the V8-lesson-safe pattern, same as `displayPostsPerWeekTarget`).
+    func testWeekendFallsBackToWeekdayHoursWhenNeverSet() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let settings = try SettingsService.currentSettings(in: context)
+        let calendar = Calendar.current
+        let saturday = calendar.nextDate(after: .now, matching: DateComponents(weekday: 7), matchingPolicy: .nextTime, direction: .forward)!
+
+        let summary = CreativeCapacityService.todaysCapacity(settings: settings, events: [], plannedSessions: [], now: saturday)
+
+        XCTAssertEqual(summary.baselineHours, 2.5, "Falls back to the default weekday value since weekendCreativeCapacityHours was never set")
     }
 
     func testRemainingNeverGoesNegative() throws {

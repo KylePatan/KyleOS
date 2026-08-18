@@ -4,7 +4,7 @@ import SwiftData
 /// Reusable domain actions for the single app-wide Settings row, kept out of views per
 /// CLAUDE.md §4.
 enum SettingsService {
-    typealias AppSettings = KyleOSSchemaV30.AppSettings
+    typealias AppSettings = KyleOSSchemaV31.AppSettings
 
     /// Returns the one Settings row, creating it with PRD-default values on first launch.
     /// Safe to call repeatedly — never creates a second row.
@@ -35,9 +35,11 @@ enum SettingsService {
     static func updateCreativeCapacity(
         _ settings: AppSettings,
         weekdayHours: Double,
+        weekendHours: Double,
         standUpNightBonusHours: Double
     ) {
         settings.weekdayCreativeCapacityHours = weekdayHours
+        settings.weekendCreativeCapacityHours = weekendHours
         settings.standUpNightBonusHours = standUpNightBonusHours
         settings.updatedAt = .now
     }

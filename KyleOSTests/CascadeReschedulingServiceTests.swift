@@ -16,7 +16,7 @@ final class CascadeReschedulingServiceTests: XCTestCase {
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
         let settings = try SettingsService.currentSettings(in: context)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2, standUpNightBonusHours: 0)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2, weekendHours: 2, standUpNightBonusHours: 0)
 
         let highPriority = try makeWorkItem(priority: 5, in: project, context: context)
         let lowPriority = try makeWorkItem(priority: 1, in: project, context: context)
@@ -41,7 +41,7 @@ final class CascadeReschedulingServiceTests: XCTestCase {
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
         let settings = try SettingsService.currentSettings(in: context)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 1, standUpNightBonusHours: 0)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 1, weekendHours: 1, standUpNightBonusHours: 0)
 
         let lockedItem = try makeWorkItem(priority: 3, in: project, context: context)
         let movableItem = try makeWorkItem(priority: 3, in: project, context: context)
@@ -67,7 +67,7 @@ final class CascadeReschedulingServiceTests: XCTestCase {
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
         let settings = try SettingsService.currentSettings(in: context)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2, standUpNightBonusHours: 0)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 2, weekendHours: 2, standUpNightBonusHours: 0)
 
         let item = try makeWorkItem(priority: 3, in: project, context: context)
         let today = Date()
@@ -89,7 +89,7 @@ final class CascadeReschedulingServiceTests: XCTestCase {
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
         let settings = try SettingsService.currentSettings(in: context)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 0, standUpNightBonusHours: 0)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 0, weekendHours: 0, standUpNightBonusHours: 0)
 
         let item = try makeWorkItem(priority: 3, in: project, context: context)
         let today = Date()
@@ -110,7 +110,7 @@ final class CascadeReschedulingServiceTests: XCTestCase {
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
         let settings = try SettingsService.currentSettings(in: context)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 1, standUpNightBonusHours: 0)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 1, weekendHours: 1, standUpNightBonusHours: 0)
 
         let calendar = Calendar.current
         let today = Date()
@@ -142,7 +142,7 @@ final class CascadeReschedulingServiceTests: XCTestCase {
         let context = ModelContext(container)
         let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
         let settings = try SettingsService.currentSettings(in: context)
-        SettingsService.updateCreativeCapacity(settings, weekdayHours: 3, standUpNightBonusHours: 0)
+        SettingsService.updateCreativeCapacity(settings, weekdayHours: 3, weekendHours: 3, standUpNightBonusHours: 0)
 
         let item = try makeWorkItem(priority: 3, in: project, context: context)
         let today = Date()
