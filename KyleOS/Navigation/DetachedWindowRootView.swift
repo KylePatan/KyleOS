@@ -6,7 +6,7 @@ import SwiftData
 /// windows' `@Query`s independently re-fetch on every save, so edits in either window show up in
 /// the other live — the same reactivity guarantee this session's stale-list fixes already
 /// established, see `feedback_swiftdata_relationship_lists`). Deliberately renders just the
-/// content view itself, no `RetroTopNav`/`RetroPageHeader` — this is meant to read as a focused,
+/// content view itself, no `RetroSidebar`/`RetroPageHeader` — this is meant to read as a focused,
 /// single-purpose work window (matching Xcode/Final Cut's own "open in new window" convention),
 /// not a second copy of the whole app's chrome.
 struct DetachedWindowRootView: View {

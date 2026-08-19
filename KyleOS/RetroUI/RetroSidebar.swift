@@ -1,40 +1,46 @@
 import SwiftUI
 
-/// Primary application chrome (spec §13): "KYLE OS / HOME | WRITING | STAND UP | ..." — a
-/// horizontal top navigation bar replacing the original `NavigationSplitView` sidebar. "Avoid
-/// giant sidebar navigation unless it clearly improves a specific screen... horizontal navigation
-/// near the top supports the intended top-down architecture." Secondary/contextual navigation
-/// (a module's own project list, a Chunk list, etc.) still lives inside that module's own content
-/// area — this bar only ever switches between the primary destinations.
-struct RetroTopNav: View {
+/// Kyle (2026-08-19): "I want to change the top bar and put it on the left hand side again. I
+/// like that look better. So HOME, WRITING, SKETCHES, everything gets put away." A direct reversal
+/// of Decision Gate C's 2026-08-15 choice (`RetroTopNav`, horizontal — see that file's own doc
+/// comment for the reasoning that led there). Reuses `AppNavigationController`'s existing
+/// `selection` state unchanged — only the presentation is different, every deep-link/navigate(to:)
+/// call site elsewhere in the app is untouched.
+struct RetroSidebar: View {
     @Environment(AppNavigationController.self) private var navigator
+    static let width: CGFloat = 176
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("KYLE OS")
                     .font(.headline.bold())
                     .foregroundStyle(RetroTheme.primaryText)
-                Spacer()
                 Text(Date.now, format: .dateTime.weekday(.wide).month(.abbreviated).day())
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(RetroTheme.secondaryText)
             }
             .padding(.horizontal, RetroTheme.sectionPadding)
-            .padding(.vertical, RetroTheme.controlSpacing)
+            .padding(.vertical, RetroTheme.controlSpacing + 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(RetroTheme.panelBackground)
 
             Rectangle().fill(RetroTheme.border).frame(height: RetroTheme.borderWidth)
 
-            HStack(spacing: 0) {
+            VStack(spacing: 0) {
                 ForEach(SidebarDestination.allCases) { destination in
                     moduleButton(destination)
                 }
-                Spacer(minLength: 0)
             }
             .background(RetroTheme.background)
 
-            Rectangle().fill(RetroTheme.border).frame(height: RetroTheme.borderWidth)
+            Spacer(minLength: 0)
+        }
+        .frame(width: Self.width)
+        .frame(maxHeight: .infinity)
+        .background(RetroTheme.background)
+        .overlay(alignment: .trailing) {
+            Rectangle().fill(RetroTheme.border).frame(width: RetroTheme.borderWidth)
         }
     }
 
@@ -46,8 +52,9 @@ struct RetroTopNav: View {
             Label(destination.title, systemImage: destination.systemImage)
                 .font(.callout)
                 .foregroundStyle(isSelected ? RetroTheme.accentText : RetroTheme.primaryText)
-                .padding(.horizontal, RetroTheme.controlSpacing + 4)
-                .padding(.vertical, RetroTheme.controlSpacing)
+                .padding(.horizontal, RetroTheme.sectionPadding)
+                .padding(.vertical, RetroTheme.controlSpacing + 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
         .background(isSelected ? RetroTheme.accent : Color.clear)

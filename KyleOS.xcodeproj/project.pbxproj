@@ -128,7 +128,6 @@
 		B9F32ECB0225123358903AA1 /* ReportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5518B0ABF4051A20FB63917 /* ReportServiceTests.swift */; };
 		B9FC67F714FAEC4F64B4E9B8 /* FileReferenceResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDF3891632379E2253D5659 /* FileReferenceResolverTests.swift */; };
 		BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B06A23CAF9A33772891D1AA /* PersistenceController.swift */; };
-		BCF41F4DE414F34193BB36DE /* RetroTopNav.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5549899F778178FEA1D06182 /* RetroTopNav.swift */; };
 		BE5CFBB4A2DEC01B50386A74 /* SourceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE69DD91F0B820753D4356A /* SourceService.swift */; };
 		BE8A02D7F20A5F4FDD1735E5 /* ClipBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0595BFFA41DE897B2C34790 /* ClipBoardView.swift */; };
 		BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */; };
@@ -145,7 +144,9 @@
 		C635A98EEA34C0B3DB58FA9C /* ClipsRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B441DE452B43B07B54175ED /* ClipsRoute.swift */; };
 		C728CAB8906362CF0E153E3C /* ChunkListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EA4A2F04B9FCD47C8A68AF1 /* ChunkListView.swift */; };
 		C7807F04607820B381461221 /* CalendarEventPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9295A52D3460E8B4134E8348 /* CalendarEventPersistenceTests.swift */; };
+		C92EDC04033CACDD262961CC /* RetroSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A324D418D0783289EC93D40E /* RetroSidebar.swift */; };
 		C9E96A1AA690937F94AFB36C /* GigServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB0F68AB96FFDF41920A64F /* GigServiceTests.swift */; };
+		CA9BCC5EED69937E959051F4 /* ScriptEditorGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7C99D95A2E221D9FE403 /* ScriptEditorGeometryTests.swift */; };
 		CB178461B6E1916B25A68EB3 /* RetroTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63CEAD592DD80A73EA2A79E4 /* RetroTheme.swift */; };
 		CBF29CB4B86FD6A3015AEC1B /* KyleOSSchemaV30.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9368643C09DEDACEF89EDD /* KyleOSSchemaV30.swift */; };
 		D3E04B6C451A896E257D3E33 /* KyleOSSchemaV7.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */; };
@@ -254,7 +255,6 @@
 		5118E5FE8729FFEA8FB2D27A /* ChunkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChunkService.swift; sourceTree = "<group>"; };
 		522D786A6B687BD929FB976C /* QuickAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddButton.swift; sourceTree = "<group>"; };
 		52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV19.swift; sourceTree = "<group>"; };
-		5549899F778178FEA1D06182 /* RetroTopNav.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroTopNav.swift; sourceTree = "<group>"; };
 		554DE9F8F27BA7EEA233E4BA /* CascadeReschedulingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CascadeReschedulingServiceTests.swift; sourceTree = "<group>"; };
 		575D877F4F1CA9AF505158C2 /* WeeklyBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyBoardView.swift; sourceTree = "<group>"; };
 		59E199DA7890341CDC60AA6C /* HeadlineSetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadlineSetDetailView.swift; sourceTree = "<group>"; };
@@ -311,6 +311,7 @@
 		9F7EA9D04BAF8F260ABCB478 /* FocusTimerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerController.swift; sourceTree = "<group>"; };
 		A064C86B7A44F7E2434AD738 /* ClipsHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipsHomeView.swift; sourceTree = "<group>"; };
 		A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV7.swift; sourceTree = "<group>"; };
+		A324D418D0783289EC93D40E /* RetroSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroSidebar.swift; sourceTree = "<group>"; };
 		A343326ABA806B7ED4EE3C44 /* ChunkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChunkServiceTests.swift; sourceTree = "<group>"; };
 		A5897E3E141CBB89EEF7E317 /* WritingHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingHomeView.swift; sourceTree = "<group>"; };
 		A5D3FED139B90EBB99C21F3F /* HistoryEventServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEventServiceTests.swift; sourceTree = "<group>"; };
@@ -349,6 +350,7 @@
 		D138354B6AD5EACAD0C3EBDB /* KyleOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KyleOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1B7574EC24A9CFF1F43003B /* KyleOSMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSMigrationPlan.swift; sourceTree = "<group>"; };
 		D29FAC72928350F9584B073F /* RetroBevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroBevel.swift; sourceTree = "<group>"; };
+		D44E7C99D95A2E221D9FE403 /* ScriptEditorGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorGeometryTests.swift; sourceTree = "<group>"; };
 		D4FBF710F6D8D3B30ACFDBE6 /* TimerRecoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRecoveryServiceTests.swift; sourceTree = "<group>"; };
 		D5F1F97FE2DD05643475FCDC /* KyleOSSchemaV23.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV23.swift; sourceTree = "<group>"; };
 		D73908F64313B9B846F20B7E /* KyleOSSchemaV5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV5.swift; sourceTree = "<group>"; };
@@ -427,10 +429,10 @@
 				C4F8CE022DB7140EEF3616C3 /* RetroPageHeader.swift */,
 				B61ED7A12BA97563EEC31FBA /* RetroPanel.swift */,
 				97ECDE3F94E658B1FEE55BFE /* RetroProgressBar.swift */,
+				A324D418D0783289EC93D40E /* RetroSidebar.swift */,
 				B5636B6352B27B8104A557D8 /* RetroStatusBar.swift */,
 				9C3F1B880C49922F5FA48DF1 /* RetroTabs.swift */,
 				63CEAD592DD80A73EA2A79E4 /* RetroTheme.swift */,
-				5549899F778178FEA1D06182 /* RetroTopNav.swift */,
 			);
 			path = RetroUI;
 			sourceTree = "<group>";
@@ -510,6 +512,7 @@
 				AA1CFD6CFD49CE0B0FCA2ADF /* SchedulingServiceTests.swift */,
 				C85EC140FD6AE6F09E20D82B /* SchemaMigrationTests.swift */,
 				0BDD98234E1607C97ADCA2D0 /* ScriptBlockServiceTests.swift */,
+				D44E7C99D95A2E221D9FE403 /* ScriptEditorGeometryTests.swift */,
 				044EB916F1D3748BB17E7B19 /* SettingsPersistenceTests.swift */,
 				49BC806CFAA90C92159C5BD2 /* SketchProductionServiceTests.swift */,
 				42C5CDBE46872A0E0FD33CD8 /* SourceServiceTests.swift */,
@@ -848,6 +851,7 @@
 				D3EBFCB7A730CA0B8F441798 /* SchedulingServiceTests.swift in Sources */,
 				193BFDC22D0970FE9568FCB8 /* SchemaMigrationTests.swift in Sources */,
 				252B55FA286040385CE319DF /* ScriptBlockServiceTests.swift in Sources */,
+				CA9BCC5EED69937E959051F4 /* ScriptEditorGeometryTests.swift in Sources */,
 				020CF879657DF8764DF89FD9 /* SettingsPersistenceTests.swift in Sources */,
 				29090345C4C5C8513953AFC7 /* SketchProductionServiceTests.swift in Sources */,
 				2EFE655F08CE1F07A301CB0A /* SourceServiceTests.swift in Sources */,
@@ -966,10 +970,10 @@
 				9851895F0ECD34AE2EF3CF3C /* RetroPageHeader.swift in Sources */,
 				EF8E613C6E009793AF6F381F /* RetroPanel.swift in Sources */,
 				8BBA27B957DFBD9269916B10 /* RetroProgressBar.swift in Sources */,
+				C92EDC04033CACDD262961CC /* RetroSidebar.swift in Sources */,
 				3580D79DED65CDAE0D20C296 /* RetroStatusBar.swift in Sources */,
 				C17A99401CB25ED3E12861A9 /* RetroTabs.swift in Sources */,
 				CB178461B6E1916B25A68EB3 /* RetroTheme.swift in Sources */,
-				BCF41F4DE414F34193BB36DE /* RetroTopNav.swift in Sources */,
 				680ED53C1E3989CD253F4950 /* RootView.swift in Sources */,
 				62EDCD61FE258B4E58A006D2 /* SceneListView.swift in Sources */,
 				D9C432D80F6A9A270C76F2A9 /* SceneService.swift in Sources */,

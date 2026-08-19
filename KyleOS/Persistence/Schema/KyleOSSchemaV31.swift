@@ -657,6 +657,14 @@ enum KyleOSSchemaV31: VersionedSchema {
         }
     }
 
+    /// Kyle (2026-08-19, screenplay spec §6): the full professional element set. `shot`/`general`/
+    /// `actBreak` added on top of the original six — additive String rawValue cases on an enum
+    /// stored via `ScriptBlock.elementType`, not a `@Model` shape change, so this needs no schema
+    /// version bump (existing stored rows are unaffected; SwiftData only cares about the `@Model`
+    /// class's own attribute/relationship shape). Dual Dialogue is deliberately NOT one more case
+    /// here — the spec (§22) treats it as a semantic relationship between two existing
+    /// Character/Dialogue groups, not a new element type, and modeling that relationship is a real
+    /// schema decision left for its own pass rather than shoehorned in here.
     enum ScriptElementType: String, Codable, CaseIterable {
         case sceneHeading = "Scene Heading"
         case action = "Action"
@@ -664,6 +672,9 @@ enum KyleOSSchemaV31: VersionedSchema {
         case dialogue = "Dialogue"
         case parenthetical = "Parenthetical"
         case transition = "Transition"
+        case shot = "Shot"
+        case general = "General"
+        case actBreak = "Act Break"
     }
 
     /// New in V12 (PRD §6.7/§14.3). Belongs directly to a Script-type Document. `order` is a

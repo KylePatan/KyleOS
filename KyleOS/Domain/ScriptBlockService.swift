@@ -26,8 +26,8 @@ enum ScriptBlockService {
     /// What Enter after a block of `type` should start next, absent any other signal.
     static func suggestedNextType(afterEnterFrom type: ScriptElementType) -> ScriptElementType {
         switch type {
-        case .sceneHeading, .transition: return .action
-        case .action: return .action
+        case .sceneHeading, .transition, .shot, .actBreak: return .action
+        case .action, .general: return .action
         case .character: return .dialogue
         case .dialogue: return .action
         case .parenthetical: return .dialogue
@@ -97,11 +97,11 @@ enum ScriptBlockService {
         guard !normalizedName.isEmpty else { return false }
         for entry in precedingEntries.reversed() {
             switch entry.type {
-            case .sceneHeading, .transition:
+            case .sceneHeading, .transition, .shot, .actBreak:
                 return false
             case .character:
                 return normalizedCharacterName(entry.text) == normalizedName
-            case .action, .dialogue, .parenthetical:
+            case .action, .dialogue, .parenthetical, .general:
                 continue
             }
         }
