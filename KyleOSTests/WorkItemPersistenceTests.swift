@@ -4,6 +4,45 @@ import SwiftData
 
 final class WorkItemPersistenceTests: XCTestCase {
 
+    /// Real bug Kyle hit: "I deleted the source and that should delete the 'clips' within it, no?"
+    /// — it did (Source cascades to Clip), but the Clip's own "Post" WorkItem/Deadline was left
+    /// behind, undeletable, since `Clip.workItems` is deliberately `.nullify` not `.cascade` (a
+    /// WorkItem is session/time-tracking history that outlives its target — see that relationship's
+    /// own doc comment). `deleteUnderlyingContent` must fall back to removing the orphaned WorkItem
+    /// row itself once its target is gone, not silently no-op.
+    func testDeleteUnderlyingContentRemovesAnOrphanedWorkItemAfterItsClipIsAlreadyGone() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        let clip = ClipService.createClip(title: "Airplane Joke", in: source, context: context)
+        let workItem = try WorkItemService.clipPostingWorkItem(for: clip, context: context)
+        try context.save()
+
+        SourceService.delete(source, context: context) // cascades away the Clip, nullifies workItem.clip
+        try context.save()
+        XCTAssertNil(workItem.clip, "Sanity check: the Clip is really gone, only the WorkItem remains")
+        XCTAssertNil(WorkItemService.underlyingContent(for: workItem))
+
+        WorkItemService.deleteUnderlyingContent(for: workItem, context: context)
+        try context.save()
+
+        XCTAssertTrue(try context.fetch(FetchDescriptor<WorkItemService.WorkItem>()).isEmpty, "The orphaned WorkItem itself must be removable")
+    }
+
+    /// Same fallback, for a genuinely general Stand-Up session that never had real content —
+    /// Kyle: "also stand up writing... is unable to be deleted."
+    func testDeleteUnderlyingContentRemovesAGeneralStandUpSession() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let workItem = try WorkItemService.generalStandUpWorkItem(context: context)
+        try context.save()
+
+        WorkItemService.deleteUnderlyingContent(for: workItem, context: context)
+        try context.save()
+
+        XCTAssertTrue(try context.fetch(FetchDescriptor<WorkItemService.WorkItem>()).isEmpty)
+    }
+
     /// New 2026-08-20 (real use, "the things on 'home' should be removeable") — Home's Weekly
     /// Board/All Tasks rows only ever show a WorkItem, so deleting/archiving what they represent
     /// has to resolve past it to the real content first. A Writing WorkItem carries `project`, so

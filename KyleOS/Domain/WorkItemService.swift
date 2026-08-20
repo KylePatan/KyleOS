@@ -356,14 +356,24 @@ enum WorkItemService {
         }
     }
 
-    /// `nil` only for a general, untargeted session — nothing exists to delete.
+    /// Kyle (2026-08-20, real use): found this the hard way — deleted a Clip's Source (correctly
+    /// cascading away the Clip itself), but the Clip's own "Post" WorkItem/Deadline stayed on Home
+    /// forever with no way to remove it. That's not a bug in the cascade rule itself:
+    /// `Clip.workItems`/`Chunk.workItems`/`Joke.workItems` are deliberately `.nullify`, not
+    /// `.cascade` — a WorkItem represents real session/time-tracking history that a codebase-wide
+    /// design choice (see those relationships' own doc comments) says must outlive the content it
+    /// was originally about, the same way a HistoryEvent record does. So once its target is gone,
+    /// `underlyingContent` correctly returns `nil` — but that used to mean "nothing to delete,"
+    /// when what Kyle actually needed was "delete the row itself, there's nothing richer left."
+    /// Same fallback also covers a genuinely general, untargeted Stand-Up session ("Stand-Up
+    /// Writing") that never had real content to begin with — same "just remove this row" ask.
     static func deleteUnderlyingContent(for workItem: WorkItem, context: ModelContext) {
         switch underlyingContent(for: workItem) {
         case .project(let project): ProjectService.delete(project, context: context)
         case .chunk(let chunk): ChunkService.delete(chunk, context: context)
         case .joke(let joke): JokeService.delete(joke, context: context)
         case .clip(let clip): ClipService.delete(clip, context: context)
-        case .none: break
+        case .none: context.delete(workItem)
         }
     }
 }
