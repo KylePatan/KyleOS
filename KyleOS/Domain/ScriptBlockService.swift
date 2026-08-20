@@ -126,17 +126,49 @@ enum ScriptBlockService {
 
     private typealias SceneElementType = KyleOSSchemaV33.SceneLocationType
 
-    /// Syncs a document's entire block array in one operation — the simplest correct way to
-    /// persist edits from a free-form NSTextStorage (see ScriptEditorView) back to structured
-    /// SwiftData rows, rather than diffing paragraph-by-paragraph. Existing blocks beyond the
-    /// new count are deleted; blocks are always saved together, so this can't leave stale rows.
+    /// Syncs a document's block array to match `entries`, updating existing blocks in place
+    /// wherever possible instead of deleting everything and recreating it from scratch.
+    ///
+    /// Kyle (2026-08-20, real use, on a real full-length script): "you can type a full word and
+    /// then the word appears a moment later." Root cause: this used to delete every ScriptBlock
+    /// and reinsert a fresh one for the *entire document*, on *every single keystroke* — fine
+    /// against a few paragraphs of test content, but real SwiftData churn proportional to the
+    /// whole script's length once it actually got long, all synchronous on the main thread that's
+    /// also trying to render the next keystroke. Positional diffing instead: for the by-far-most-
+    /// common edit (typing within the current/last paragraph), this touches exactly one block's
+    /// properties in place — real persistence work now proportional to what actually changed, not
+    /// to document length. A mid-document paragraph insertion/deletion still shifts every block
+    /// after it (same as before — the block *at* each position is what has stable identity here,
+    /// not any specific line of text), but that's the rare case, not every keystroke.
+    ///
+    /// Side effect worth knowing: block `id`s are now far more stable across edits (unchanged for
+    /// any position whose content didn't change) instead of churning fresh every single keystroke.
+    /// Nothing in this codebase relied on that instability — `ScriptEditorRepresentable`'s own
+    /// scene-jump already deliberately uses `order`, not `id`, for exactly this reason — so this is
+    /// a strict improvement, not a behavior change to guard against.
     static func replaceAllBlocks(for document: Document, with entries: [(type: ScriptElementType, text: String)], context: ModelContext) {
-        for block in document.scriptBlocks {
-            context.delete(block)
+        let existing = blocks(for: document)
+        let sharedCount = min(existing.count, entries.count)
+
+        for index in 0..<sharedCount {
+            let block = existing[index]
+            let entry = entries[index]
+            guard block.elementType != entry.type || block.text != entry.text else { continue }
+            block.elementType = entry.type
+            block.text = entry.text
+            block.updatedAt = .now
         }
-        for (index, entry) in entries.enumerated() {
-            let block = ScriptBlock(elementType: entry.type, text: entry.text, order: index, document: document)
-            context.insert(block)
+
+        if entries.count > existing.count {
+            for index in existing.count..<entries.count {
+                let entry = entries[index]
+                let block = ScriptBlock(elementType: entry.type, text: entry.text, order: index, document: document)
+                context.insert(block)
+            }
+        } else if existing.count > entries.count {
+            for block in existing[entries.count...] {
+                context.delete(block)
+            }
         }
     }
 }

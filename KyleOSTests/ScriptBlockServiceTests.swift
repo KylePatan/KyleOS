@@ -177,6 +177,62 @@ final class ScriptBlockServiceTests: XCTestCase {
         XCTAssertEqual(blocks.map(\.text), ["EXT. DOCKS - NIGHT", "The tide is out."])
     }
 
+    /// Kyle (2026-08-20, real use, on a real full-length script): "you can type a full word and
+    /// then the word appears a moment later." Root cause was `replaceAllBlocks` deleting and
+    /// recreating *every* block on *every* keystroke — real, escalating SwiftData churn as a
+    /// script gets long, even though only one paragraph actually changed. This proves the fix:
+    /// editing one paragraph's text must update that block in place and leave every other block's
+    /// identity completely untouched, not delete-and-recreate the whole document.
+    func testReplaceAllBlocksUpdatesOnlyTheChangedBlockInPlace() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [(.sceneHeading, "INT. DINER - DAY"), (.action, "A quiet morning."), (.character, "MARA")],
+            context: context
+        )
+        try context.save()
+        let originalIDs = ScriptBlockService.blocks(for: document).map(\.id)
+
+        // Simulates typing a single character into the middle (Action) paragraph — everything
+        // else in the document is byte-for-byte unchanged.
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [(.sceneHeading, "INT. DINER - DAY"), (.action, "A quiet, misty morning."), (.character, "MARA")],
+            context: context
+        )
+        try context.save()
+
+        let updatedBlocks = ScriptBlockService.blocks(for: document)
+        XCTAssertEqual(updatedBlocks.map(\.id), originalIDs, "Untouched paragraphs must keep their exact same identity, not be deleted and recreated")
+        XCTAssertEqual(updatedBlocks.map(\.text), ["INT. DINER - DAY", "A quiet, misty morning.", "MARA"])
+    }
+
+    /// The tail-shrink case: entries.count < existing.count must delete exactly the excess blocks,
+    /// still leaving the untouched leading blocks' identity alone.
+    func testReplaceAllBlocksDeletesOnlyTheExcessBlocksWhenTheDocumentGetsShorter() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let document = makeScriptDocument(context: context)
+
+        ScriptBlockService.replaceAllBlocks(
+            for: document,
+            with: [(.sceneHeading, "INT. DINER - DAY"), (.action, "A quiet morning."), (.character, "MARA")],
+            context: context
+        )
+        try context.save()
+        let firstBlockID = ScriptBlockService.blocks(for: document)[0].id
+
+        ScriptBlockService.replaceAllBlocks(for: document, with: [(.sceneHeading, "INT. DINER - DAY")], context: context)
+        try context.save()
+
+        let remaining = ScriptBlockService.blocks(for: document)
+        XCTAssertEqual(remaining.map(\.id), [firstBlockID])
+        XCTAssertEqual(remaining.map(\.text), ["INT. DINER - DAY"])
+    }
+
     // MARK: - (CONT'D) continuation rule
 
     func testShouldMarkContinuedWhenSameCharacterResumesAfterOnlyAction() {
