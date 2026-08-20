@@ -320,4 +320,50 @@ enum WorkItemService {
             context: context
         )
     }
+
+    /// What real content a WorkItem represents — for Home's right-click Archive/Delete (Kyle,
+    /// 2026-08-20: "the things on 'home' should be removeable"), which needs to reach past the
+    /// WorkItem row to whatever it's actually about. Mirrors `DeepLinkTarget.forWorkItem`'s exact
+    /// resolution order (project first, then chunk/joke/clip) — "where this opens to" and "what
+    /// this actually represents" are the same underlying question, so they must never drift apart
+    /// into two different answers for the same WorkItem.
+    enum UnderlyingContent {
+        case project(Project)
+        case chunk(Chunk)
+        case joke(Joke)
+        case clip(Clip)
+    }
+
+    static func underlyingContent(for workItem: WorkItem) -> UnderlyingContent? {
+        if let project = workItem.project { return .project(project) }
+        if let chunk = workItem.chunk { return .chunk(chunk) }
+        if let joke = workItem.joke { return .joke(joke) }
+        if let clip = workItem.clip { return .clip(clip) }
+        return nil
+    }
+
+    /// `nil` when the content has no archive concept of its own (Chunk/Clip) or there's nothing
+    /// to act on at all (a general, untargeted session) — the caller should omit the Archive menu
+    /// entry entirely in that case, not show one that silently does nothing.
+    static func archiveUnderlyingContent(for workItem: WorkItem) -> (() -> Void)? {
+        switch underlyingContent(for: workItem) {
+        case .project(let project):
+            return { ProjectService.archive(project) }
+        case .joke(let joke):
+            return { JokeService.archive(joke) }
+        case .chunk, .clip, .none:
+            return nil
+        }
+    }
+
+    /// `nil` only for a general, untargeted session — nothing exists to delete.
+    static func deleteUnderlyingContent(for workItem: WorkItem, context: ModelContext) {
+        switch underlyingContent(for: workItem) {
+        case .project(let project): ProjectService.delete(project, context: context)
+        case .chunk(let chunk): ChunkService.delete(chunk, context: context)
+        case .joke(let joke): JokeService.delete(joke, context: context)
+        case .clip(let clip): ClipService.delete(clip, context: context)
+        case .none: break
+        }
+    }
 }

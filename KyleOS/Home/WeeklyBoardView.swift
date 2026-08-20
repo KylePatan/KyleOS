@@ -230,6 +230,11 @@ private struct WeeklyItemCard: View {
         .onDrag {
             NSItemProvider(object: workItem.id.uuidString as NSString)
         }
+        // Kyle (2026-08-20): "the things on 'home' should be removeable." Reaches past the
+        // WorkItem row to whatever it's actually about (its Project/Chunk/Joke/Clip) via
+        // `WorkItemService.underlyingContent` — omitted entirely for a general, untargeted
+        // session, which has nothing to archive or delete.
+        .archiveDeleteContextMenuIfApplicable(for: workItem, context: context)
     }
 
     private func navigateToWorkItem() {

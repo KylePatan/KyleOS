@@ -72,6 +72,15 @@ enum JokeService {
         joke.updatedAt = .now
     }
 
+    /// New 2026-08-20 (real use, "can there be an option to right click any item... 'delete' that
+    /// will completely wipe it?") — Archive already existed for Jokes; this adds the permanent
+    /// counterpart, same as `ChunkService.delete`/`ClipService.delete`. `chunk`/any referencing
+    /// `WorkItem.joke` are plain optional relationships (SwiftData's default nullify), so no
+    /// manual cleanup is needed here.
+    static func delete(_ joke: Joke, context: ModelContext) {
+        context.delete(joke)
+    }
+
     private static func renumber(_ ordered: [Joke]) {
         for (index, joke) in ordered.enumerated() {
             joke.order = index

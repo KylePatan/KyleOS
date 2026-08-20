@@ -50,6 +50,7 @@ struct AllTasksView: View {
 
 private struct AllTasksRow: View {
     let workItem: HomeService.WorkItem
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         HStack(spacing: RetroTheme.controlSpacing) {
@@ -73,5 +74,8 @@ private struct AllTasksRow: View {
         }
         .padding(.horizontal, RetroTheme.controlSpacing + 4)
         .padding(.vertical, RetroTheme.controlSpacing)
+        // Kyle (2026-08-20): "the things on 'home' should be removeable." Same resolution as
+        // WeeklyBoardView's cards — see WorkItemService.underlyingContent's own doc comment.
+        .archiveDeleteContextMenuIfApplicable(for: workItem, context: context)
     }
 }

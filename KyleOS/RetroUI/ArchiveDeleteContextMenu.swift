@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 /// Kyle (2026-08-20, real use): "can there be an option to right click any item in Kyle OS where
 /// you can have the option to 'Archive' which will bring it to the archive section of that module.
@@ -26,6 +27,29 @@ extension View {
             } label: {
                 Label("Delete", systemImage: "trash")
             }
+        }
+    }
+
+    /// Home shows `WorkItem` rows (Weekly Board, All Tasks), not the real content directly — this
+    /// resolves what a WorkItem actually represents (`WorkItemService.underlyingContent`) and
+    /// applies the same menu to that, or omits it entirely for a general, untargeted session
+    /// (nothing exists to archive or delete). Kept here, not duplicated per Home screen, since
+    /// both Weekly Board and All Tasks need the exact same resolution.
+    @ViewBuilder
+    func archiveDeleteContextMenuIfApplicable(for workItem: WorkItemService.WorkItem, context: ModelContext) -> some View {
+        if WorkItemService.underlyingContent(for: workItem) != nil {
+            let archiveAction = WorkItemService.archiveUnderlyingContent(for: workItem)
+            self.archiveDeleteContextMenu(
+                onArchive: archiveAction.map { action in
+                    { action(); try? context.save() }
+                },
+                onDelete: {
+                    WorkItemService.deleteUnderlyingContent(for: workItem, context: context)
+                    try? context.save()
+                }
+            )
+        } else {
+            self
         }
     }
 }

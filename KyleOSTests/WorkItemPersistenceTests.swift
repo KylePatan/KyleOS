@@ -4,6 +4,61 @@ import SwiftData
 
 final class WorkItemPersistenceTests: XCTestCase {
 
+    /// New 2026-08-20 (real use, "the things on 'home' should be removeable") — Home's Weekly
+    /// Board/All Tasks rows only ever show a WorkItem, so deleting/archiving what they represent
+    /// has to resolve past it to the real content first. A Writing WorkItem carries `project`, so
+    /// deleting it must reach the whole Project (matching WritingHomeView's own row action), not
+    /// just detach the WorkItem.
+    func testUnderlyingContentAndDeleteForAWritingWorkItemResolvesToItsProject() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "test", in: context)
+        let document = DocumentService.createDocument(title: "Untitled", type: .prose, in: project, context: context)
+        let workItem = try WorkItemService.writingWorkItem(for: document, context: context)
+        try context.save()
+
+        guard case .project(let resolved) = WorkItemService.underlyingContent(for: workItem) else {
+            return XCTFail("Expected .project")
+        }
+        XCTAssertEqual(resolved.id, project.id)
+        XCTAssertNotNil(WorkItemService.archiveUnderlyingContent(for: workItem), "A Project can be archived")
+
+        WorkItemService.deleteUnderlyingContent(for: workItem, context: context)
+        try context.save()
+
+        XCTAssertTrue(try context.fetch(FetchDescriptor<ProjectService.Project>()).isEmpty)
+        XCTAssertTrue(try context.fetch(FetchDescriptor<WorkItemService.WorkItem>()).isEmpty, "Must cascade-delete along with the Project")
+    }
+
+    func testUnderlyingContentForAChunkWorkItemHasNoArchiveActionButStillDeletes() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let chunk = ChunkService.createChunk(title: "Airport Bit", context: context)
+        let workItem = try WorkItemService.standUpWorkItem(for: chunk, context: context)
+        try context.save()
+
+        guard case .chunk(let resolved) = WorkItemService.underlyingContent(for: workItem) else {
+            return XCTFail("Expected .chunk")
+        }
+        XCTAssertEqual(resolved.id, chunk.id)
+        XCTAssertNil(WorkItemService.archiveUnderlyingContent(for: workItem), "Chunk has no archive concept of its own")
+
+        WorkItemService.deleteUnderlyingContent(for: workItem, context: context)
+        try context.save()
+
+        XCTAssertTrue(try context.fetch(FetchDescriptor<ChunkService.Chunk>()).isEmpty)
+    }
+
+    func testUnderlyingContentForAGeneralStandUpSessionIsNil() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let workItem = try WorkItemService.generalStandUpWorkItem(context: context)
+        try context.save()
+
+        XCTAssertNil(WorkItemService.underlyingContent(for: workItem), "A general session has nothing to archive or delete")
+        XCTAssertNil(WorkItemService.archiveUnderlyingContent(for: workItem))
+    }
+
     func testWritingWorkItemCreatesOneLinkedToTheDocumentOnFirstCall() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

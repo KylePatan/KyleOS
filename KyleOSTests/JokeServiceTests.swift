@@ -111,4 +111,18 @@ final class JokeServiceTests: XCTestCase {
         XCTAssertNil(joke.archivedAt)
         XCTAssertEqual(JokeService.jokes(withStatus: .ideas, in: context).map(\.id), [joke.id])
     }
+
+    /// New 2026-08-20 (real use) — the permanent counterpart to Archive, same as
+    /// ChunkService.delete/ClipService.delete already had.
+    func testDeletePermanentlyRemovesTheJoke() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let joke = JokeService.quickCapture(text: "One.", context: context)
+        try context.save()
+
+        JokeService.delete(joke, context: context)
+        try context.save()
+
+        XCTAssertTrue(try context.fetch(FetchDescriptor<JokeService.Joke>()).isEmpty)
+    }
 }
