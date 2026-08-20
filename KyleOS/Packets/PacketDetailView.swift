@@ -17,8 +17,8 @@ struct PacketDetailView: View {
 
     private var packetID: PersistentIdentifier { packet.persistentModelID }
 
-    @Query(sort: \KyleOSSchemaV32.Project.title) private var allProjects: [KyleOSSchemaV32.Project]
-    @Query(sort: \KyleOSSchemaV32.Document.title) private var allDocuments: [KyleOSSchemaV32.Document]
+    @Query(sort: \KyleOSSchemaV33.Project.title) private var allProjects: [KyleOSSchemaV33.Project]
+    @Query(sort: \KyleOSSchemaV33.Document.title) private var allDocuments: [KyleOSSchemaV33.Document]
 
     /// Live @Query, not `packet.items` held off the parent — a plain relationship array here would
     /// go stale after adding/removing items without a full view reload (the exact bug this
@@ -29,19 +29,19 @@ struct PacketDetailView: View {
         allItems.filter { $0.packet?.persistentModelID == packetID }.sorted { $0.order < $1.order }
     }
 
-    private var availableProjects: [KyleOSSchemaV32.Project] {
+    private var availableProjects: [KyleOSSchemaV33.Project] {
         let usedIDs = Set(items.compactMap { $0.project?.id })
         return allProjects.filter { !$0.isArchived && !usedIDs.contains($0.id) }
     }
 
-    private var availableDocuments: [KyleOSSchemaV32.Document] {
+    private var availableDocuments: [KyleOSSchemaV33.Document] {
         let usedIDs = Set(items.compactMap { $0.document?.id })
         return allDocuments.filter {
             ($0.documentType == .script || $0.documentType == .prose) && !usedIDs.contains($0.id)
         }
     }
 
-    private var documentsByDraftLabel: [(label: String, documents: [KyleOSSchemaV32.Document])] {
+    private var documentsByDraftLabel: [(label: String, documents: [KyleOSSchemaV33.Document])] {
         Dictionary(grouping: availableDocuments, by: \.displayDraftLabel)
             .sorted { $0.key < $1.key }
             .map { (label: $0.key, documents: $0.value) }

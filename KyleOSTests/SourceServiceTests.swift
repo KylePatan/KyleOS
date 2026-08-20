@@ -102,4 +102,38 @@ final class SourceServiceTests: XCTestCase {
         let remainingClips = try context.fetch(FetchDescriptor<ClipService.Clip>())
         XCTAssertFalse(remainingClips.contains { $0.id == clipID })
     }
+
+    /// Kyle (2026-08-20, real use): "there should be an archive in both writing and clips." Same
+    /// round-trip shape as ProjectPersistenceTests.testArchiveAndRestore.
+    func testArchiveAndRestore() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        try context.save()
+        XCTAssertFalse(source.displayIsArchived)
+
+        SourceService.archive(source)
+        try context.save()
+        XCTAssertTrue(source.displayIsArchived)
+        XCTAssertNotNil(source.archivedAt)
+
+        SourceService.restore(source)
+        try context.save()
+        XCTAssertFalse(source.displayIsArchived)
+        XCTAssertNil(source.archivedAt)
+    }
+
+    /// A newly-created Source must read as not-archived even though `isArchived` defaults to a
+    /// real `false` (not left `nil` like `Project.status`) — this proves `displayIsArchived`
+    /// works either way, matching how `Project.displayStatus` tolerates a `nil` from lightweight
+    /// migration on pre-existing rows.
+    func testPreExistingSourceWithNilIsArchivedDisplaysAsNotArchived() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let source = SourceService.createSource(title: "March Comedy Slam", context: context)
+        source.isArchived = nil // simulates a row that existed before the V33 migration
+        try context.save()
+
+        XCTAssertFalse(source.displayIsArchived)
+    }
 }

@@ -6,12 +6,12 @@ import SwiftData
 /// are explicitly "planning assumptions, not hard restrictions" (§4.4's own words) — a simple
 /// baseline-minus-scheduled calculation, not a precise minute-by-minute free/busy derivation.
 enum CreativeCapacityService {
-    typealias AppSettings = KyleOSSchemaV32.AppSettings
-    typealias CalendarEvent = KyleOSSchemaV32.CalendarEvent
-    typealias CalendarEventType = KyleOSSchemaV32.CalendarEventType
-    typealias Availability = KyleOSSchemaV32.Availability
-    typealias PlannedSession = KyleOSSchemaV32.PlannedSession
-    typealias CapacityOverride = KyleOSSchemaV32.CapacityOverride
+    typealias AppSettings = KyleOSSchemaV33.AppSettings
+    typealias CalendarEvent = KyleOSSchemaV33.CalendarEvent
+    typealias CalendarEventType = KyleOSSchemaV33.CalendarEventType
+    typealias Availability = KyleOSSchemaV33.Availability
+    typealias PlannedSession = KyleOSSchemaV33.PlannedSession
+    typealias CapacityOverride = KyleOSSchemaV33.CapacityOverride
 
     /// PRD §4.4: "Personal calendar events and all-day time-off events reduce available capacity."
     /// Only these two types count — Day Job is already baked into the weekday/weekend baseline

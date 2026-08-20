@@ -5,9 +5,11 @@ import SwiftData
 /// disappear among writing/editing tasks." Ingests exactly the two content types the PRD names —
 /// Clips and finished Sketch Projects (§9.8: "counts toward the same overall posting cadence as
 /// Clips"; §10.4: "shared across Clips and Sketches") — Stand Up produces no postable content.
-/// Reuses each module's own filter logic (`SketchBoardView`'s `projectType == .sketch && status
-/// == .finished && !isArchived`) directly against `@Query`d arrays rather than the context-based
-/// service helpers, matching every other Home widget's "query shared underlying data" pattern.
+/// "Sketch Projects" now also covers finished Short Films (`SketchProductionService.
+/// isProductionProject`, 2026-08-20) since both go through the same filming/posting pipeline.
+/// Reuses that shared predicate directly against `@Query`d arrays rather than the context-based
+/// `finishedSketchProjects(in:)` helper, matching every other Home widget's "query shared
+/// underlying data" pattern (a fresh context fetch inside a computed property wouldn't stay live).
 struct PostItView: View {
     @Environment(\.modelContext) private var context
     @Query private var allClips: [PostingItemService.Clip]
@@ -18,14 +20,20 @@ struct PostItView: View {
     @State private var cadenceTarget = 3
 
     private var finishedSketchProjects: [PostingItemService.Project] {
-        allProjects.filter { $0.projectType == .sketch && $0.status == .finished && !$0.isArchived }
+        allProjects.filter(SketchProductionService.isProductionProject)
     }
 
+    /// Kyle (2026-08-20, real use): "in clips there is still an airplane clip to be posted even
+    /// though i've cleared it." Real bug: this used to only filter out `.notReady` rows, so once
+    /// something was actually marked Posted it stayed in the "Ready to Post" list forever — the
+    /// summary counts above (`readyToPostCount`/`scheduledThisWeekCount`) already excluded
+    /// `.posted` correctly, but the rendered row list underneath them didn't, so the panel's own
+    /// title ("Ready to Post") and its own contents disagreed with each other.
     private var rows: [PostItRow] {
         let clipRows = allClips.map { PostItRow(content: .clip($0)) }
         let sketchRows = finishedSketchProjects.map { PostItRow(content: .sketch($0)) }
         return (clipRows + sketchRows)
-            .filter { $0.displayStatus != .notReady }
+            .filter { $0.displayStatus != .notReady && $0.displayStatus != .posted }
             .sorted {
                 switch ($0.confirmedPostDate, $1.confirmedPostDate) {
                 case (nil, nil): return $0.title < $1.title
@@ -146,6 +154,29 @@ struct PostItView: View {
         .overlay(alignment: .bottom) {
             Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
         }
+        // Kyle (2026-08-20): "the things on 'home' should be removeable." A Clip has no archive
+        // state of its own (only its Source does), so only Delete is offered there; a Sketch
+        // Project can be archived like any other Project.
+        .archiveDeleteContextMenu(
+            onArchive: archiveAction(for: row),
+            onDelete: { remove(row) }
+        )
+    }
+
+    private func archiveAction(for row: PostItRow) -> (() -> Void)? {
+        guard case .sketch(let project) = row.content else { return nil }
+        return {
+            ProjectService.archive(project)
+            try? context.save()
+        }
+    }
+
+    private func remove(_ row: PostItRow) {
+        switch row.content {
+        case .clip(let clip): ClipService.delete(clip, context: context)
+        case .sketch(let project): ProjectService.delete(project, context: context)
+        }
+        try? context.save()
     }
 
     private func statusDot(_ status: PostingItemService.DisplayStatus) -> some View {

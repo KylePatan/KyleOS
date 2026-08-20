@@ -59,6 +59,32 @@ final class ProjectPersistenceTests: XCTestCase {
         XCTAssertNil(project.archivedAt)
     }
 
+    /// Kyle (2026-08-20, real use): "'P' and 'test'... aren't real and from the writing page i
+    /// should be able to delete things from it." A genuine hard delete, distinct from Archive —
+    /// proves the schema's own cascade rules clean up everything a Project owns (Document,
+    /// WorkItem, Deadline) without any manual cleanup in `ProjectService.delete` itself, and that
+    /// an unrelated Project survives untouched.
+    func testDeletePermanentlyRemovesTheProjectAndCascadesItsChildrenButNotOtherProjects() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let junkProject = ProjectService.createProject(title: "test", in: context)
+        _ = DocumentService.createDocument(title: "Untitled", type: .prose, in: junkProject, context: context)
+        _ = try WorkItemService.createWorkItem(
+            title: "Some work", workspace: .writing, workTypeName: "Outline", in: junkProject, context: context
+        )
+        let realProject = ProjectService.createProject(title: "THE TOUR", in: context)
+        try context.save()
+
+        ProjectService.delete(junkProject, context: context)
+        try context.save()
+
+        let remainingProjects = try ProjectService.activeProjects(in: context)
+        XCTAssertEqual(remainingProjects.map(\.id), [realProject.id], "Only the deleted project should be gone")
+        XCTAssertTrue(try context.fetch(FetchDescriptor<DocumentService.Document>()).isEmpty, "The Project's Document must cascade-delete")
+        XCTAssertTrue(try context.fetch(FetchDescriptor<WorkItemService.WorkItem>()).isEmpty, "The Project's WorkItem must cascade-delete")
+    }
+
     func testDataSurvivesReopeningTheStore() throws {
         let storeURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("KyleOSRestartTest-\(UUID().uuidString)")

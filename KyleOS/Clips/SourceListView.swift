@@ -10,11 +10,15 @@ struct SourceListView: View {
     @Environment(\.modelContext) private var context
     @Environment(AppNavigationController.self) private var navigator
     @Environment(\.openWindow) private var openWindow
-    @Query(sort: \SourceService.Source.createdAt, order: .reverse) private var sources: [SourceService.Source]
+    @Query(sort: \SourceService.Source.createdAt, order: .reverse) private var allSources: [SourceService.Source]
     @Query private var allClips: [ClipService.Clip]
+
+    private var sources: [SourceService.Source] { allSources.filter { !$0.displayIsArchived } }
+    private var archivedSources: [SourceService.Source] { allSources.filter { $0.displayIsArchived } }
 
     @State private var newSourceTitle = ""
     @State private var path = NavigationPath()
+    @State private var isPresentingArchivedSources = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -67,6 +71,19 @@ struct SourceListView: View {
                                 .overlay(alignment: .bottom) {
                                     Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                 }
+                                // Kyle (2026-08-20): "can there be an option to right click any
+                                // item... 'Archive'... or 'delete'." Additive alongside the
+                                // existing explicit buttons above, not a replacement for them.
+                                .archiveDeleteContextMenu(
+                                    onArchive: {
+                                        SourceService.archive(source)
+                                        try? context.save()
+                                    },
+                                    onDelete: {
+                                        SourceService.delete(source, context: context)
+                                        try? context.save()
+                                    }
+                                )
                             }
                         }
                     }
@@ -76,7 +93,10 @@ struct SourceListView: View {
             .padding(RetroTheme.sectionPadding)
             .background(RetroTheme.background)
             .navigationDestination(for: SourceRoute.self) { route in
-                if let source = sources.first(where: { $0.persistentModelID == route.id }) {
+                // Looks up `allSources` (unfiltered), not the active-only `sources` — a Source
+                // archived while its own detail view is open must stay resolvable, not vanish
+                // out from under the user mid-navigation.
+                if let source = allSources.first(where: { $0.persistentModelID == route.id }) {
                     SourceDetailView(source: source)
                 }
             }
@@ -84,6 +104,20 @@ struct SourceListView: View {
                 if let clip = allClips.first(where: { $0.persistentModelID == route.id }) {
                     ClipDetailView(clip: clip)
                 }
+            }
+            .toolbar {
+                if !archivedSources.isEmpty {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            isPresentingArchivedSources = true
+                        } label: {
+                            Label("Archived Sources (\(archivedSources.count))", systemImage: "archivebox")
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $isPresentingArchivedSources) {
+                ArchivedSourcesSheet()
             }
         }
         .task(id: navigator.pendingTarget) { consumePendingTarget() }
@@ -101,6 +135,62 @@ struct SourceListView: View {
         SourceService.createSource(title: title, context: context)
         try? context.save()
         newSourceTitle = ""
+    }
+}
+
+/// Kyle (2026-08-20, real use): "there should be an archive in both writing and clips." Same
+/// shape as `WritingHomeView`'s `ArchivedWritingProjectsSheet` — own live `@Query` so Restore
+/// shrinks the list in this same sheet session, not a passed-in array snapshot.
+private struct ArchivedSourcesSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+
+    @Query(sort: \SourceService.Source.updatedAt, order: .reverse)
+    private var allSources: [SourceService.Source]
+
+    private var sources: [SourceService.Source] { allSources.filter { $0.displayIsArchived } }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Archived Sources").font(.headline).foregroundStyle(RetroTheme.primaryText)
+                Spacer()
+                Button("Done") { dismiss() }
+                    .buttonStyle(.retroProminent)
+                    .keyboardShortcut(.defaultAction)
+            }
+            .padding(RetroTheme.sectionPadding)
+            if sources.isEmpty {
+                Text("Nothing archived.").foregroundStyle(RetroTheme.secondaryText).padding(RetroTheme.sectionPadding)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(sources) { source in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(source.title).foregroundStyle(RetroTheme.primaryText)
+                                Text("\(ClipService.clips(in: source).count) clip\(ClipService.clips(in: source).count == 1 ? "" : "s")")
+                                    .font(.caption)
+                                    .foregroundStyle(RetroTheme.secondaryText)
+                            }
+                            Spacer()
+                            Button("Restore") {
+                                SourceService.restore(source)
+                                try? context.save()
+                            }
+                            .buttonStyle(.retro)
+                        }
+                        .padding(.horizontal, RetroTheme.sectionPadding)
+                        .padding(.vertical, RetroTheme.controlSpacing)
+                        .overlay(alignment: .bottom) {
+                            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+                        }
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(minWidth: 380, minHeight: 300)
+        .background(RetroTheme.panelBackground)
     }
 }
 

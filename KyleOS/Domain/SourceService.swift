@@ -7,8 +7,8 @@ import SwiftData
 /// copying it" — `attachFile` routes through the existing `FileReferenceService`/bookmark
 /// infrastructure rather than duplicating file-handling logic.
 enum SourceService {
-    typealias Source = KyleOSSchemaV32.Source
-    typealias FileReference = KyleOSSchemaV32.FileReference
+    typealias Source = KyleOSSchemaV33.Source
+    typealias FileReference = KyleOSSchemaV33.FileReference
 
     @discardableResult
     static func createSource(
@@ -60,6 +60,20 @@ enum SourceService {
 
     static func sources(in context: ModelContext) -> [Source] {
         (try? context.fetch(FetchDescriptor<Source>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)]))) ?? []
+    }
+
+    /// New in V33 (Kyle, 2026-08-20: "there should be an archive in both writing and clips") —
+    /// same shape as `ProjectService.archive`/`restore`.
+    static func archive(_ source: Source) {
+        source.isArchived = true
+        source.archivedAt = .now
+        source.updatedAt = .now
+    }
+
+    static func restore(_ source: Source) {
+        source.isArchived = false
+        source.archivedAt = nil
+        source.updatedAt = .now
     }
 
     /// Cascade delete rule on `Source.clips`/`Source.fileReference` removes both along with it.

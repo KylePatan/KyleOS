@@ -23,23 +23,23 @@ import SwiftData
 /// periodic snapshots (no snapshot mechanism exists, and the log already has everything needed)
 /// — see `readyBufferTrend`. With these two, every §13.x/roadmap Reports item is built.
 enum ReportService {
-    typealias WorkSession = KyleOSSchemaV32.WorkSession
-    typealias WorkItem = KyleOSSchemaV32.WorkItem
-    typealias Workspace = KyleOSSchemaV32.Workspace
-    typealias PostingItem = KyleOSSchemaV32.PostingItem
-    typealias PlannedSession = KyleOSSchemaV32.PlannedSession
-    typealias PlannedSessionStatus = KyleOSSchemaV32.PlannedSessionStatus
-    typealias HistoryEvent = KyleOSSchemaV32.HistoryEvent
-    typealias HistoryEventKind = KyleOSSchemaV32.HistoryEventKind
-    typealias Clip = KyleOSSchemaV32.Clip
-    typealias ClipStatus = KyleOSSchemaV32.ClipStatus
-    typealias Project = KyleOSSchemaV32.Project
-    typealias ProjectStatus = KyleOSSchemaV32.ProjectStatus
-    typealias SketchProductionStatus = KyleOSSchemaV32.SketchProductionStatus
-    typealias AppSettings = KyleOSSchemaV32.AppSettings
-    typealias Joke = KyleOSSchemaV32.Joke
-    typealias Chunk = KyleOSSchemaV32.Chunk
-    typealias JokeStatus = KyleOSSchemaV32.JokeStatus
+    typealias WorkSession = KyleOSSchemaV33.WorkSession
+    typealias WorkItem = KyleOSSchemaV33.WorkItem
+    typealias Workspace = KyleOSSchemaV33.Workspace
+    typealias PostingItem = KyleOSSchemaV33.PostingItem
+    typealias PlannedSession = KyleOSSchemaV33.PlannedSession
+    typealias PlannedSessionStatus = KyleOSSchemaV33.PlannedSessionStatus
+    typealias HistoryEvent = KyleOSSchemaV33.HistoryEvent
+    typealias HistoryEventKind = KyleOSSchemaV33.HistoryEventKind
+    typealias Clip = KyleOSSchemaV33.Clip
+    typealias ClipStatus = KyleOSSchemaV33.ClipStatus
+    typealias Project = KyleOSSchemaV33.Project
+    typealias ProjectStatus = KyleOSSchemaV33.ProjectStatus
+    typealias SketchProductionStatus = KyleOSSchemaV33.SketchProductionStatus
+    typealias AppSettings = KyleOSSchemaV33.AppSettings
+    typealias Joke = KyleOSSchemaV33.Joke
+    typealias Chunk = KyleOSSchemaV33.Chunk
+    typealias JokeStatus = KyleOSSchemaV33.JokeStatus
 
     enum DateRangeOption: String, CaseIterable, Identifiable {
         case thisWeek = "This Week"

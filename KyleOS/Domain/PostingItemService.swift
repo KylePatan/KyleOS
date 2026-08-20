@@ -7,10 +7,10 @@ import SwiftData
 /// `GigSetListService`'s "exactly one of joke/chunk" enforcement (the schema itself can't express
 /// an exclusive-or, so the service layer does).
 enum PostingItemService {
-    typealias PostingItem = KyleOSSchemaV32.PostingItem
-    typealias Clip = KyleOSSchemaV32.Clip
-    typealias Project = KyleOSSchemaV32.Project
-    typealias WorkItem = KyleOSSchemaV32.WorkItem
+    typealias PostingItem = KyleOSSchemaV33.PostingItem
+    typealias Clip = KyleOSSchemaV33.Clip
+    typealias Project = KyleOSSchemaV33.Project
+    typealias WorkItem = KyleOSSchemaV33.WorkItem
 
     /// PRD §10.2's five display states. Deliberately not a stored field — computed fresh from the
     /// content's own ready/posted state (already fully answered by `ClipStatus`/
@@ -135,7 +135,7 @@ enum PostingItemService {
             return clip.postingItem?.confirmedPostDate
         }
         let sketchDates = projects
-            .filter { $0.projectType == .sketch && $0.status == .finished && !$0.isArchived }
+            .filter(SketchProductionService.isProductionProject)
             .compactMap { project -> Date? in
                 guard displayStatus(for: project) != .posted else { return nil }
                 return project.postingItem?.confirmedPostDate

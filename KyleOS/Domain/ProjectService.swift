@@ -4,10 +4,10 @@ import SwiftData
 /// Reusable domain actions for Projects — Create/Rename/Archive/Restore — kept out of views
 /// per CLAUDE.md §4 so later modules (Writing, Sketches, ...) call the same logic UI ever does.
 enum ProjectService {
-    typealias Project = KyleOSSchemaV32.Project
-    typealias WritingProjectType = KyleOSSchemaV32.WritingProjectType
-    typealias ProjectStatus = KyleOSSchemaV32.ProjectStatus
-    typealias Document = KyleOSSchemaV32.Document
+    typealias Project = KyleOSSchemaV33.Project
+    typealias WritingProjectType = KyleOSSchemaV33.WritingProjectType
+    typealias ProjectStatus = KyleOSSchemaV33.ProjectStatus
+    typealias Document = KyleOSSchemaV33.Document
 
     @discardableResult
     static func createProject(
@@ -52,6 +52,17 @@ enum ProjectService {
         project.isArchived = false
         project.archivedAt = nil
         project.updatedAt = .now
+    }
+
+    /// Kyle (2026-08-20, real use): "'P' and 'test'... aren't real and from the writing page i
+    /// should be able to delete things from it." Archive is the right answer for real, finished
+    /// work (CLAUDE.md §5 — never lose irreplaceable creative work to a casual delete); this is
+    /// the deliberate, user-initiated permanent removal for content that was never real to begin
+    /// with. Every child relationship already cascades from `Project` in the schema (Documents,
+    /// WorkItems, Deadline, PacketItems), so a plain `context.delete` is enough — no manual
+    /// cleanup needed here.
+    static func delete(_ project: Project, context: ModelContext) {
+        context.delete(project)
     }
 
     static func activeProjects(in context: ModelContext) throws -> [Project] {

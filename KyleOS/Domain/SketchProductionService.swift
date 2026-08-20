@@ -7,11 +7,32 @@ import SwiftData
 /// `finishedSketchProjects` just filters the existing `Project` fields that already carry this
 /// (`WritingProjectType.sketch`, `ProjectStatus.finished`, both since V8).
 enum SketchProductionService {
-    typealias Project = KyleOSSchemaV32.Project
-    typealias SketchProduction = KyleOSSchemaV32.SketchProduction
-    typealias SketchProductionStatus = KyleOSSchemaV32.SketchProductionStatus
-    typealias FilmShoot = KyleOSSchemaV32.FilmShoot
-    typealias CallSheet = KyleOSSchemaV32.CallSheet
+    typealias Project = KyleOSSchemaV33.Project
+    typealias SketchProduction = KyleOSSchemaV33.SketchProduction
+    typealias SketchProductionStatus = KyleOSSchemaV33.SketchProductionStatus
+    typealias FilmShoot = KyleOSSchemaV33.FilmShoot
+    typealias CallSheet = KyleOSSchemaV33.CallSheet
+    typealias WritingProjectType = KyleOSSchemaV33.WritingProjectType
+
+    /// Kyle (2026-08-20, real use): "short films and sketches that are finished scripts should be
+    /// sent to the sketches module - because they require the same sort of process of filming and
+    /// posting." Short Film joins Sketch as a project type that graduates into Sketches
+    /// production once its writing is done — TV Pilot/Screenplay/Short Story never do, since
+    /// those are delivered as a finished script/submission, not filmed and posted by Kyle himself.
+    static let productionProjectTypes: Set<WritingProjectType> = [.sketch, .shortFilm]
+
+    /// The single source of truth for "does this Project belong on the Sketches production
+    /// board" — every call site (the board itself, Post It, the confirmed-post-date pool, and
+    /// Home's deep-link routing) reads this same rule instead of each re-deriving its own copy,
+    /// which is exactly how a project type could join the pipeline in one place but not another.
+    /// A `Project` stays visible in Writing's own "Finished" group at the same time — this is
+    /// additive presence, not a move, matching how Sketch already worked before Short Film joined
+    /// it (see this file's own original doc comment: "appear in Sketches automatically as the
+    /// same Project, not a copied project").
+    static func isProductionProject(_ project: Project) -> Bool {
+        guard let type = project.projectType else { return false }
+        return productionProjectTypes.contains(type) && project.status == .finished && !project.isArchived
+    }
 
     /// Read-only, never creates a `SketchProduction` row — merely viewing the board must not
     /// write anything. `nil` reads as the natural starting state, the same Optional-with-
@@ -56,7 +77,7 @@ enum SketchProductionService {
     /// enum-typed — the Sixth/Tenth lesson) and filters in-memory.
     static func finishedSketchProjects(in context: ModelContext) -> [Project] {
         let all = (try? context.fetch(FetchDescriptor<Project>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]))) ?? []
-        return all.filter { $0.projectType == .sketch && $0.status == .finished && !$0.isArchived }
+        return all.filter(isProductionProject)
     }
 
     static func finishedSketchProjects(inStatus status: SketchProductionStatus, in context: ModelContext) -> [Project] {

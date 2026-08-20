@@ -8,6 +8,7 @@ import SwiftData
 /// Side-by-side split view (§6.12/§6.13) is a later increment.
 struct WritingHomeView: View {
     @Environment(AppNavigationController.self) private var navigator
+    @Environment(\.modelContext) private var context
 
     // SwiftData's #Predicate can't reliably evaluate a keypath into an enum-typed property
     // (confirmed live: even a plain `!= nil` check on `projectType` crashed with "keypath
@@ -60,6 +61,22 @@ struct WritingHomeView: View {
                                                 WritingProjectRow(project: project)
                                             }
                                             .buttonStyle(.plain)
+                                            // Kyle (2026-08-20, real use): "'P' and 'test'...
+                                            // aren't real and from the writing page i should be
+                                            // able to delete things from it." Archive already
+                                            // existed (WritingProjectDetailView's own button);
+                                            // this adds Delete for junk/test content, right on
+                                            // the list row so drilling in isn't required.
+                                            .archiveDeleteContextMenu(
+                                                onArchive: {
+                                                    ProjectService.archive(project)
+                                                    try? context.save()
+                                                },
+                                                onDelete: {
+                                                    ProjectService.delete(project, context: context)
+                                                    try? context.save()
+                                                }
+                                            )
                                         }
                                     }
                                 }

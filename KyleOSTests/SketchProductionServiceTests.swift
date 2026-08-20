@@ -75,6 +75,24 @@ final class SketchProductionServiceTests: XCTestCase {
         XCTAssertEqual(results.map(\.id), [finishedSketch.id])
     }
 
+    /// Kyle (2026-08-20, real use): "short films and sketches that are finished scripts should be
+    /// sent to the sketches module - because they require the same sort of process of filming and
+    /// posting." A finished Short Film must join a finished Sketch on the board; an in-progress
+    /// Short Film (still being written) must not — it only graduates once finished, same gate as
+    /// Sketch itself always had.
+    func testFinishedSketchProjectsIncludesFinishedShortFilmsAlongsideSketches() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let finishedSketch = makeFinishedSketch(title: "Finished Sketch", context: context)
+        let finishedShortFilm = ProjectService.createProject(title: "Finished Short Film", projectType: .shortFilm, status: .finished, in: context)
+        ProjectService.createProject(title: "In-Progress Short Film", projectType: .shortFilm, status: .active, in: context)
+        try context.save()
+
+        let results = SketchProductionService.finishedSketchProjects(in: context)
+
+        XCTAssertEqual(Set(results.map(\.id)), Set([finishedSketch.id, finishedShortFilm.id]))
+    }
+
     func testFinishedSketchProjectsInStatusFiltersByProductionStatus() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

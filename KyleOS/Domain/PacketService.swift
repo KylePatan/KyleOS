@@ -12,10 +12,10 @@ import SwiftData
 /// content, matching this codebase's general "one source of truth" pattern (same reasoning as
 /// PostingItem referencing a Clip/Sketch rather than copying its fields).
 enum PacketService {
-    typealias Packet = KyleOSSchemaV32.Packet
-    typealias PacketItem = KyleOSSchemaV32.PacketItem
-    typealias Project = KyleOSSchemaV32.Project
-    typealias Document = KyleOSSchemaV32.Document
+    typealias Packet = KyleOSSchemaV33.Packet
+    typealias PacketItem = KyleOSSchemaV33.PacketItem
+    typealias Project = KyleOSSchemaV33.Project
+    typealias Document = KyleOSSchemaV33.Document
 
     static func createPacket(title: String, targetName: String, context: ModelContext) -> Packet {
         let packet = Packet(title: title, targetName: targetName)

@@ -5,9 +5,9 @@ import SwiftData
 /// is plain text — structured Script Blocks (PRD §14.3) are Decision Gate A territory, resolved
 /// during V0.2 Writing, not decided here.
 enum DocumentService {
-    typealias Document = KyleOSSchemaV32.Document
-    typealias DocumentType = KyleOSSchemaV32.DocumentType
-    typealias Project = KyleOSSchemaV32.Project
+    typealias Document = KyleOSSchemaV33.Document
+    typealias DocumentType = KyleOSSchemaV33.DocumentType
+    typealias Project = KyleOSSchemaV33.Project
 
     @discardableResult
     static func createDocument(

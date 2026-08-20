@@ -210,6 +210,15 @@ private struct ClipCard: View {
         .onDrag {
             NSItemProvider(object: clip.id.uuidString as NSString)
         }
+        // Kyle (2026-08-20, real use): "in clips there is still an airplane clip to be posted
+        // even though i've cleared it... the things on 'home' should be removeable." The board is
+        // where all clip info was already consolidated (2026-08-17) but it never gained its own
+        // delete affordance — the only prior path was drilling into the Source. No Archive here;
+        // a Clip has no archive state of its own, only its Source does (see SourceListView).
+        .archiveDeleteContextMenu(onDelete: {
+            ClipService.delete(clip, context: context)
+            try? context.save()
+        })
     }
 }
 

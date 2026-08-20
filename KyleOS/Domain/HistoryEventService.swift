@@ -7,13 +7,13 @@ import SwiftData
 /// type, and String is the simplest common representation for a log that's read back as display
 /// text, not re-parsed into a typed enum.
 enum HistoryEventService {
-    typealias HistoryEvent = KyleOSSchemaV32.HistoryEvent
-    typealias HistoryEventKind = KyleOSSchemaV32.HistoryEventKind
-    typealias WorkItem = KyleOSSchemaV32.WorkItem
-    typealias Clip = KyleOSSchemaV32.Clip
-    typealias Project = KyleOSSchemaV32.Project
-    typealias Joke = KyleOSSchemaV32.Joke
-    typealias Chunk = KyleOSSchemaV32.Chunk
+    typealias HistoryEvent = KyleOSSchemaV33.HistoryEvent
+    typealias HistoryEventKind = KyleOSSchemaV33.HistoryEventKind
+    typealias WorkItem = KyleOSSchemaV33.WorkItem
+    typealias Clip = KyleOSSchemaV33.Clip
+    typealias Project = KyleOSSchemaV33.Project
+    typealias Joke = KyleOSSchemaV33.Joke
+    typealias Chunk = KyleOSSchemaV33.Chunk
 
     @discardableResult
     static func recordStatusChange(

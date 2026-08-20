@@ -5,7 +5,11 @@ import SwiftData
 /// remains inside Writing. Sketches begins when a Sketch is marked Writing Finished." A finished
 /// Sketch project (WritingProjectType.sketch + ProjectStatus.finished, both existing fields —
 /// see SketchProductionService's doc comment) appears here automatically, grouped by its
-/// production status. Same "explicit Move to… menu, not a competing drag gesture" choice as
+/// production status. Short Film joined Sketch here 2026-08-20 (Kyle: "short films and sketches
+/// that are finished scripts should be sent to the sketches module - because they require the
+/// same sort of process of filming and posting") — see `SketchProductionService.
+/// isProductionProject`, the one shared rule this and every other "does this belong in Sketches"
+/// call site now reads. Same "explicit Move to… menu, not a competing drag gesture" choice as
 /// JokeBoardView (CLAUDE.md §13, documented implementation choice). ClipBoardView itself moved off
 /// this pattern on 2026-08-17 (Kyle: "like the home page, the clip page has to be completely
 /// draggable") — not extended here since Sketches wasn't part of that request.
@@ -16,7 +20,7 @@ struct SketchBoardView: View {
     @State private var path = NavigationPath()
 
     private var finishedSketches: [ProjectService.Project] {
-        allProjects.filter { $0.projectType == .sketch && $0.status == .finished && !$0.isArchived }
+        allProjects.filter(SketchProductionService.isProductionProject)
     }
 
     private func projects(inStatus status: SketchProductionService.SketchProductionStatus) -> [ProjectService.Project] {

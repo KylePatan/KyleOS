@@ -18,12 +18,15 @@ enum DeepLinkTarget: Equatable {
 
     /// Where a given Work Item's own material actually lives, if anywhere navigable. Centralized
     /// here (not duplicated per card/view) since any future "make it clickable" affordance needs
-    /// the exact same resolution: a Project either is a Sketch (`projectType == .sketch`) or a
-    /// plain Writing project; Stand-Up material is a Chunk, a loose Joke, or neither (a general,
-    /// untargeted session, which has nowhere specific to go).
-    static func forWorkItem(_ workItem: KyleOSSchemaV32.WorkItem) -> DeepLinkTarget? {
+    /// the exact same resolution: a Project routes to Sketches once it's actually IN Sketches
+    /// production (`SketchProductionService.isProductionProject` — Sketch or Short Film, finished,
+    /// not archived; 2026-08-20 added Short Film alongside Sketch here too), otherwise to plain
+    /// Writing (including a still-being-written Short Film — it only graduates to Sketches once
+    /// finished); Stand-Up material is a Chunk, a loose Joke, or neither (a general, untargeted
+    /// session, which has nowhere specific to go).
+    static func forWorkItem(_ workItem: KyleOSSchemaV33.WorkItem) -> DeepLinkTarget? {
         if let project = workItem.project {
-            return project.projectType == .sketch
+            return SketchProductionService.isProductionProject(project)
                 ? .sketchProject(project.persistentModelID)
                 : .writingProject(project.persistentModelID)
         }
