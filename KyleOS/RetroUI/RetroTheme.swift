@@ -82,4 +82,69 @@ enum RetroTheme {
 
     /// Deadlines/warnings (§21: "use strong colour for... warnings... deadlines").
     static let warning = Color(red: 0.75, green: 0.30, blue: 0.05)
+
+    // MARK: - Aesthetic Direction V2 (docs/VISUAL_DESIGN_SYSTEM.md §0, 2026-08-20)
+    //
+    // "Kyle OS should feel like a colourful late-2000s creative productivity dashboard, redesigned
+    // with the smooth interactions, clarity, and polish of a modern desktop operating system."
+    // Piloted on the Sidebar + Home first (Kyle's own chosen sequencing) — these tokens exist
+    // system-wide so the rest of the app can adopt them later, but for now only RetroSidebar and
+    // Home's own views (CreativeCapacityWidget, WeeklyBoardView, AllTasksView, PostItView) actually
+    // read them. Every other screen keeps using the tokens above, completely unchanged, until it's
+    // its own turn.
+
+    /// Warm cream/soft white — the pilot's content background, replacing plain white specifically
+    /// where adopted (§0: "warm cream or soft white backgrounds").
+    static let creamBackground = Color(red: 0.99, green: 0.97, blue: 0.92)
+
+    /// The sidebar's own light-blue base, top-to-bottom gradient stops (§0 §2: "light blue, pale
+    /// cyan... maybe a gentle gradient, not flat flat flat").
+    static let sidebarGradientTop = Color(red: 0.70, green: 0.86, blue: 0.96)
+    static let sidebarGradientBottom = Color(red: 0.86, green: 0.94, blue: 0.98)
+
+    /// A touch more rounded than the base `cornerRadius` — the pilot's "rounded rectangles... 2008
+    /// web card" feel (§0: repeatedly asks for rounded rectangles, no sharp-corner constraint).
+    static let moduleCornerRadius: CGFloat = 12
+
+    /// Slightly stronger than the base `shadow` — pilot surfaces want a "raised card feeling."
+    static let moduleShadow = Color.black.opacity(0.16)
+
+    /// §0's category colour language: "writing = warm yellow/gold, stand-up = orange/coral, clips
+    /// = pink/red, sketches = green, calendar = blue, deadlines = red, completed = mint or light
+    /// green... gives the OS an immediate visual language." Mirrors `WorkItemService.Workspace`
+    /// 1:1 for the four content workspaces, plus three cross-cutting semantic ones (calendar/
+    /// deadline/completed) that apply regardless of workspace.
+    enum ModuleCategory: CaseIterable {
+        case writing, standUp, clips, sketches, calendar, deadline, completed
+
+        var accent: Color {
+            switch self {
+            case .writing: return Color(red: 0.87, green: 0.67, blue: 0.13)     // warm yellow/gold
+            case .standUp: return Color(red: 0.93, green: 0.47, blue: 0.24)     // orange/coral
+            case .clips: return Color(red: 0.90, green: 0.32, blue: 0.52)       // pink/red
+            case .sketches: return Color(red: 0.28, green: 0.68, blue: 0.42)    // green
+            case .calendar: return Color(red: 0.24, green: 0.55, blue: 0.85)    // blue
+            case .deadline: return Color(red: 0.82, green: 0.24, blue: 0.24)    // red
+            case .completed: return Color(red: 0.33, green: 0.76, blue: 0.56)   // mint
+            }
+        }
+
+        /// A soft tint of the same accent, for card backgrounds/badges where the full-strength
+        /// colour would be too loud — §0's own "controlled... not neon chaos" instruction.
+        var softBackground: Color { accent.opacity(0.14) }
+    }
+}
+
+extension WorkItemService.Workspace {
+    /// The 1:1 mapping §0's category language is built on — every Home row showing a WorkItem
+    /// (Weekly Board, All Tasks, Post It) reads this to pick its accent, so a workspace's colour
+    /// can never drift between screens.
+    var moduleCategory: RetroTheme.ModuleCategory {
+        switch self {
+        case .writing: return .writing
+        case .standUp: return .standUp
+        case .clips: return .clips
+        case .sketches: return .sketches
+        }
+    }
 }

@@ -54,6 +54,10 @@ private struct AllTasksRow: View {
 
     var body: some View {
         HStack(spacing: RetroTheme.controlSpacing) {
+            // §0: "accent colours help categorize things... immediate visual language" — same
+            // per-workspace colour dot as the sidebar's own active-item indicator, scaled down for
+            // a dense list row.
+            Circle().fill(workItem.workspace.moduleCategory.accent).frame(width: 8, height: 8)
             VStack(alignment: .leading, spacing: 2) {
                 Text(workItem.title)
                     .font(.callout)

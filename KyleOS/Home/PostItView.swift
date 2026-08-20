@@ -135,7 +135,9 @@ struct PostItView: View {
             statusDot(row.displayStatus)
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.title).font(.callout).foregroundStyle(RetroTheme.primaryText)
-                Text(row.subtitle).font(.caption2).foregroundStyle(RetroTheme.secondaryText)
+                // §0's category colour language — a Clip's "Clip" label reads pink/red, a
+                // Sketch's "Sketch" label reads green, matching those workspaces everywhere else.
+                Text(row.subtitle).font(.caption2).foregroundStyle(row.category.accent)
             }
             Spacer()
             if let date = row.confirmedPostDate {
@@ -219,6 +221,15 @@ struct PostItRow: Identifiable {
         switch content {
         case .clip: return "Clip"
         case .sketch: return "Sketch"
+        }
+    }
+    /// Aesthetic Direction V2 (§0) category colour — matches `WorkItemService.Workspace.
+    /// moduleCategory` (`.clips`/`.sketches`) exactly, so a Clip reads the same accent here as it
+    /// does on the Clips board or a Home Weekly Board card.
+    var category: RetroTheme.ModuleCategory {
+        switch content {
+        case .clip: return .clips
+        case .sketch: return .sketches
         }
     }
     var confirmedPostDate: Date? {

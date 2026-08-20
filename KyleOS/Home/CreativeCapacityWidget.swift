@@ -19,7 +19,9 @@ struct CreativeCapacityWidget: View {
 
     var body: some View {
         if let summary {
-            RetroPanel("Creative Capacity") {
+            // Aesthetic Direction V2 (§0) — Creative Capacity is a scheduling/time concept, same
+            // category language as Calendar.
+            RetroPanel("Creative Capacity", accentCategory: .calendar) {
                 HStack(spacing: RetroTheme.sectionSpacing) {
                     capacityStat(label: summary.isOverridden ? "Available (Overridden)" : "Available", hours: summary.baselineHours)
                     capacityStat(label: "Scheduled", hours: summary.scheduledHours)

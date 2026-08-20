@@ -65,7 +65,10 @@ struct HomeView: View {
                 PostItView()
             }
         }
-        .background(RetroTheme.background)
+        // Aesthetic Direction V2 pilot (docs/VISUAL_DESIGN_SYSTEM.md §0): warm cream instead of
+        // plain white, scoped to Home only for now — every other module keeps RetroTheme.
+        // background unchanged until it's its own turn.
+        .background(RetroTheme.creamBackground)
         .navigationTitle("Home")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

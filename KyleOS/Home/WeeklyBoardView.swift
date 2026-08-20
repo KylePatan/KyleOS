@@ -184,7 +184,10 @@ private struct WeeklyItemCard: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(workItem.workspace.rawValue.uppercased())
                         .font(.caption2.bold())
-                        .foregroundStyle(RetroTheme.accent)
+                        // Aesthetic Direction V2 (§0): "accent colours help categorize things...
+                        // gives the OS an immediate visual language" — was a flat RetroTheme.accent
+                        // navy for every workspace; now reads the workspace's own category colour.
+                        .foregroundStyle(workItem.workspace.moduleCategory.accent)
                     Text(workItem.title)
                         .font(.callout.bold())
                         .foregroundStyle(RetroTheme.primaryText)
@@ -223,9 +226,19 @@ private struct WeeklyItemCard: View {
                     .foregroundStyle(RetroTheme.secondaryText)
             }
         }
+        .padding(.leading, RetroTheme.controlSpacing)
         .padding(.vertical, RetroTheme.controlSpacing)
         .overlay(alignment: .bottom) {
             Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+        }
+        // §0: "a little more expressive... colour strategically" — a thin accent stripe reading
+        // the same workspace colour as the label above, so the category is legible even at a
+        // glance/scroll, not just when reading the small caption text.
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(workItem.workspace.moduleCategory.accent)
+                .frame(width: 3)
+                .padding(.vertical, 3)
         }
         .onDrag {
             NSItemProvider(object: workItem.id.uuidString as NSString)

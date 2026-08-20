@@ -7,7 +7,121 @@ behavior.
 
 ---
 
-# 1. Core Visual Concept
+# 0. AMENDMENT (2026-08-20) — Aesthetic Direction V2, supersedes conflicts below
+
+Kyle, unprompted, after a month of real use ahead: a full new creative direction, given verbatim
+below. **Where this section and anything after it (the original 2026-08-15 spec) disagree, this
+section wins** — most notably: the app moves from a near-monochrome white/navy palette to a
+genuinely colourful one (category-coded accent colours per module), and surfaces gain real
+gradient/depth treatment instead of flat fills. Where the two *don't* conflict — spacing rhythm,
+consistency-over-randomness, avoiding clutter, the §34 usability-first priority order, the
+sidebar-as-primary-nav structure itself (already re-confirmed 2026-08-19) — the original spec's
+detail still applies; this amendment sets the *palette and surface* direction, not a full rewrite
+of every rule below it.
+
+Verbatim, Kyle's own words:
+
+> **Kyle OS Aesthetic Direction**
+>
+> **Core Design Identity**
+>
+> Kyle OS should feel like: retro internet / late-2000s desktop-web nostalgia; bright, colourful,
+> structured interfaces; clear visual separation between sections; modern smoothness in spacing,
+> animation, and interaction; an OS-like productivity tool rather than a sparse startup app.
+>
+> The overall look should feel like: a 2008 website sitting on top of a modern, clean, responsive
+> OS. Not messy. Not gimmicky. Not ironic. Not ugly on purpose. It should feel like the best parts
+> of 2008 design were refined using modern UX standards.
+>
+> **The Feeling You Want**
+>
+> Kyle OS should communicate: creative energy, organization, personality, clarity, momentum. It
+> should feel more alive than minimalist apps like Notion or Linear, but still more usable and
+> polished than an actual 2008 website. The user should feel: "This is fun to use." "Everything is
+> visually distinct." "I can understand where things are immediately." "This has personality."
+> "This feels built for writing, comedy, and creative work."
+>
+> **1. Layout Philosophy** — Use a structured app layout, not floating minimalism: left sidebar,
+> top utility/header area where needed, content panels that stack clearly, cards/modules with
+> visible boundaries, sections that feel compartmentalized. The interface should build from the
+> top down and feel anchored, rather than having isolated objects floating in empty space. Key
+> principle: every major section should feel like its own panel, tile, or module, so users can
+> quickly scan and understand the interface.
+>
+> **2. Sidebar Style** — A soft light blue base, slightly glossy or subtly layered feel, clear
+> navigation zones, active item states that feel tactile, icons with a slightly playful or classic
+> desktop-software feel. Think light blue, pale cyan, slightly desaturated sky tones, maybe a
+> gentle gradient, not flat flat flat. The sidebar should feel like a friendly anchor for the whole
+> app, communicating stability, clarity, "home base," easy navigation.
+>
+> **3. Separation Between Elements** — Things should feel separate, organized, and easy to read,
+> without feeling disconnected. Achieve this through: distinct card backgrounds, slightly
+> different panel tones, subtle borders, rounded rectangles, section headers, inset blocks, layered
+> surfaces. Different squares/cards/modules can have slightly different surface treatments so they
+> feel individually scannable (task cards, writing project cards, clip pipeline cards, calendar
+> blocks, stand-up joke sections) — each should feel like a separate "object" while still belonging
+> to one system. Important: use variation *within* a system, not randomness — consistent corner
+> radius, border styles, shadow softness, spacing, typography rules.
+>
+> **Colour Direction** — Colourful, but controlled. Not neon chaos, not grayscale minimalism, not
+> childish rainbow overload. Retro productivity web with modern polish. Suggested palette
+> character: light blue/cyan as a foundational UI colour; warm cream or soft white backgrounds;
+> soft navy or dark slate for text and structure; accent colours like coral, orange, lime, teal,
+> purple, sunny yellow. These accents should help categorize things — for example: writing = warm
+> yellow/gold, stand-up = orange/coral, clips = pink/red, sketches = green, calendar = blue,
+> deadlines = red, completed = mint or light green. This gives the OS an immediate visual language.
+>
+> **Surface/Panel Style** — Surfaces should feel slightly dimensional (the 2008-website influence):
+> gentle gradients, subtle inner shadows, soft border contrast, raised card feeling, slightly
+> glossy or luminous headers in places — but restrained. Avoid heavy bevels everywhere, cheesy
+> metallic effects, overly loud gradients, too much skeuomorphism, cluttered textures. Aim for
+> "retro-inspired depth" rather than literal old-web imitation — tactile and layered, but crisp and
+> modern.
+>
+> **Typography Direction** — Clean, modern UI font for app chrome, navigation, controls, labels.
+> For writing-related sections, introduce subtle typographic personality: UI text = clean
+> sans-serif; creative/editorial areas (screenplay/prose/joke writing spaces) = more literary or
+> typewriter-inspired feeling. Typography should feel readable, confident, slightly editorial, not
+> sterile.
+>
+> **Motion/Smoothness** — The app may look retro-inspired, but it should move like a contemporary
+> application: soft transitions, smooth hover states, gentle expansion/collapse, polished
+> drag-and-drop behavior, subtle easing, satisfying state changes. When a panel opens, it should
+> glide. When a task is dragged, it should feel responsive. When a card is selected, the emphasis
+> should feel deliberate. The contrast — retro visual personality + modern interaction smoothness —
+> is what makes the aesthetic special.
+>
+> **Buttons/Controls** — A little more expressive than flat modern SaaS buttons: rounded
+> rectangles, subtle gradients or layered fills, strong active/hover states, clear borders,
+> slightly glossy or "soft plastic" feel in moderation. Inspiration: early web 2.0 buttons, classic
+> desktop software controls, old portal-style navigation tabs, modernized OS utility controls — but
+> refined.
+>
+> **Cards/Modules/"Squares"** — Kyle OS should be heavily module-based. Each module should have a
+> clear title, a visible boundary, feel like a "widget" or functional workspace, be readable at a
+> glance, use colour strategically (Today's Tasks, Writing Projects, Calendar Snapshot, Stand-Up
+> Set Progress, Clip Pipeline, Recent Sessions, Post It). Each should look like part of the same
+> ecosystem, but distinct enough to scan quickly — "every part of the app has its own home."
+>
+> **What to Borrow from 2008**: colourful navigation, visible containers, tabbed interfaces,
+> strong section headers, gradients, badges, icon-supported navigation, dashboard-like modularity.
+> **Do not borrow**: clutter, cramped spacing, tiny text, inconsistent fonts, flashing effects,
+> poor hierarchy, busy patterned backgrounds, ad-like chaos. Want the spirit, not the flaws.
+>
+> **What to Borrow from Modern OS Design**: clean spacing, hierarchy, fluid animations, responsive
+> resizing, consistency, smooth drag/drop, modern readability, focus states, balanced white space.
+> This is what stops the aesthetic from becoming kitsch.
+>
+> **One-sentence definition**: Kyle OS should feel like a colourful late-2000s creative
+> productivity dashboard, redesigned with the smooth interactions, clarity, and polish of a modern
+> desktop operating system.
+
+**Implementation status**: not started as of this amendment — see the project memory for the
+sequencing decision (pilot vs. full rollout) made with Kyle right after this was given.
+
+---
+
+# 1. Core Visual Concept (2026-08-15 — see §0 amendment above for what's since changed)
 
 Kyle OS should look like a **modern creative operating system designed through the visual
 language of Windows 95/98 and the early web**.
