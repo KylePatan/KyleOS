@@ -23,9 +23,15 @@ enum RetroTheme {
 
     static let interactionAnimation = Animation.easeOut(duration: 0.12)
 
-    // MARK: - Shape (§7: "0-4px, not modern 12/16/24px rounded cards")
+    // MARK: - Shape (§7 originally: "0-4px, not modern 12/16/24px rounded cards." Kyle, 2026-08-19:
+    // "let's give the app a very slightly more modern look... SLIGHTLY rounded corners. I want to
+    // make it look about 5 years more modern than it does right now." A deliberate, bounded
+    // exception to §7's own rule — still far short of the "modern 12-24px" look §7 explicitly
+    // warned against, just enough to read as a step up from the original sharp 2px. One shared
+    // token, so this single change cascades through every Retro* component that reads it, per the
+    // design system's own "change it once, everywhere updates" intent.)
 
-    static let cornerRadius: CGFloat = 2
+    static let cornerRadius: CGFloat = 6
     static let borderWidth: CGFloat = 1
 
     // MARK: - Colors

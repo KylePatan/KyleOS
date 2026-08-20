@@ -28,10 +28,11 @@ struct RetroPanel<Content: View>: View {
             content
                 .padding(RetroTheme.sectionPadding)
         }
-        .background(RetroTheme.panelBackground)
+        .background(RetroTheme.panelBackground, in: RoundedRectangle(cornerRadius: RetroTheme.cornerRadius, style: .continuous))
         .overlay(
-            Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth)
+            RoundedRectangle(cornerRadius: RetroTheme.cornerRadius, style: .continuous)
+                .strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth)
         )
-        .shadow(color: RetroTheme.shadow, radius: 3, y: 1)
+        .shadow(color: RetroTheme.shadow, radius: 5, y: 2)
     }
 }

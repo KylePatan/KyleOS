@@ -6,13 +6,14 @@ import SwiftUI
 /// enough of the field's body to draw a custom bevel/border this way.
 struct RetroInputModifier: ViewModifier {
     func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: RetroTheme.cornerRadius, style: .continuous)
         content
             .textFieldStyle(.plain)
             .padding(.horizontal, RetroTheme.controlSpacing)
             .padding(.vertical, RetroTheme.controlSpacing / 2)
-            .background(RetroTheme.insetBackground)
-            .overlay(RetroBevel(isPressed: true))
-            .overlay(Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
+            .background(RetroTheme.insetBackground, in: shape)
+            .overlay(RetroBevel(isPressed: true).clipShape(shape))
+            .overlay(shape.strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
     }
 }
 

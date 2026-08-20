@@ -16,15 +16,16 @@ struct RetroButtonStyle: ButtonStyle {
     var compact: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: RetroTheme.cornerRadius, style: .continuous)
         configuration.label
             .font(compact ? .caption.weight(.medium) : .callout.weight(.medium))
             .foregroundStyle(prominent ? RetroTheme.accentText : RetroTheme.primaryText)
             .padding(.horizontal, compact ? RetroTheme.controlSpacing : RetroTheme.sectionPadding)
             .padding(.vertical, compact ? RetroTheme.controlSpacing / 2 : RetroTheme.controlSpacing)
-            .background(prominent ? RetroTheme.accent : RetroTheme.buttonBackground)
-            .overlay(RetroBevel(isPressed: configuration.isPressed))
-            .overlay(Rectangle().strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
-            .shadow(color: RetroTheme.shadow, radius: configuration.isPressed ? 0 : 2, y: configuration.isPressed ? 0 : 1)
+            .background(prominent ? RetroTheme.accent : RetroTheme.buttonBackground, in: shape)
+            .overlay(RetroBevel(isPressed: configuration.isPressed).clipShape(shape))
+            .overlay(shape.strokeBorder(RetroTheme.border, lineWidth: RetroTheme.borderWidth))
+            .shadow(color: RetroTheme.shadow, radius: configuration.isPressed ? 1 : 3, y: configuration.isPressed ? 0 : 2)
             .offset(y: configuration.isPressed ? 1 : 0)
             .animation(RetroTheme.interactionAnimation, value: configuration.isPressed)
     }
