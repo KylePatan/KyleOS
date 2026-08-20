@@ -31,7 +31,7 @@ struct GigListView: View {
                     Text("No gigs yet. Add one to see it appear on the Calendar automatically.")
                         .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    RetroPanel("Gigs") {
+                    RetroPanel("Gigs", accentCategory: .standUp) {
                         VStack(spacing: 0) {
                             ForEach(gigs) { gig in
                                 HStack {

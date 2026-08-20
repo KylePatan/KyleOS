@@ -93,7 +93,7 @@ struct SourceDetailView: View {
     }
 
     private var fileSection: some View {
-        RetroPanel("Footage") {
+        RetroPanel("Footage", accentCategory: .clips) {
             if let reference = source.fileReference {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(reference.displayName).foregroundStyle(RetroTheme.primaryText)
@@ -119,7 +119,7 @@ struct SourceDetailView: View {
     }
 
     private var clipsSection: some View {
-        RetroPanel("Clips") {
+        RetroPanel("Clips", accentCategory: .clips) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 HStack {
                     TextField("New clip title", text: $newClipTitle)

@@ -1,15 +1,18 @@
 import SwiftUI
 
-/// Design tokens for Decision Gate C's visual direction (`docs/VISUAL_DESIGN_SYSTEM.md`,
-/// resolved 2026-08-15): "Windows 95/98 structure + late-90s/early-2000s web personality +
-/// modern application smoothness." This file is the single place color/spacing/border/corner
-/// values live — every `Retro*` component and every reskinned screen should read from here, not
-/// hardcode its own values, so a future palette change updates the whole app (spec §31).
+/// Design tokens for Kyle OS's visual direction (`docs/VISUAL_DESIGN_SYSTEM.md`). Currently
+/// **Aesthetic Direction V2** (§0, 2026-08-20): "a colourful late-2000s creative productivity
+/// dashboard, redesigned with the smooth interactions, clarity, and polish of a modern desktop
+/// operating system" — full system-wide rollout, after piloting on Sidebar + Home first. This
+/// supersedes the 2026-08-15 Decision Gate C spec's near-monochrome palette (still described
+/// below §0 in the design doc for history, but no longer what's built). This file is the single
+/// place color/spacing/border/corner values live — every `Retro*` component and every screen
+/// should read from here, not hardcode its own values, so a future palette change updates the
+/// whole app from one place (spec §31).
 ///
 /// One fixed light palette, no dark-mode variant. Kyle (2026-08-16): "I want it to be a white
 /// background and core colour and black and dark blue writing - i don't like this dark mode
-/// stuff." This supersedes §23 (the spec's own light/dark mapping) — see
-/// `KyleOSApp.swift`'s `NSApp.appearance = .aqua` for the matching native-chrome override.
+/// stuff." — still true today, just "white" is now the warm cream §0 asks for, not stark white.
 enum RetroTheme {
     // MARK: - Spacing (§3: "12-20px around primary sections, 6-12px between related controls,
     // 16-24px between major sections")
@@ -18,27 +21,25 @@ enum RetroTheme {
     static let controlSpacing: CGFloat = 8
     static let sectionSpacing: CGFloat = 20
 
-    // MARK: - Motion (Kyle, 2026-08-16: "smoother and more natural" — keep sharp corners, get it
-    // from transitions/depth instead. Spec §29's own "100-200ms" range.)
+    // MARK: - Motion (Kyle, 2026-08-16: "smoother and more natural." §0 (2026-08-20): "soft
+    // transitions, smooth hover states... subtle easing" — same 100-200ms range both specs ask for.)
 
     static let interactionAnimation = Animation.easeOut(duration: 0.12)
 
-    // MARK: - Shape (§7 originally: "0-4px, not modern 12/16/24px rounded cards." Kyle, 2026-08-19:
-    // "let's give the app a very slightly more modern look... SLIGHTLY rounded corners. I want to
-    // make it look about 5 years more modern than it does right now." A deliberate, bounded
-    // exception to §7's own rule — still far short of the "modern 12-24px" look §7 explicitly
-    // warned against, just enough to read as a step up from the original sharp 2px. One shared
-    // token, so this single change cascades through every Retro* component that reads it, per the
-    // design system's own "change it once, everywhere updates" intent.)
+    // MARK: - Shape. §0 (2026-08-20): "rounded rectangles" throughout, "a 2008 website... redesigned
+    // with modern UX standards" — a real step up from the original Decision Gate C's sharp 0-4px
+    // rule (already loosened once, 2026-08-19, to a "very slight" 6px; §0 goes further). One shared
+    // token, so this single change cascades through every Retro* component that reads it.
 
-    static let cornerRadius: CGFloat = 6
+    static let cornerRadius: CGFloat = 12
     static let borderWidth: CGFloat = 1
 
     // MARK: - Colors
 
-    /// Base window/app background — behind all panels. White, per Kyle's own framing ("white
-    /// background... core colour") rather than the spec's original light-gray desktop tone.
-    static let background = Color.white
+    /// Base window/app background — behind all panels. Warm cream, not stark white (§0: "warm
+    /// cream or soft white backgrounds") — the late-2000s-web warmth that separates this from a
+    /// sterile modern SaaS dashboard.
+    static let background = Color(red: 0.99, green: 0.97, blue: 0.92)
 
     /// Panel/card surfaces sitting on top of `background` — a hair off pure white so bordered
     /// panels still read as distinct shapes against the page, without introducing visible gray.
@@ -46,16 +47,16 @@ enum RetroTheme {
 
     /// Standard (non-prominent) button fill — a visible step up from `panelBackground` so buttons
     /// read as physical controls sitting on a panel, not just bordered text (Kyle, 2026-08-16:
-    /// "more button-y").
+    /// "more button-y"; §0: "rounded rectangles, subtle gradients or layered fills").
     static let buttonBackground = Color(white: 0.93)
 
     /// Inset surfaces — text fields, wells — one step darker than the panel they sit in, for the
     /// "slightly inset" feel (§10).
     static let insetBackground = Color(white: 0.94)
 
-    /// Soft lift under panels/buttons (Kyle, 2026-08-16: "smoother and more natural") — depth
-    /// without touching the sharp-corner rule.
-    static let shadow = Color.black.opacity(0.12)
+    /// Soft lift under panels/buttons — §0: "raised card feeling," a touch stronger than the
+    /// original Decision Gate C shadow to match the 2008-web "slightly dimensional" surfaces.
+    static let shadow = Color.black.opacity(0.16)
 
     /// Visible structural borders (§5: "the interface should have edges").
     static let border = Color(white: 0.60)
@@ -87,27 +88,13 @@ enum RetroTheme {
     //
     // "Kyle OS should feel like a colourful late-2000s creative productivity dashboard, redesigned
     // with the smooth interactions, clarity, and polish of a modern desktop operating system."
-    // Piloted on the Sidebar + Home first (Kyle's own chosen sequencing) — these tokens exist
-    // system-wide so the rest of the app can adopt them later, but for now only RetroSidebar and
-    // Home's own views (CreativeCapacityWidget, WeeklyBoardView, AllTasksView, PostItView) actually
-    // read them. Every other screen keeps using the tokens above, completely unchanged, until it's
-    // its own turn.
-
-    /// Warm cream/soft white — the pilot's content background, replacing plain white specifically
-    /// where adopted (§0: "warm cream or soft white backgrounds").
-    static let creamBackground = Color(red: 0.99, green: 0.97, blue: 0.92)
+    // Full system-wide rollout (Kyle, after seeing the Sidebar + Home pilot: "love it - let's push
+    // this and make the entire app look like this") — every module now reads these tokens.
 
     /// The sidebar's own light-blue base, top-to-bottom gradient stops (§0 §2: "light blue, pale
     /// cyan... maybe a gentle gradient, not flat flat flat").
     static let sidebarGradientTop = Color(red: 0.70, green: 0.86, blue: 0.96)
     static let sidebarGradientBottom = Color(red: 0.86, green: 0.94, blue: 0.98)
-
-    /// A touch more rounded than the base `cornerRadius` — the pilot's "rounded rectangles... 2008
-    /// web card" feel (§0: repeatedly asks for rounded rectangles, no sharp-corner constraint).
-    static let moduleCornerRadius: CGFloat = 12
-
-    /// Slightly stronger than the base `shadow` — pilot surfaces want a "raised card feeling."
-    static let moduleShadow = Color.black.opacity(0.16)
 
     /// §0's category colour language: "writing = warm yellow/gold, stand-up = orange/coral, clips
     /// = pink/red, sketches = green, calendar = blue, deadlines = red, completed = mint or light

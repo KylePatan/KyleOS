@@ -29,7 +29,7 @@ struct ChunkListView: View {
                     Text("No chunks yet. Group related jokes into a Chunk once a theme emerges.")
                         .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    RetroPanel("Chunks") {
+                    RetroPanel("Chunks", accentCategory: .standUp) {
                         VStack(spacing: 0) {
                             ForEach(chunks) { chunk in
                                 HStack {

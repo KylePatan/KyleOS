@@ -37,7 +37,7 @@ struct SourceListView: View {
                     Text("No sources yet. Add one to start identifying clips from footage.")
                         .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    RetroPanel("Sources") {
+                    RetroPanel("Sources", accentCategory: .clips) {
                         VStack(spacing: 0) {
                             ForEach(sources) { source in
                                 HStack {

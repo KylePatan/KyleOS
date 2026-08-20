@@ -79,7 +79,7 @@ struct RetroSidebar: View {
         }
         .buttonStyle(.plain)
         .background(
-            RoundedRectangle(cornerRadius: RetroTheme.moduleCornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: RetroTheme.cornerRadius, style: .continuous)
                 .fill(isSelected ? Color.white.opacity(0.75) : Color.clear)
         )
         .overlay(alignment: .leading) {
@@ -90,7 +90,7 @@ struct RetroSidebar: View {
                     .padding(.vertical, 6)
             }
         }
-        .shadow(color: isSelected ? RetroTheme.moduleShadow : .clear, radius: 3, y: 1)
+        .shadow(color: isSelected ? RetroTheme.shadow : .clear, radius: 3, y: 1)
         .animation(RetroTheme.interactionAnimation, value: isSelected)
     }
 

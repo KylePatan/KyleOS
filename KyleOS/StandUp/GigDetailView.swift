@@ -91,7 +91,7 @@ struct GigDetailView: View {
     }
 
     private var scheduleSection: some View {
-        RetroPanel("Schedule") {
+        RetroPanel("Schedule", accentCategory: .standUp) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 DatePicker("Start", selection: $startAt)
                     .onChange(of: startAt) {
@@ -112,7 +112,7 @@ struct GigDetailView: View {
 
     /// PRD §7.9: "show the planned set duration versus the gig's target set length."
     private var setListSection: some View {
-        RetroPanel("Set List") {
+        RetroPanel("Set List", accentCategory: .standUp) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 if !addableJokes.isEmpty || !addableChunks.isEmpty {
                     Menu("Add to Set List") {
@@ -198,7 +198,7 @@ struct GigDetailView: View {
     }
 
     private var notesSection: some View {
-        RetroPanel("Notes") {
+        RetroPanel("Notes", accentCategory: .standUp) {
             TextField("Notes", text: $notes, axis: .vertical)
                 .textFieldStyle(.plain)
                 .foregroundStyle(RetroTheme.primaryText)

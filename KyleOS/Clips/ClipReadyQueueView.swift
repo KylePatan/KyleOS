@@ -63,7 +63,7 @@ struct ClipReadyQueueView: View {
         emptyText: String,
         @ViewBuilder detail: @escaping (ClipService.Clip) -> Detail
     ) -> some View {
-        RetroPanel("\(title) (\(clips.count))") {
+        RetroPanel("\(title) (\(clips.count))", accentCategory: .clips) {
             if clips.isEmpty {
                 Text(emptyText)
                     .font(.caption)

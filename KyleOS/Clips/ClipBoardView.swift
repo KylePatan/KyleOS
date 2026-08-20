@@ -88,7 +88,7 @@ private struct ClipBoardColumn: View {
     @State private var isTargeted = false
 
     var body: some View {
-        RetroPanel(lane.rawValue) {
+        RetroPanel(lane.rawValue, accentCategory: .clips) {
             VStack(alignment: .leading, spacing: 0) {
                 if clips.isEmpty {
                     Text("Drag a clip here.")

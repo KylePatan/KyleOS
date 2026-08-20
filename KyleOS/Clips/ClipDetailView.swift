@@ -140,7 +140,7 @@ struct ClipDetailView: View {
     }
 
     private var timestampsSection: some View {
-        RetroPanel("Source Timestamps") {
+        RetroPanel("Source Timestamps", accentCategory: .clips) {
             HStack {
                 TextField("Start (sec)", text: $startSecondsText)
                     .retroInputStyle()
@@ -165,7 +165,7 @@ struct ClipDetailView: View {
     }
 
     private var statusSection: some View {
-        RetroPanel("Status") {
+        RetroPanel("Status", accentCategory: .clips) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 Picker("Status", selection: Binding(
                     get: { clip.status },
@@ -230,7 +230,7 @@ struct ClipDetailView: View {
 
     /// PRD §8.3: "related Joke/Chunk reference."
     private var relatedMaterialSection: some View {
-        RetroPanel("Related Material") {
+        RetroPanel("Related Material", accentCategory: .clips) {
             HStack {
                 Menu(linkedJokeLabel) {
                     Button("None") {

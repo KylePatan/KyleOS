@@ -31,7 +31,7 @@ struct PacketsHomeView: View {
                     Text("No packets yet. Create one to start building a submission.")
                         .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    RetroPanel("Packets") {
+                    RetroPanel("Packets", accentCategory: .completed) {
                         VStack(spacing: 0) {
                             ForEach(packets) { packet in
                                 packetRow(packet)

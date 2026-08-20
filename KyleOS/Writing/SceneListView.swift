@@ -46,7 +46,7 @@ struct SceneListView: View {
                 Text("No scenes in this act yet.")
                     .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                RetroPanel("Scenes") {
+                RetroPanel("Scenes", accentCategory: .writing) {
                     List {
                         ForEach(scenes) { scene in
                             SceneRow(

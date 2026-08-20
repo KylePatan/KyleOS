@@ -7,10 +7,11 @@ struct RetroPanel<Content: View>: View {
     let title: String?
     /// Aesthetic Direction V2 (docs/VISUAL_DESIGN_SYSTEM.md §0, 2026-08-20), Kyle's own words:
     /// "different squares/cards/modules can have slightly different surface treatments... use
-    /// colour strategically... slightly glossy or luminous headers in places." Opt-in and `nil` by
-    /// default — every existing call site across every non-Home module keeps today's exact flat
-    /// panel look unchanged; only Home passes a category for now (the pilot Kyle chose), so this
-    /// one component can carry both looks at once without a second panel type to keep in sync.
+    /// colour strategically... slightly glossy or luminous headers in places." `nil` (the default)
+    /// still renders a real card — every panel now shares the same rounded/shadowed "2008 web
+    /// card" structure — just without a colour tint, for panels that genuinely mix categories
+    /// (a Reports summary, a Weekly Board day column with items from several workspaces) or sit in
+    /// a module-neutral screen (Settings).
     var accentCategory: RetroTheme.ModuleCategory?
     @ViewBuilder let content: Content
 
@@ -18,10 +19,6 @@ struct RetroPanel<Content: View>: View {
         self.title = title
         self.accentCategory = accentCategory
         self.content = content()
-    }
-
-    private var cornerRadius: CGFloat {
-        accentCategory != nil ? RetroTheme.moduleCornerRadius : RetroTheme.cornerRadius
     }
 
     var body: some View {
@@ -35,12 +32,12 @@ struct RetroPanel<Content: View>: View {
             content
                 .padding(RetroTheme.sectionPadding)
         }
-        .background(panelBackground, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .background(panelBackground, in: RoundedRectangle(cornerRadius: RetroTheme.cornerRadius, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: RetroTheme.cornerRadius, style: .continuous)
                 .strokeBorder(accentCategory?.accent.opacity(0.4) ?? RetroTheme.border, lineWidth: RetroTheme.borderWidth)
         )
-        .shadow(color: accentCategory != nil ? RetroTheme.moduleShadow : RetroTheme.shadow, radius: accentCategory != nil ? 6 : 5, y: 2)
+        .shadow(color: RetroTheme.shadow, radius: 6, y: 2)
     }
 
     private func header(_ title: String) -> some View {
@@ -69,7 +66,7 @@ struct RetroPanel<Content: View>: View {
         if let accentCategory {
             AnyShapeStyle(LinearGradient(colors: [Color.white, accentCategory.softBackground.opacity(0.5)], startPoint: .top, endPoint: .bottom))
         } else {
-            AnyShapeStyle(RetroTheme.panelBackground)
+            AnyShapeStyle(LinearGradient(colors: [Color.white, RetroTheme.panelBackground], startPoint: .top, endPoint: .bottom))
         }
     }
 }

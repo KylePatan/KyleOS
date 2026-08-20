@@ -139,7 +139,7 @@ struct PacketDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 if !availableProjects.isEmpty {
-                    RetroPanel("Projects") {
+                    RetroPanel("Projects", accentCategory: .completed) {
                         VStack(spacing: 0) {
                             ForEach(availableProjects) { project in
                                 sourceRow(
@@ -156,7 +156,7 @@ struct PacketDetailView: View {
                 }
                 if !documentsByDraftLabel.isEmpty {
                     ForEach(documentsByDraftLabel, id: \.label) { group in
-                        RetroPanel(group.label) {
+                        RetroPanel(group.label, accentCategory: .completed) {
                             VStack(spacing: 0) {
                                 ForEach(group.documents) { document in
                                     sourceRow(

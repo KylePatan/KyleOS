@@ -54,7 +54,7 @@ struct WritingHomeView: View {
                     ScrollView {
                         VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                             ForEach(grouped, id: \.0) { status, projects in
-                                RetroPanel(status.rawValue) {
+                                RetroPanel(status.rawValue, accentCategory: .writing) {
                                     VStack(spacing: 0) {
                                         ForEach(projects) { project in
                                             NavigationLink(value: ProjectRoute(id: project.persistentModelID)) {

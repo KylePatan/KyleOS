@@ -28,7 +28,7 @@ struct HeadlineSetListView: View {
                     Text("No headline sets yet. Build one from your Chunks once a set starts taking shape.")
                         .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    RetroPanel("Headline Sets") {
+                    RetroPanel("Headline Sets", accentCategory: .standUp) {
                         VStack(spacing: 0) {
                             ForEach(sets) { set in
                                 HStack {

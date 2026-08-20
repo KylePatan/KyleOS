@@ -63,7 +63,7 @@ struct JokeBoardView: View {
 
     private func column(for status: JokeService.JokeStatus) -> some View {
         let items = jokes(for: status)
-        return RetroPanel(status.rawValue) {
+        return RetroPanel(status.rawValue, accentCategory: .standUp) {
             if items.isEmpty {
                 Text("No jokes here yet.")
                     .font(.caption)

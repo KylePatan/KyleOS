@@ -88,7 +88,7 @@ struct HeadlineSetDetailView: View {
     }
 
     private var chunksSection: some View {
-        RetroPanel("Chunks in this Set") {
+        RetroPanel("Chunks in this Set", accentCategory: .standUp) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 if !addableChunks.isEmpty {
                     Menu("Add Chunk") {

@@ -116,8 +116,19 @@ Verbatim, Kyle's own words:
 > productivity dashboard, redesigned with the smooth interactions, clarity, and polish of a modern
 > desktop operating system.
 
-**Implementation status**: not started as of this amendment — see the project memory for the
-sequencing decision (pilot vs. full rollout) made with Kyle right after this was given.
+**Implementation status**: piloted on Sidebar + Home first (Kyle's chosen sequencing), confirmed —
+"love it - let's push this and make the entire app look like this" — then rolled out system-wide
+the same day. `RetroTheme`'s base tokens (`background`, `cornerRadius`, `shadow`) now directly
+carry the new values (cream background, 12pt radius, stronger shadow) rather than living as
+separate "pilot" tokens, so every `Retro*` component picked them up automatically. `RetroPanel`
+gained an opt-in `accentCategory` parameter (`ModuleCategory`: writing/standUp/clips/sketches/
+calendar/deadline/completed) assigned per-module across Writing, Stand Up, Clips, Sketches,
+Packets, and the type-specific Reports panels; deliberately left neutral where a panel genuinely
+mixes categories (Home's Weekly Board/All Tasks/Post It use per-row colour instead — see those
+files — plus Reports' cross-cutting summary panels, and Settings). Not yet touched: Calendar's own
+custom grid view (doesn't use RetroPanel), the Script/Prose editor surfaces themselves (deliberately
+kept distinct from Kyle OS chrome per §34's editorial-surface exception), RetroTabs/RetroListRow/
+RetroStatusBar. See the project memory for the full file-by-file rollout log.
 
 ---
 

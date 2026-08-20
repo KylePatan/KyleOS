@@ -54,7 +54,7 @@ struct ActOutlineView: View {
                 Text("No acts yet. Kyle OS doesn't force exactly three — add as many as the story needs.")
                     .foregroundStyle(RetroTheme.secondaryText)
             } else {
-                RetroPanel("Acts") {
+                RetroPanel("Acts", accentCategory: .writing) {
                     List {
                         ForEach(acts) { act in
                             ActRow(act: act) {

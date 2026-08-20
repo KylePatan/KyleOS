@@ -133,26 +133,26 @@ struct ReportsView: View {
             }
         case .standUp:
             if let standUpReport {
-                RetroPanel("Stand Up") { standUpReportSection(standUpReport) }
+                RetroPanel("Stand Up", accentCategory: .standUp) { standUpReportSection(standUpReport) }
             } else {
                 emptyTabMessage
             }
         case .production:
             if let clipsReport {
-                RetroPanel("Clips") { clipsReportSection(clipsReport) }
+                RetroPanel("Clips", accentCategory: .clips) { clipsReportSection(clipsReport) }
             }
             if !sketchTransitions.isEmpty || sketchesEditingSeconds > 0 {
-                RetroPanel("Sketches") { sketchesReportSection }
+                RetroPanel("Sketches", accentCategory: .sketches) { sketchesReportSection }
             }
             if !readyBufferTrend.isEmpty {
-                RetroPanel("Ready Buffer Trend") { readyBufferTrendSection }
+                RetroPanel("Ready Buffer Trend", accentCategory: .clips) { readyBufferTrendSection }
             }
             if !hasContent(.production) {
                 emptyTabMessage
             }
         case .posting:
             if let postingReport {
-                RetroPanel("Posting") { postingReportSection(postingReport) }
+                RetroPanel("Posting", accentCategory: .completed) { postingReportSection(postingReport) }
             } else {
                 emptyTabMessage
             }

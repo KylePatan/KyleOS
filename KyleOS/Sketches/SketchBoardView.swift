@@ -64,7 +64,7 @@ struct SketchBoardView: View {
 
     private func column(for status: SketchProductionService.SketchProductionStatus) -> some View {
         let items = projects(inStatus: status)
-        return RetroPanel(status.rawValue) {
+        return RetroPanel(status.rawValue, accentCategory: .sketches) {
             if items.isEmpty {
                 Text("No sketches here.")
                     .font(.caption)

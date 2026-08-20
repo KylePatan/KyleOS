@@ -174,7 +174,7 @@ struct SketchDetailView: View {
     /// PRD §9.3: "The shoot automatically appears on Calendar and generally acts as a hard
     /// calendar commitment once cast/crew/location are involved."
     private var filmSchedulingSection: some View {
-        RetroPanel("Film Scheduling") {
+        RetroPanel("Film Scheduling", accentCategory: .sketches) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 DatePicker("Call time", selection: $callTime)
                     .onChange(of: callTime) { ensureShoot() }
@@ -211,7 +211,7 @@ struct SketchDetailView: View {
     }
 
     private var castAndCrewSection: some View {
-        RetroPanel("Cast & Crew") {
+        RetroPanel("Cast & Crew", accentCategory: .sketches) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 TextField("Cast", text: $cast, axis: .vertical)
                     .retroInputStyle()
@@ -230,7 +230,7 @@ struct SketchDetailView: View {
     }
 
     private var logisticsSection: some View {
-        RetroPanel("Logistics") {
+        RetroPanel("Logistics", accentCategory: .sketches) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 TextField("Wardrobe", text: $wardrobe, axis: .vertical)
                     .retroInputStyle()
@@ -269,7 +269,7 @@ struct SketchDetailView: View {
     /// Script Editor's ExportService.exportScriptPDF — "Writing remains inside Writing" means
     /// this only exports, it doesn't open an editor here.
     private var scriptSection: some View {
-        RetroPanel("Script") {
+        RetroPanel("Script", accentCategory: .sketches) {
             if let scriptDocument {
                 HStack {
                     Text(scriptDocument.title).foregroundStyle(RetroTheme.primaryText)
@@ -299,7 +299,7 @@ struct SketchDetailView: View {
     /// first, matching "populated from project data"); once generated, it's its own editable
     /// document — edits here never write back to Film Scheduling above.
     private var callSheetSection: some View {
-        RetroPanel("Call Sheet") {
+        RetroPanel("Call Sheet", accentCategory: .sketches) {
             if let callSheet {
                 VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                     TextField("Cast / Characters", text: $callSheetCastAndCharacters, axis: .vertical)

@@ -114,7 +114,7 @@ struct ChunkDetailView: View {
     }
 
     private var jokesSection: some View {
-        RetroPanel("Jokes in this Chunk") {
+        RetroPanel("Jokes in this Chunk", accentCategory: .standUp) {
             VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
                 if !addableJokes.isEmpty {
                     Menu("Add Joke") {
