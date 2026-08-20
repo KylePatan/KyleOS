@@ -31,10 +31,10 @@ import SwiftData
 /// lookahead day's capacity for those automatically the moment that gap was fixed (2026-08-18) —
 /// no change needed here.
 enum CascadeReschedulingService {
-    typealias PlannedSession = KyleOSSchemaV31.PlannedSession
-    typealias CalendarEvent = KyleOSSchemaV31.CalendarEvent
-    typealias AppSettings = KyleOSSchemaV31.AppSettings
-    typealias CapacityOverride = KyleOSSchemaV31.CapacityOverride
+    typealias PlannedSession = KyleOSSchemaV32.PlannedSession
+    typealias CalendarEvent = KyleOSSchemaV32.CalendarEvent
+    typealias AppSettings = KyleOSSchemaV32.AppSettings
+    typealias CapacityOverride = KyleOSSchemaV32.CapacityOverride
 
     struct Move {
         let session: PlannedSession

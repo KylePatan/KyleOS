@@ -7,11 +7,11 @@ import SwiftData
 /// `finishedSketchProjects` just filters the existing `Project` fields that already carry this
 /// (`WritingProjectType.sketch`, `ProjectStatus.finished`, both since V8).
 enum SketchProductionService {
-    typealias Project = KyleOSSchemaV31.Project
-    typealias SketchProduction = KyleOSSchemaV31.SketchProduction
-    typealias SketchProductionStatus = KyleOSSchemaV31.SketchProductionStatus
-    typealias FilmShoot = KyleOSSchemaV31.FilmShoot
-    typealias CallSheet = KyleOSSchemaV31.CallSheet
+    typealias Project = KyleOSSchemaV32.Project
+    typealias SketchProduction = KyleOSSchemaV32.SketchProduction
+    typealias SketchProductionStatus = KyleOSSchemaV32.SketchProductionStatus
+    typealias FilmShoot = KyleOSSchemaV32.FilmShoot
+    typealias CallSheet = KyleOSSchemaV32.CallSheet
 
     /// Read-only, never creates a `SketchProduction` row — merely viewing the board must not
     /// write anything. `nil` reads as the natural starting state, the same Optional-with-

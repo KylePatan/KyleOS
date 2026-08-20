@@ -56,6 +56,28 @@ later V1.x development should be driven by actual use rather than speculation"):
   outstanding, matching how Foundation's own V0 completion required an explicit acceptance
   checklist pass.
 
+## In progress, 2026-08-19
+
+Kyle gave a fully-specified, detailed follow-up list, worked in this explicit order (authorized to
+run unattended, "do not pause the work"):
+
+1. **DONE (commit `0858f47`)** — Script Editor rebuilt to Kyle's own 35-section professional
+   screenplay spec (true 8.5×11in page geometry, real per-element margins, shared editor/PDF
+   pagination engine, zoom, new element types). See `docs/VISUAL_DESIGN_SYSTEM.md`'s Implementation
+   Log and the project memory for full detail, including what was deliberately deferred (Dual
+   Dialogue, orphan/widow pagination markers, custom Title Page fields, drag-to-dock split mode, TV
+   act templates).
+2. **DONE (same commit)** — primary navigation reverted from the horizontal top bar back to a left
+   sidebar (`RetroSidebar`), reversing §13's 2026-08-15 decision. See `docs/VISUAL_DESIGN_SYSTEM.md`
+   §13's amendment note.
+3. **In progress** — new "Packet" module: a submission-packet builder for shows/production
+   companies (e.g. "This Hour Has 22 Minutes," "SNL"). Create a named packet targeting a show/
+   company, then curate existing Projects/Documents/Sketches/Prose into it (drag from a list of
+   finished drafts), edit/remove freely, manage multiple packets at once.
+4. **Queued next** — slight modernization visual pass (small button shadows, slightly-rounded
+   corners) — a deliberate, bounded exception to §7's sharp-corner rule, not a redesign.
+5. **Queued last** — rebuild Release and reinstall to `/Applications`, replacing the current build.
+
 ## Stable version tags
 
 `kyle-os-v0-foundation` — end of Foundation V0.

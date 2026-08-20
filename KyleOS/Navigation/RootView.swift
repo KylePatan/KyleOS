@@ -40,6 +40,8 @@ struct RootView: View {
             ClipsHomeView()
         case .sketches:
             SketchBoardView()
+        case .packets:
+            PacketsHomeView()
         case .calendar:
             CalendarHomeView()
         case .reports:

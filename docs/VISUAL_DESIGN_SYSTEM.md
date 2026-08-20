@@ -434,6 +434,11 @@ Avoid giant sidebar navigation unless it clearly improves a specific screen.
 For the main app, horizontal navigation near the top supports the intended **top-down
 architecture**.
 
+> **Amendment (2026-08-19):** Kyle reversed this call — "I want to change the top bar and put it
+> on the left hand side again. I like that look better." Primary module navigation (HOME, WRITING,
+> SKETCHES, etc.) is a left sidebar (`RetroSidebar`) again, not the horizontal top bar described
+> above. Treat this paragraph as superseded; see the Implementation Log's 2026-08-19 entry.
+
 Secondary sidebars are acceptable for context-specific navigation such as:
 
 * Writing projects
@@ -1113,3 +1118,11 @@ built against this spec versus still pending.
   Not yet addressed: window-chrome details (§6, §12), menu/scrollbar styling (§27–28), animation
   timing beyond button/tab presses (§29), drag-and-drop visuals (§30) — none of these have concrete
   user-facing gaps reported yet, revisit if/when they do.
+- **2026-08-19**: §13 reversed — commit `0858f47`. Kyle: "I want to change the top bar and put it
+  on the left hand side again. I like that look better." `RetroTopNav` deleted; new `RetroSidebar`
+  (left, `RootView` now an `HStack`) reuses `AppNavigationController`'s existing selection state
+  unchanged. See the amended §13 note above.
+- **2026-08-19 (planned)**: a slight modernization pass is next in the queue — small button resting
+  shadows + slightly-rounded corners, "about 5 years more modern," explicitly NOT a redesign. This
+  is a deliberate, Kyle-approved exception to §7's sharp 0–4px corner rule; confirm scope (global
+  token bump vs. one-screen pilot first) before applying broadly. Not started yet as of this entry.
