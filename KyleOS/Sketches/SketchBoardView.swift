@@ -18,20 +18,21 @@ struct SketchBoardView: View {
     @Environment(AppNavigationController.self) private var navigator
     @Query(sort: \ProjectService.Project.updatedAt, order: .reverse) private var allProjects: [ProjectService.Project]
     @State private var path = NavigationPath()
+    @State private var isPresentingNewSketch = false
 
-    private var finishedSketches: [ProjectService.Project] {
+    private var sketchesOnBoard: [ProjectService.Project] {
         allProjects.filter(SketchProductionService.isProductionProject)
     }
 
     private func projects(inStatus status: SketchProductionService.SketchProductionStatus) -> [ProjectService.Project] {
-        finishedSketches.filter { SketchProductionService.status(for: $0) == status }
+        sketchesOnBoard.filter { SketchProductionService.status(for: $0) == status }
     }
 
     var body: some View {
         NavigationStack(path: $path) {
             Group {
-                if finishedSketches.isEmpty {
-                    Text("No finished Sketches yet. Mark a Sketch project's Writing status Finished to see it here.")
+                if sketchesOnBoard.isEmpty {
+                    Text("No Sketches yet. Add a Reel to start tracking one right away, or mark a written Sketch's status Finished to see it here.")
                         .foregroundStyle(RetroTheme.secondaryText)
                         .padding(RetroTheme.sectionPadding)
                 } else {
@@ -48,9 +49,21 @@ struct SketchBoardView: View {
             .navigationTitle("Sketches")
             .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
-                if let project = finishedSketches.first(where: { $0.persistentModelID == id }) {
+                if let project = sketchesOnBoard.first(where: { $0.persistentModelID == id }) {
                     SketchDetailView(project: project)
                 }
+            }
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        isPresentingNewSketch = true
+                    } label: {
+                        Label("Add Sketch", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $isPresentingNewSketch) {
+                NewSketchSheet()
             }
         }
         .task(id: navigator.pendingTarget) { consumePendingTarget() }
@@ -92,7 +105,12 @@ private struct SketchCard: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 NavigationLink(value: project.persistentModelID) {
-                    Text(project.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(project.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+                        if SketchProductionService.isReel(project) {
+                            Text("REEL").font(.caption2.bold()).foregroundStyle(RetroTheme.ModuleCategory.sketches.accent)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
                 Spacer()

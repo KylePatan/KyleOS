@@ -29,9 +29,15 @@ enum SketchProductionService {
     /// additive presence, not a move, matching how Sketch already worked before Short Film joined
     /// it (see this file's own original doc comment: "appear in Sketches automatically as the
     /// same Project, not a copied project").
+    ///
+    /// A Reel is the one exception to the `.finished` gate (Kyle, 2026-08-20: "I'd want it to
+    /// appear in sketches as well" — reported right after marking one as a Reel and not seeing it
+    /// show up) — "Finished" means *writing* is done, but a Reel never had writing to finish in
+    /// the first place, so requiring it would mean a Reel could never appear here at all.
     static func isProductionProject(_ project: Project) -> Bool {
-        guard let type = project.projectType else { return false }
-        return productionProjectTypes.contains(type) && project.status == .finished && !project.isArchived
+        guard let type = project.projectType, !project.isArchived else { return false }
+        if isReel(project) { return true }
+        return productionProjectTypes.contains(type) && project.status == .finished
     }
 
     /// Read-only, never creates a `SketchProduction` row — merely viewing the board must not

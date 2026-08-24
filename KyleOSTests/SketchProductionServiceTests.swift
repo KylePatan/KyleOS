@@ -472,6 +472,25 @@ final class SketchProductionServiceTests: XCTestCase {
         XCTAssertEqual(survivingClips.map(\.id), [clip.id], "The Clip and its editing progress must survive being unmarked")
     }
 
+    /// Kyle (2026-08-20, immediately after trying the Reel feature): "I'd want it to appear in
+    /// sketches as well" — reported right after marking a project as a Reel and not seeing it on
+    /// the board, since `isProductionProject` still required `status == .finished`, which makes no
+    /// sense for something that never had writing to finish. A Reel must appear on the board
+    /// regardless of status.
+    func testReelAppearsOnTheBoardRegardlessOfWritingStatus() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Bit", projectType: .sketch, status: .active, in: context)
+        try context.save()
+        XCTAssertFalse(SketchProductionService.isProductionProject(project), "Not a Reel and not finished yet — must not appear")
+
+        SketchProductionService.markAsReel(project, context: context)
+        try context.save()
+
+        XCTAssertTrue(SketchProductionService.isProductionProject(project), "A Reel belongs on the board immediately, no 'finished writing' gate applies")
+        XCTAssertEqual(project.displayStatus, .active, "Marking as Reel must not silently change the Project's own writing status")
+    }
+
     func testDeletingTheProjectNullifiesTheClipInsteadOfDeletingIt() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

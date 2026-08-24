@@ -155,6 +155,7 @@
 		CA9BCC5EED69937E959051F4 /* ScriptEditorGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7C99D95A2E221D9FE403 /* ScriptEditorGeometryTests.swift */; };
 		CB178461B6E1916B25A68EB3 /* RetroTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63CEAD592DD80A73EA2A79E4 /* RetroTheme.swift */; };
 		CBF29CB4B86FD6A3015AEC1B /* KyleOSSchemaV30.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9368643C09DEDACEF89EDD /* KyleOSSchemaV30.swift */; };
+		CEB84C858AB1A481DF0C7758 /* NewSketchSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147F3989DCA2CE71710A5F24 /* NewSketchSheet.swift */; };
 		D3E04B6C451A896E257D3E33 /* KyleOSSchemaV7.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D1507C07C4A0E3C7F20FD1 /* KyleOSSchemaV7.swift */; };
 		D3EBFCB7A730CA0B8F441798 /* SchedulingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1CFD6CFD49CE0B0FCA2ADF /* SchedulingServiceTests.swift */; };
 		D60F9895CF29DFF634EA48E6 /* GigDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2D18652770DF0748E0E0B6 /* GigDetailView.swift */; };
@@ -217,6 +218,7 @@
 		108DAD9FC4FE4F4E840A624E /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
 		11711CB53AB95183CB693448 /* ScriptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEditorView.swift; sourceTree = "<group>"; };
 		11C95B684768CC5BDDCF3962 /* KyleOSSchemaV27.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV27.swift; sourceTree = "<group>"; };
+		147F3989DCA2CE71710A5F24 /* NewSketchSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewSketchSheet.swift; sourceTree = "<group>"; };
 		15224FB43759F4D958E53F9C /* KyleOSSchemaV22.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV22.swift; sourceTree = "<group>"; };
 		1538987F36ED00C5947A950D /* ClipReadyQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipReadyQueueView.swift; sourceTree = "<group>"; };
 		1758113B2ED3EDEEF682144C /* DraftService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftService.swift; sourceTree = "<group>"; };
@@ -623,6 +625,7 @@
 		ABFAD64A1711BD92D4E9B0CD /* Sketches */ = {
 			isa = PBXGroup;
 			children = (
+				147F3989DCA2CE71710A5F24 /* NewSketchSheet.swift */,
 				CAD25AFAA1F4A7C9234D63D1 /* SketchBoardView.swift */,
 				B2D44DB2BF28C0C08EC21611 /* SketchDetailView.swift */,
 			);
@@ -988,6 +991,7 @@
 				C5F7ADB03EAAEEAFD09A7786 /* KyleOSSchemaV9.swift in Sources */,
 				E11770EA10A8A94105FD80B4 /* MonthCalendarService.swift in Sources */,
 				947EEEDC9171C7BDE07C1A19 /* MonthCalendarView.swift in Sources */,
+				CEB84C858AB1A481DF0C7758 /* NewSketchSheet.swift in Sources */,
 				20BFEEC1289658640EFCC20C /* NewWritingProjectSheet.swift in Sources */,
 				AEDE8D9F7995D7E59034DD47 /* PacketDetailView.swift in Sources */,
 				185D57D9AF976F3048CCF555 /* PacketService.swift in Sources */,
