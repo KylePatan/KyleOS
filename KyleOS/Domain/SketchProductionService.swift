@@ -7,12 +7,12 @@ import SwiftData
 /// `finishedSketchProjects` just filters the existing `Project` fields that already carry this
 /// (`WritingProjectType.sketch`, `ProjectStatus.finished`, both since V8).
 enum SketchProductionService {
-    typealias Project = KyleOSSchemaV33.Project
-    typealias SketchProduction = KyleOSSchemaV33.SketchProduction
-    typealias SketchProductionStatus = KyleOSSchemaV33.SketchProductionStatus
-    typealias FilmShoot = KyleOSSchemaV33.FilmShoot
-    typealias CallSheet = KyleOSSchemaV33.CallSheet
-    typealias WritingProjectType = KyleOSSchemaV33.WritingProjectType
+    typealias Project = KyleOSSchemaV34.Project
+    typealias SketchProduction = KyleOSSchemaV34.SketchProduction
+    typealias SketchProductionStatus = KyleOSSchemaV34.SketchProductionStatus
+    typealias FilmShoot = KyleOSSchemaV34.FilmShoot
+    typealias CallSheet = KyleOSSchemaV34.CallSheet
+    typealias WritingProjectType = KyleOSSchemaV34.WritingProjectType
 
     /// Kyle (2026-08-20, real use): "short films and sketches that are finished scripts should be
     /// sent to the sketches module - because they require the same sort of process of filming and
@@ -52,6 +52,39 @@ enum SketchProductionService {
         production.project = project
         context.insert(production)
         return production
+    }
+
+    static func isReel(_ project: Project) -> Bool {
+        project.sketchProduction?.displayIsReel ?? false
+    }
+
+    /// Kyle (2026-08-20): "sometimes we'll film a really quick reel/sketch that doesn't have a
+    /// script. But in Kyle OS we'll still need to be able to add that into the sketches so that we
+    /// can log the progress and posting of it... when [REEL is] selected, it then goes into the
+    /// clips folder as well so that we can start editing/subtitling/post it." Marks the Project as
+    /// a Reel and lazily creates its linked Clip (no Source — see `ClipService.createClip(title:
+    /// context:)`'s own doc comment) so the *actual* editing/subtitling/post-date work happens on
+    /// the normal Clips board, reusing that infrastructure rather than duplicating it inside
+    /// Sketches. The Project itself is untouched otherwise — still a Sketch, still trackable here.
+    @discardableResult
+    static func markAsReel(_ project: Project, context: ModelContext) -> ClipService.Clip {
+        let production = findOrCreateProduction(for: project, context: context)
+        production.isReel = true
+        production.updatedAt = .now
+        if let existing = project.reelClip { return existing }
+        let clip = ClipService.createClip(title: project.title, context: context)
+        clip.sketchProject = project
+        return clip
+    }
+
+    /// Un-marks the Project as a Reel — deliberately does *not* delete the linked Clip (same
+    /// "outlives its origin" reasoning as `Clip.workItems`/`Clip.joke`/`Clip.chunk`): any real
+    /// editing/posting work already logged against it must survive. The Clip just stops being
+    /// linked to this Project's Reel flag; it stays exactly where it is on the Clips board.
+    static func unmarkAsReel(_ project: Project) {
+        guard let production = project.sketchProduction else { return }
+        production.isReel = false
+        production.updatedAt = .now
     }
 
     /// PRD §14.19: status changes create a history record — enables §13.11's "Writing-to-post

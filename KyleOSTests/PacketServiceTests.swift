@@ -62,7 +62,7 @@ final class PacketServiceTests: XCTestCase {
         XCTAssertTrue(survivingProjects.contains { $0.id == project.id }, "Removing a packet item must never delete the underlying Project")
     }
 
-    /// Proves the new `packetItems` cascade relationship (KyleOSSchemaV33) actually works: deleting
+    /// Proves the new `packetItems` cascade relationship (KyleOSSchemaV34) actually works: deleting
     /// a Project that's inside a Packet must clean up the dangling PacketItem, not leave a
     /// reference-to-nothing sitting in the packet.
     func testDeletingTheUnderlyingProjectRemovesItFromEveryPacket() throws {

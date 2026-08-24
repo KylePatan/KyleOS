@@ -133,6 +133,7 @@
 		B9FC67F714FAEC4F64B4E9B8 /* FileReferenceResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDF3891632379E2253D5659 /* FileReferenceResolverTests.swift */; };
 		BAA475ADD778F8EDEFE594FF /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B06A23CAF9A33772891D1AA /* PersistenceController.swift */; };
 		BABA498FD0307121A75EAC73 /* ArchiveDeleteContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C3A7D0A006D2F619FEEAD2 /* ArchiveDeleteContextMenu.swift */; };
+		BB37DCBEB5332C21A4B305E6 /* KyleOSSchemaV34.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB22841ECD1766DDF77CC0C /* KyleOSSchemaV34.swift */; };
 		BE5CFBB4A2DEC01B50386A74 /* SourceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE69DD91F0B820753D4356A /* SourceService.swift */; };
 		BE8A02D7F20A5F4FDD1735E5 /* ClipBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0595BFFA41DE897B2C34790 /* ClipBoardView.swift */; };
 		BF4E02803CE746CA71D0EF8E /* DeadlinePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E2A04490A9F58FAEDB12C4 /* DeadlinePersistenceTests.swift */; };
@@ -259,6 +260,7 @@
 		4AE271A382AB5CA0988277A8 /* CalendarHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHomeView.swift; sourceTree = "<group>"; };
 		4BB6349B022C048467D26575 /* KyleOSSchemaV3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV3.swift; sourceTree = "<group>"; };
 		4C67DD07E08597F2DA1E14A8 /* PostingCadenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostingCadenceService.swift; sourceTree = "<group>"; };
+		4FB22841ECD1766DDF77CC0C /* KyleOSSchemaV34.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV34.swift; sourceTree = "<group>"; };
 		5118E5FE8729FFEA8FB2D27A /* ChunkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChunkService.swift; sourceTree = "<group>"; };
 		522D786A6B687BD929FB976C /* QuickAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddButton.swift; sourceTree = "<group>"; };
 		52C1E2002E8E7AB58A5BF689 /* KyleOSSchemaV19.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyleOSSchemaV19.swift; sourceTree = "<group>"; };
@@ -595,6 +597,7 @@
 				FCA06EAF10E27769D1FABE5A /* KyleOSSchemaV31.swift */,
 				6128D211EA617A3687D8052B /* KyleOSSchemaV32.swift */,
 				5831CBE34917379D022B86D0 /* KyleOSSchemaV33.swift */,
+				4FB22841ECD1766DDF77CC0C /* KyleOSSchemaV34.swift */,
 			);
 			path = Schema;
 			sourceTree = "<group>";
@@ -976,6 +979,7 @@
 				DF4DCB0C91A884D429B2D764 /* KyleOSSchemaV31.swift in Sources */,
 				FE6BA085E47711964C9EF063 /* KyleOSSchemaV32.swift in Sources */,
 				D670EA12A2C694D4930CBF16 /* KyleOSSchemaV33.swift in Sources */,
+				BB37DCBEB5332C21A4B305E6 /* KyleOSSchemaV34.swift in Sources */,
 				98254136A92BEDF6CBB2FEBE /* KyleOSSchemaV4.swift in Sources */,
 				2A7D59E3757D548B871DA798 /* KyleOSSchemaV5.swift in Sources */,
 				8AC7B4F94D5A982E5A7F2A05 /* KyleOSSchemaV6.swift in Sources */,

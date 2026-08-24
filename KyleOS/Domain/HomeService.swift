@@ -8,8 +8,8 @@ import SwiftData
 /// Decision Gate B) — this service kept its own simple deadline-then-priority sort until that
 /// replaced it; removed here rather than left as unused dead code.
 enum HomeService {
-    typealias WorkItem = KyleOSSchemaV33.WorkItem
-    typealias Project = KyleOSSchemaV33.Project
+    typealias WorkItem = KyleOSSchemaV34.WorkItem
+    typealias Project = KyleOSSchemaV34.Project
 
     /// PRD §5.6/§4.3: "cumulative logged project time" — summed from actual Work Sessions, not
     /// a separately-maintained total (§2.5: one source of truth).

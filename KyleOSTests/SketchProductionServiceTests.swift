@@ -401,4 +401,91 @@ final class SketchProductionServiceTests: XCTestCase {
         let remaining = try context.fetch(FetchDescriptor<SketchProductionService.CallSheet>())
         XCTAssertFalse(remaining.contains { $0.id == callSheetID })
     }
+
+    // MARK: - Reels (Kyle, 2026-08-20: "a really quick reel/sketch that doesn't have a script")
+
+    func testMarkAsReelCreatesALinkedSourcelessClip() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Bit", projectType: .sketch, in: context)
+        try context.save()
+        XCTAssertFalse(SketchProductionService.isReel(project))
+
+        let clip = SketchProductionService.markAsReel(project, context: context)
+        try context.save()
+
+        XCTAssertTrue(SketchProductionService.isReel(project))
+        XCTAssertEqual(project.reelClip?.id, clip.id)
+        XCTAssertEqual(clip.sketchProject?.id, project.id)
+        XCTAssertNil(clip.source, "A Reel Clip has no recording-session Source")
+        XCTAssertEqual(clip.title, "Airport Bit")
+    }
+
+    func testMarkAsReelCalledTwiceReusesTheSameClipRatherThanCreatingASecondOne() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Bit", projectType: .sketch, in: context)
+        try context.save()
+
+        let first = SketchProductionService.markAsReel(project, context: context)
+        try context.save()
+        let second = SketchProductionService.markAsReel(project, context: context)
+        try context.save()
+
+        XCTAssertEqual(first.id, second.id)
+        let allClips = try context.fetch(FetchDescriptor<ClipService.Clip>())
+        XCTAssertEqual(allClips.count, 1)
+    }
+
+    /// The whole point: a Reel's Clip must show up and behave exactly like any other Clip on the
+    /// real board Kyle actually uses.
+    func testReelClipAppearsOnTheNormalClipsBoardAndCanProgressThroughEditing() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Bit", projectType: .sketch, in: context)
+        try context.save()
+        let clip = SketchProductionService.markAsReel(project, context: context)
+        try context.save()
+
+        XCTAssertEqual(ClipService.boardLane(for: clip.status), .toIsolate)
+        ClipService.changeStatus(clip, to: .currentlyEditing, context: context)
+        try context.save()
+        XCTAssertEqual(ClipService.boardLane(for: clip.status), .editing)
+    }
+
+    /// Unmarking must never destroy real editing/posting work already logged against the Clip —
+    /// same "outlives its origin" reasoning as every other Clip cross-reference in this codebase.
+    func testUnmarkAsReelKeepsTheClipIntact() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Bit", projectType: .sketch, in: context)
+        try context.save()
+        let clip = SketchProductionService.markAsReel(project, context: context)
+        ClipService.changeStatus(clip, to: .currentlyEditing, context: context)
+        try context.save()
+
+        SketchProductionService.unmarkAsReel(project)
+        try context.save()
+
+        XCTAssertFalse(SketchProductionService.isReel(project))
+        let survivingClips = try context.fetch(FetchDescriptor<ClipService.Clip>())
+        XCTAssertEqual(survivingClips.map(\.id), [clip.id], "The Clip and its editing progress must survive being unmarked")
+    }
+
+    func testDeletingTheProjectNullifiesTheClipInsteadOfDeletingIt() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Bit", projectType: .sketch, in: context)
+        try context.save()
+        let clip = SketchProductionService.markAsReel(project, context: context)
+        let clipID = clip.id
+        try context.save()
+
+        context.delete(project)
+        try context.save()
+
+        let survivingClips = try context.fetch(FetchDescriptor<ClipService.Clip>())
+        XCTAssertEqual(survivingClips.map(\.id), [clipID], "Deleting the Project must not delete its Reel Clip")
+        XCTAssertNil(survivingClips.first?.sketchProject, "The reference should be nullified, not left dangling")
+    }
 }

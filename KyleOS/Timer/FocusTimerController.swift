@@ -19,8 +19,8 @@ import Observation
 /// can drive time deterministically instead of sleeping.
 @Observable
 final class FocusTimerController {
-    typealias WorkItem = KyleOSSchemaV33.WorkItem
-    typealias WorkSession = KyleOSSchemaV33.WorkSession
+    typealias WorkItem = KyleOSSchemaV34.WorkItem
+    typealias WorkSession = KyleOSSchemaV34.WorkSession
 
     enum State: Equatable {
         case idle

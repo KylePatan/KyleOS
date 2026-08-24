@@ -11,6 +11,7 @@ struct WritingProjectDetailView: View {
     let project: ProjectService.Project
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppNavigationController.self) private var navigator
     @State private var isShowingArchiveConfirmation = false
 
     /// Live @Query, not `project.documents` read inline — same class of stale-list bug confirmed
@@ -26,6 +27,9 @@ struct WritingProjectDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
                 header
+                if project.projectType == .sketch {
+                    reelSection
+                }
                 if let lastOpened = project.lastOpenedDocument {
                     continueWritingSection(for: lastOpened)
                 }
@@ -67,6 +71,46 @@ struct WritingProjectDetailView: View {
             .overlay(Rectangle().strokeBorder(RetroTheme.accent, lineWidth: RetroTheme.borderWidth))
         }
         .buttonStyle(.plain)
+    }
+
+    /// Kyle (2026-08-20): "sometimes we'll film a really quick reel/sketch that doesn't have a
+    /// script... let's have an option to have a sketch project started - and when it is opened
+    /// there can be an option for 'REEL' and when that's selected, it then goes into the clips
+    /// folder as well so that we can start editing/subtitling/post it." Sketch-type projects only
+    /// — a Reel is specifically a script-less Sketch, not a general Writing concept.
+    private var reelSection: some View {
+        RetroPanel("Reel", accentCategory: .sketches) {
+            if SketchProductionService.isReel(project) {
+                HStack(spacing: RetroTheme.controlSpacing) {
+                    Label("This is a Reel — no script needed.", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(RetroTheme.ModuleCategory.sketches.accent)
+                    Spacer()
+                    if let clip = project.reelClip {
+                        Button("Open in Clips") {
+                            navigator.navigate(to: .clip(clip.persistentModelID))
+                        }
+                        .buttonStyle(.retro)
+                    }
+                    Button("Unmark") {
+                        SketchProductionService.unmarkAsReel(project)
+                        try? context.save()
+                    }
+                    .buttonStyle(.retro)
+                }
+            } else {
+                HStack(spacing: RetroTheme.controlSpacing) {
+                    Text("Quick sketch, no script? Mark it as a Reel to track editing, subtitling, and posting from the Clips board.")
+                        .font(.caption)
+                        .foregroundStyle(RetroTheme.secondaryText)
+                    Spacer()
+                    Button("Mark as Reel") {
+                        SketchProductionService.markAsReel(project, context: context)
+                        try? context.save()
+                    }
+                    .buttonStyle(.retroProminent)
+                }
+            }
+        }
     }
 
     private var header: some View {
@@ -211,4 +255,5 @@ struct WritingProjectDetailView: View {
         WritingProjectDetailView(project: project)
     }
     .modelContainer(container)
+    .environment(AppNavigationController())
 }

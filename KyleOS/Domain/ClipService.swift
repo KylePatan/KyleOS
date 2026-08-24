@@ -4,11 +4,11 @@ import SwiftData
 /// Reusable domain actions for Clips (PRD §8.3-§8.4), kept out of views per CLAUDE.md §4. "One
 /// Source can contain many Clip records."
 enum ClipService {
-    typealias Clip = KyleOSSchemaV33.Clip
-    typealias Source = KyleOSSchemaV33.Source
-    typealias ClipStatus = KyleOSSchemaV33.ClipStatus
-    typealias Joke = KyleOSSchemaV33.Joke
-    typealias Chunk = KyleOSSchemaV33.Chunk
+    typealias Clip = KyleOSSchemaV34.Clip
+    typealias Source = KyleOSSchemaV34.Source
+    typealias ClipStatus = KyleOSSchemaV34.ClipStatus
+    typealias Joke = KyleOSSchemaV34.Joke
+    typealias Chunk = KyleOSSchemaV34.Chunk
 
     /// PRD §8.4: "A board can visually simplify these to To Isolate, Editing, Needs Subtitles,
     /// Ready, Posted." The full 7-state `ClipStatus` remains the real stored value (needed for
@@ -39,6 +39,17 @@ enum ClipService {
     static func createClip(title: String, in source: Source, context: ModelContext) -> Clip {
         let clip = Clip(title: title)
         clip.source = source
+        context.insert(clip)
+        return clip
+    }
+
+    /// A Clip with no Source — for content that doesn't come from a logged recording session, the
+    /// same way a Reel doesn't (see `SketchProductionService.markAsReel`). `ClipBoardView` (where
+    /// Kyle actually works — all clip info was consolidated there 2026-08-17) groups by status
+    /// lane, not by Source, so a sourceless clip still appears and behaves exactly like any other.
+    @discardableResult
+    static func createClip(title: String, context: ModelContext) -> Clip {
+        let clip = Clip(title: title)
         context.insert(clip)
         return clip
     }

@@ -135,10 +135,17 @@ private struct ClipCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(clip.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+                    // A Reel Clip has no Source (see ClipService.createClip(title:context:)'s own
+                    // doc comment) — show where it actually came from instead of leaving this
+                    // blank.
                     if let sourceTitle = clip.source?.title {
                         Text(sourceTitle)
                             .font(.caption2)
                             .foregroundStyle(RetroTheme.secondaryText)
+                    } else if clip.sketchProject != nil {
+                        Text("Reel")
+                            .font(.caption2.bold())
+                            .foregroundStyle(RetroTheme.ModuleCategory.sketches.accent)
                     }
                 }
                 Spacer(minLength: RetroTheme.controlSpacing)

@@ -7,11 +7,11 @@ import SwiftData
 /// Never resolve a future model change by deleting the user's store (CLAUDE.md §5).
 enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self, KyleOSSchemaV14.self, KyleOSSchemaV15.self, KyleOSSchemaV16.self, KyleOSSchemaV17.self, KyleOSSchemaV18.self, KyleOSSchemaV19.self, KyleOSSchemaV20.self, KyleOSSchemaV21.self, KyleOSSchemaV22.self, KyleOSSchemaV23.self, KyleOSSchemaV24.self, KyleOSSchemaV25.self, KyleOSSchemaV26.self, KyleOSSchemaV27.self, KyleOSSchemaV28.self, KyleOSSchemaV29.self, KyleOSSchemaV30.self, KyleOSSchemaV31.self, KyleOSSchemaV32.self, KyleOSSchemaV33.self]
+        [KyleOSSchemaV1.self, KyleOSSchemaV2.self, KyleOSSchemaV3.self, KyleOSSchemaV4.self, KyleOSSchemaV5.self, KyleOSSchemaV6.self, KyleOSSchemaV7.self, KyleOSSchemaV8.self, KyleOSSchemaV9.self, KyleOSSchemaV10.self, KyleOSSchemaV11.self, KyleOSSchemaV12.self, KyleOSSchemaV13.self, KyleOSSchemaV14.self, KyleOSSchemaV15.self, KyleOSSchemaV16.self, KyleOSSchemaV17.self, KyleOSSchemaV18.self, KyleOSSchemaV19.self, KyleOSSchemaV20.self, KyleOSSchemaV21.self, KyleOSSchemaV22.self, KyleOSSchemaV23.self, KyleOSSchemaV24.self, KyleOSSchemaV25.self, KyleOSSchemaV26.self, KyleOSSchemaV27.self, KyleOSSchemaV28.self, KyleOSSchemaV29.self, KyleOSSchemaV30.self, KyleOSSchemaV31.self, KyleOSSchemaV32.self, KyleOSSchemaV33.self, KyleOSSchemaV34.self]
     }
 
     static var stages: [MigrationStage] {
-        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13, migrateV13toV14, migrateV14toV15, migrateV15toV16, migrateV16toV17, migrateV17toV18, migrateV18toV19, migrateV19toV20, migrateV20toV21, migrateV21toV22, migrateV22toV23, migrateV23toV24, migrateV24toV25, migrateV25toV26, migrateV26toV27, migrateV27toV28, migrateV28toV29, migrateV29toV30, migrateV30toV31, migrateV31toV32, migrateV32toV33]
+        [migrateV1toV2, migrateV2toV3, migrateV3toV4, migrateV4toV5, migrateV5toV6, migrateV6toV7, migrateV7toV8, migrateV8toV9, migrateV9toV10, migrateV10toV11, migrateV11toV12, migrateV12toV13, migrateV13toV14, migrateV14toV15, migrateV15toV16, migrateV16toV17, migrateV17toV18, migrateV18toV19, migrateV19toV20, migrateV20toV21, migrateV21toV22, migrateV22toV23, migrateV23toV24, migrateV24toV25, migrateV25toV26, migrateV26toV27, migrateV27toV28, migrateV28toV29, migrateV29toV30, migrateV30toV31, migrateV31toV32, migrateV32toV33, migrateV33toV34]
     }
 
     /// V2 only adds a new entity (Document) and a relationship pointing at it — no existing
@@ -260,5 +260,12 @@ enum KyleOSMigrationPlan: SchemaMigrationPlan {
     static let migrateV32toV33 = MigrationStage.lightweight(
         fromVersion: KyleOSSchemaV32.self,
         toVersion: KyleOSSchemaV33.self
+    )
+
+    /// V34 adds SketchProduction.isReel (a new Optional scalar) and the new Project.reelClip <->
+    /// Clip.sketchProject relationship pair — both additive, same safe lightweight shape.
+    static let migrateV33toV34 = MigrationStage.lightweight(
+        fromVersion: KyleOSSchemaV33.self,
+        toVersion: KyleOSSchemaV34.self
     )
 }
