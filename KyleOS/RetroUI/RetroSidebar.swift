@@ -105,6 +105,7 @@ struct RetroSidebar: View {
         case .sketches: return .sketches
         case .calendar: return .calendar
         case .packets: return .completed
+        case .submissions: return .submissions
         case .home, .reports, .settings: return nil
         }
     }

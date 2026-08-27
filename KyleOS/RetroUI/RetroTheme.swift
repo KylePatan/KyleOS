@@ -102,7 +102,7 @@ enum RetroTheme {
     /// 1:1 for the four content workspaces, plus three cross-cutting semantic ones (calendar/
     /// deadline/completed) that apply regardless of workspace.
     enum ModuleCategory: CaseIterable {
-        case writing, standUp, clips, sketches, calendar, deadline, completed
+        case writing, standUp, clips, sketches, submissions, calendar, deadline, completed
 
         var accent: Color {
             switch self {
@@ -110,6 +110,7 @@ enum RetroTheme {
             case .standUp: return Color(red: 0.93, green: 0.47, blue: 0.24)     // orange/coral
             case .clips: return Color(red: 0.90, green: 0.32, blue: 0.52)       // pink/red
             case .sketches: return Color(red: 0.28, green: 0.68, blue: 0.42)    // green
+            case .submissions: return Color(red: 0.55, green: 0.36, blue: 0.87) // purple
             case .calendar: return Color(red: 0.24, green: 0.55, blue: 0.85)    // blue
             case .deadline: return Color(red: 0.82, green: 0.24, blue: 0.24)    // red
             case .completed: return Color(red: 0.33, green: 0.76, blue: 0.56)   // mint
@@ -132,6 +133,7 @@ extension WorkItemService.Workspace {
         case .standUp: return .standUp
         case .clips: return .clips
         case .sketches: return .sketches
+        case .submissions: return .submissions
         }
     }
 }

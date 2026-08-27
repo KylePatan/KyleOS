@@ -8,10 +8,10 @@ import SwiftData
 /// the model itself has no way to enforce that (SwiftData has no sum-type/enum-relationship
 /// construct), so it's enforced here instead.
 enum GigSetListService {
-    typealias Gig = KyleOSSchemaV34.Gig
-    typealias GigSetListItem = KyleOSSchemaV34.GigSetListItem
-    typealias Joke = KyleOSSchemaV34.Joke
-    typealias Chunk = KyleOSSchemaV34.Chunk
+    typealias Gig = KyleOSSchemaV35.Gig
+    typealias GigSetListItem = KyleOSSchemaV35.GigSetListItem
+    typealias Joke = KyleOSSchemaV35.Joke
+    typealias Chunk = KyleOSSchemaV35.Chunk
 
     static func items(in gig: Gig) -> [GigSetListItem] {
         gig.setListItems.sorted { $0.order < $1.order }

@@ -29,7 +29,7 @@ import SwiftData
 /// concentrating a session's work around one or two projects" — that's a session-composition
 /// concern for when Planned Sessions actually get built/reflowed, not this list-ranking pass.
 enum SchedulingService {
-    typealias WorkItem = KyleOSSchemaV34.WorkItem
+    typealias WorkItem = KyleOSSchemaV35.WorkItem
 
     struct ScoredWorkItem: Identifiable {
         let workItem: WorkItem

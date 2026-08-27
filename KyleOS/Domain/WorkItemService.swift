@@ -4,14 +4,15 @@ import SwiftData
 /// Reusable domain actions for Work Items — Create/Complete/Change Status per PRD §15.1 — kept
 /// out of views per CLAUDE.md §4.
 enum WorkItemService {
-    typealias WorkItem = KyleOSSchemaV34.WorkItem
-    typealias Workspace = KyleOSSchemaV34.Workspace
-    typealias WorkItemStatus = KyleOSSchemaV34.WorkItemStatus
-    typealias Project = KyleOSSchemaV34.Project
-    typealias Document = KyleOSSchemaV34.Document
-    typealias Joke = KyleOSSchemaV34.Joke
-    typealias Chunk = KyleOSSchemaV34.Chunk
-    typealias Clip = KyleOSSchemaV34.Clip
+    typealias WorkItem = KyleOSSchemaV35.WorkItem
+    typealias Workspace = KyleOSSchemaV35.Workspace
+    typealias WorkItemStatus = KyleOSSchemaV35.WorkItemStatus
+    typealias Project = KyleOSSchemaV35.Project
+    typealias Document = KyleOSSchemaV35.Document
+    typealias Joke = KyleOSSchemaV35.Joke
+    typealias Chunk = KyleOSSchemaV35.Chunk
+    typealias Clip = KyleOSSchemaV35.Clip
+    typealias Submission = KyleOSSchemaV35.Submission
 
     /// Generic fallback when no WorkTypeDefault matches `workTypeName` — better than a hard
     /// crash, but real usage should mostly hit the WorkTypeDefault-seeded path below.
@@ -356,6 +357,7 @@ enum WorkItemService {
         case chunk(Chunk)
         case joke(Joke)
         case clip(Clip)
+        case submission(Submission)
     }
 
     static func underlyingContent(for workItem: WorkItem) -> UnderlyingContent? {
@@ -363,19 +365,20 @@ enum WorkItemService {
         if let chunk = workItem.chunk { return .chunk(chunk) }
         if let joke = workItem.joke { return .joke(joke) }
         if let clip = workItem.clip { return .clip(clip) }
+        if let submission = workItem.submission { return .submission(submission) }
         return nil
     }
 
-    /// `nil` when the content has no archive concept of its own (Chunk/Clip) or there's nothing
-    /// to act on at all (a general, untargeted session) — the caller should omit the Archive menu
-    /// entry entirely in that case, not show one that silently does nothing.
+    /// `nil` when the content has no archive concept of its own (Chunk/Clip/Submission) or
+    /// there's nothing to act on at all (a general, untargeted session) — the caller should omit
+    /// the Archive menu entry entirely in that case, not show one that silently does nothing.
     static func archiveUnderlyingContent(for workItem: WorkItem) -> (() -> Void)? {
         switch underlyingContent(for: workItem) {
         case .project(let project):
             return { ProjectService.archive(project) }
         case .joke(let joke):
             return { JokeService.archive(joke) }
-        case .chunk, .clip, .none:
+        case .chunk, .clip, .submission, .none:
             return nil
         }
     }
@@ -397,6 +400,7 @@ enum WorkItemService {
         case .chunk(let chunk): ChunkService.delete(chunk, context: context)
         case .joke(let joke): JokeService.delete(joke, context: context)
         case .clip(let clip): ClipService.delete(clip, context: context)
+        case .submission(let submission): SubmissionService.delete(submission, context: context)
         case .none: context.delete(workItem)
         }
     }

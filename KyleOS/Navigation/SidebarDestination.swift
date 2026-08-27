@@ -11,6 +11,10 @@ enum SidebarDestination: String, CaseIterable, Identifiable, Hashable {
     case clips
     case sketches
     case packets
+    /// Added 2026-08-27 (Kyle's own new "SUBMISSION" section — not a PRD concept, same shape as
+    /// `packets`' own addition). Placed right after Packets: both curate deadline/reference-style
+    /// content ahead of the scheduling-oriented Calendar/Reports/Settings tail.
+    case submissions
     case calendar
     case reports
     case settings
@@ -25,6 +29,7 @@ enum SidebarDestination: String, CaseIterable, Identifiable, Hashable {
         case .clips: return "Clips"
         case .sketches: return "Sketches"
         case .packets: return "Packets"
+        case .submissions: return "Submissions"
         case .calendar: return "Calendar"
         case .reports: return "Reports"
         case .settings: return "Settings"
@@ -39,6 +44,7 @@ enum SidebarDestination: String, CaseIterable, Identifiable, Hashable {
         case .clips: return "film"
         case .sketches: return "theatermasks"
         case .packets: return "shippingbox"
+        case .submissions: return "paperplane"
         case .calendar: return "calendar"
         case .reports: return "chart.bar"
         case .settings: return "gearshape"

@@ -15,6 +15,7 @@ enum DeepLinkTarget: Equatable {
     case standUpJokeBoard
     case clip(PersistentIdentifier)
     case sketchProject(PersistentIdentifier)
+    case submission(PersistentIdentifier)
 
     /// Where a given Work Item's own material actually lives, if anywhere navigable. Centralized
     /// here (not duplicated per card/view) since any future "make it clickable" affordance needs
@@ -24,7 +25,7 @@ enum DeepLinkTarget: Equatable {
     /// Writing (including a still-being-written Short Film — it only graduates to Sketches once
     /// finished); Stand-Up material is a Chunk, a loose Joke, or neither (a general, untargeted
     /// session, which has nowhere specific to go).
-    static func forWorkItem(_ workItem: KyleOSSchemaV34.WorkItem) -> DeepLinkTarget? {
+    static func forWorkItem(_ workItem: KyleOSSchemaV35.WorkItem) -> DeepLinkTarget? {
         if let project = workItem.project {
             return SketchProductionService.isProductionProject(project)
                 ? .sketchProject(project.persistentModelID)
@@ -38,6 +39,9 @@ enum DeepLinkTarget: Equatable {
         }
         if let clip = workItem.clip {
             return .clip(clip.persistentModelID)
+        }
+        if let submission = workItem.submission {
+            return .submission(submission.persistentModelID)
         }
         return nil
     }
@@ -77,6 +81,8 @@ final class AppNavigationController {
             selection = .clips
         case .sketchProject:
             selection = .sketches
+        case .submission:
+            selection = .submissions
         }
         pendingTarget = target
     }

@@ -162,14 +162,17 @@ final class ReportServiceTests: XCTestCase {
 
     // MARK: - workspaceBreakdown(in:context:)
 
-    func testWorkspaceBreakdownAlwaysReturnsAllFourWorkspacesZeroFilled() throws {
+    /// Kept in sync with `Workspace.allCases` deliberately, not hardcoded to a specific number —
+    /// V35 added `.submissions` (5 cases now, was 4 through V34) and this test's whole point is
+    /// that the breakdown always includes every real Workspace, zero-filled or not.
+    func testWorkspaceBreakdownAlwaysReturnsEveryWorkspaceZeroFilled() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
 
         let interval = DateInterval(start: Date(timeIntervalSinceNow: -3600), end: Date(timeIntervalSinceNow: 3600))
         let breakdown = try ReportService.workspaceBreakdown(in: interval, context: context)
 
-        XCTAssertEqual(breakdown.count, 4)
+        XCTAssertEqual(breakdown.count, ReportService.Workspace.allCases.count)
         XCTAssertTrue(breakdown.allSatisfy { $0.seconds == 0 })
     }
 

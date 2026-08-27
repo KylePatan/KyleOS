@@ -42,6 +42,8 @@ struct RootView: View {
             SketchBoardView()
         case .packets:
             PacketsHomeView()
+        case .submissions:
+            SubmissionsBoardView()
         case .calendar:
             CalendarHomeView()
         case .reports:

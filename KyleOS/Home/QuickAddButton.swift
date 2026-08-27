@@ -6,6 +6,11 @@ import SwiftData
 /// capture") Joke Idea are wired up. Clip and Gig still belong to modules that don't exist yet
 /// (Clips isn't built), so those options would just be dead menu items pointing at nothing; add
 /// them when that module is actually built.
+///
+/// "Submission" added 2026-08-27 (Kyle: "There needs to be another thing we can put in for
+/// 'HOME'... SUBMISSION. And then it creates a home task.") — same "right here, no detour"
+/// convenience as every other Quick Add kind; `SubmissionsBoardView`'s own toolbar offers the
+/// same creation flow for whoever's already on that screen.
 struct QuickAddButton: View {
     @State private var activeSheet: QuickAddKind?
 
@@ -15,6 +20,7 @@ struct QuickAddButton: View {
             Button("Calendar Event") { activeSheet = .calendarEvent }
             Button("Writing Project") { activeSheet = .project }
             Button("Joke Idea") { activeSheet = .jokeIdea }
+            Button("Submission") { activeSheet = .submission }
         } label: {
             Label("Add", systemImage: "plus.circle")
         }
@@ -27,7 +33,7 @@ struct QuickAddButton: View {
 }
 
 private enum QuickAddKind: String, Identifiable {
-    case task, calendarEvent, project, jokeIdea
+    case task, calendarEvent, project, jokeIdea, submission
     var id: String { rawValue }
 }
 
@@ -62,6 +68,11 @@ private struct QuickAddSheet: View {
     // Joke Idea fields
     @State private var jokeText = ""
 
+    // Submission fields
+    @State private var submissionTitle = ""
+    @State private var submissionHasDueDate = false
+    @State private var submissionDueDate = Date()
+
     var body: some View {
         VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
             Text(title)
@@ -73,6 +84,7 @@ private struct QuickAddSheet: View {
             case .calendarEvent: calendarEventForm
             case .project: projectForm
             case .jokeIdea: jokeIdeaForm
+            case .submission: submissionForm
             }
 
             HStack {
@@ -96,6 +108,7 @@ private struct QuickAddSheet: View {
         case .calendarEvent: return "Quick Add — Calendar Event"
         case .project: return "Quick Add — Writing Project"
         case .jokeIdea: return "Quick Add — Joke Idea"
+        case .submission: return "Quick Add — Submission"
         }
     }
 
@@ -111,6 +124,8 @@ private struct QuickAddSheet: View {
             return !projectTitle.trimmingCharacters(in: .whitespaces).isEmpty
         case .jokeIdea:
             return !jokeText.trimmingCharacters(in: .whitespaces).isEmpty
+        case .submission:
+            return !submissionTitle.trimmingCharacters(in: .whitespaces).isEmpty
         }
     }
 
@@ -153,6 +168,16 @@ private struct QuickAddSheet: View {
         TextField("Idea text", text: $jokeText, axis: .vertical).retroInputStyle()
     }
 
+    private var submissionForm: some View {
+        VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+            TextField("Festival or production company", text: $submissionTitle).retroInputStyle()
+            Toggle("Due date known", isOn: $submissionHasDueDate.animation())
+            if submissionHasDueDate {
+                DatePicker("Due", selection: $submissionDueDate, displayedComponents: [.date, .hourAndMinute])
+            }
+        }
+    }
+
     private func add() {
         switch kind {
         case .task:
@@ -176,6 +201,12 @@ private struct QuickAddSheet: View {
             ProjectService.createProject(title: projectTitle.trimmingCharacters(in: .whitespaces), in: context)
         case .jokeIdea:
             JokeService.quickCapture(text: jokeText.trimmingCharacters(in: .whitespaces), context: context)
+        case .submission:
+            SubmissionService.createSubmission(
+                title: submissionTitle.trimmingCharacters(in: .whitespaces),
+                dueAt: submissionHasDueDate ? submissionDueDate : nil,
+                context: context
+            )
         }
         try? context.save()
         dismiss()

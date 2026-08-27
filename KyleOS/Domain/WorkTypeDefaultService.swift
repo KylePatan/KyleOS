@@ -5,7 +5,7 @@ import SwiftData
 /// whole point of this model is that "Outline takes about 1.5 hours" lives here once, not as a
 /// magic number copy-pasted into every screen that needs it.
 enum WorkTypeDefaultService {
-    typealias WorkTypeDefault = KyleOSSchemaV34.WorkTypeDefault
+    typealias WorkTypeDefault = KyleOSSchemaV35.WorkTypeDefault
 
     /// The original two estimates the Master PRD actually specifies (§5.1) — left in place even
     /// though neither name matches a `workTypeName` the app currently generates, since existing
@@ -37,6 +37,8 @@ enum WorkTypeDefaultService {
         ("Sketch Writing", 2.0),
         ("Sketch Editing", 3.0),
         ("Sketch Posting", 0.25),
+        ("Submission", 0.5),
+        ("Submission Reminder", 0.25),
     ]
 
     /// Inserts the PRD's known defaults if they aren't already present. Idempotent — safe to
