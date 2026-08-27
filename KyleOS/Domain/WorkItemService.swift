@@ -288,6 +288,30 @@ enum WorkItemService {
         return workItem
     }
 
+    /// Kyle (2026-08-20, real use): "when a new piece of sketch writing is created - shouldn't it
+    /// go on the home board?... I feel like when you open up a sketch it should live in the
+    /// sketches (not filmed yet - writing) section as well as being a task on the home board to
+    /// schedule the work." A brand-new Sketch/Short Film Project has no Document yet (unlike a
+    /// generic Writing project, which only ever gets a WorkItem lazily once a Document is actually
+    /// opened) — without this, there was a real gap between "created" and "first document opened"
+    /// where nothing represented it on Home at all. `workspace: .writing` (not `.sketches` — this
+    /// is the pre-production writing phase, matching where the Project itself still lives until
+    /// it's finished/marked a Reel), matching `sketchEditingWorkItem`'s own "no Document needed,
+    /// the Project is the natural unit" reasoning.
+    static func sketchWritingWorkItem(for project: Project, context: ModelContext) throws -> WorkItem {
+        let workTypeName = "Sketch Writing"
+        if let existing = try workItems(for: project, in: context).first(where: { $0.workTypeName == workTypeName }) {
+            return existing
+        }
+        return try createWorkItem(
+            title: project.title,
+            workspace: .writing,
+            workTypeName: workTypeName,
+            in: project,
+            context: context
+        )
+    }
+
     /// Sketch-side counterpart to `clipPostingWorkItem`, same anchor-only purpose.
     static func sketchPostingWorkItem(for project: Project, context: ModelContext) throws -> WorkItem {
         let workTypeName = "Sketch Posting"

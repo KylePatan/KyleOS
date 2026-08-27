@@ -34,6 +34,7 @@ enum WorkTypeDefaultService {
         ("Clip Editing", 1.5),
         ("Clip Subtitling", 0.5),
         ("Clip Posting", 0.25),
+        ("Sketch Writing", 2.0),
         ("Sketch Editing", 3.0),
         ("Sketch Posting", 0.25),
     ]

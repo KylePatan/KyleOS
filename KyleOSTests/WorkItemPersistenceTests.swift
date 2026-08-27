@@ -334,6 +334,38 @@ final class WorkItemPersistenceTests: XCTestCase {
         XCTAssertNotEqual(editingDeadline.id, subtitlingDeadline.id)
     }
 
+    /// Kyle (2026-08-20): "when a new piece of sketch writing is created - shouldn't it go on the
+    /// home board?" — the pre-production counterpart to sketchEditingWorkItem, so a brand-new
+    /// (not-yet-finished) Sketch has something representing it on Home immediately.
+    func testSketchWritingWorkItemCreatesOneLinkedToTheProjectOnFirstCall() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, in: context)
+        try context.save()
+
+        let workItem = try WorkItemService.sketchWritingWorkItem(for: project, context: context)
+        try context.save()
+
+        XCTAssertEqual(workItem.project?.id, project.id)
+        XCTAssertEqual(workItem.workspace, .writing, "Pre-production is writing-phase work, not sketches production")
+        XCTAssertEqual(workItem.title, "Hackers Sketch")
+        XCTAssertEqual(workItem.workTypeName, "Sketch Writing")
+    }
+
+    func testSketchWritingWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, in: context)
+        try context.save()
+
+        let first = try WorkItemService.sketchWritingWorkItem(for: project, context: context)
+        try context.save()
+        let second = try WorkItemService.sketchWritingWorkItem(for: project, context: context)
+
+        XCTAssertEqual(first.id, second.id)
+        XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1)
+    }
+
     func testSketchEditingWorkItemCreatesOneLinkedToTheProjectOnFirstCall() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)

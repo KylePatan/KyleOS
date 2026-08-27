@@ -24,6 +24,19 @@ struct SketchBoardView: View {
         allProjects.filter(SketchProductionService.isProductionProject)
     }
 
+    /// Kyle (2026-08-20): "why is hackers sketch in writing but not on sketches... I feel like
+    /// when you open up a sketch it should live in the sketches (not filmed yet - writing)
+    /// section." Every Sketch/Short Film that's still being written (not yet finished, not a
+    /// Reel) shows here too — a real column on this board, not just invisible until it graduates
+    /// into production. Still visible in Writing's own list at the same time, same "additive
+    /// presence, not a move" reasoning `isProductionProject` already documents.
+    private var writingSketches: [ProjectService.Project] {
+        allProjects.filter {
+            guard let type = $0.projectType, SketchProductionService.productionProjectTypes.contains(type) else { return false }
+            return !$0.isArchived && !SketchProductionService.isProductionProject($0)
+        }
+    }
+
     private func projects(inStatus status: SketchProductionService.SketchProductionStatus) -> [ProjectService.Project] {
         sketchesOnBoard.filter { SketchProductionService.status(for: $0) == status }
     }
@@ -31,13 +44,14 @@ struct SketchBoardView: View {
     var body: some View {
         NavigationStack(path: $path) {
             Group {
-                if sketchesOnBoard.isEmpty {
-                    Text("No Sketches yet. Add a Reel to start tracking one right away, or mark a written Sketch's status Finished to see it here.")
+                if sketchesOnBoard.isEmpty && writingSketches.isEmpty {
+                    Text("No Sketches yet. Add one to start tracking it right away.")
                         .foregroundStyle(RetroTheme.secondaryText)
                         .padding(RetroTheme.sectionPadding)
                 } else {
                     ScrollView(.horizontal) {
                         HStack(alignment: .top, spacing: RetroTheme.sectionSpacing) {
+                            writingColumn
                             ForEach(SketchProductionService.SketchProductionStatus.allCases, id: \.self) { status in
                                 column(for: status)
                             }
@@ -73,6 +87,26 @@ struct SketchBoardView: View {
         guard case .sketchProject(let id) = navigator.pendingTarget else { return }
         path.append(id)
         navigator.pendingTarget = nil
+    }
+
+    /// Distinct accent (`.writing`, not `.sketches`) — a deliberate visual cue that this column is
+    /// still writing-phase work, not production, the same colour language Home already uses for
+    /// this exact WorkItem's own `workspace`.
+    private var writingColumn: some View {
+        RetroPanel("Writing", accentCategory: .writing) {
+            if writingSketches.isEmpty {
+                Text("No sketches here.")
+                    .font(.caption)
+                    .foregroundStyle(RetroTheme.secondaryText)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(writingSketches) { project in
+                        WritingSketchCard(project: project)
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)
     }
 
     private func column(for status: SketchProductionService.SketchProductionStatus) -> some View {
@@ -146,6 +180,49 @@ private struct SketchCard: View {
         .overlay(alignment: .bottom) {
             Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
         }
+    }
+}
+
+/// Kyle (2026-08-20): a Sketch/Short Film still being written — simpler than `SketchCard` (no
+/// production-status "Move to" menu, no Post Date, since neither applies yet). Tapping the title
+/// jumps to Writing directly (`DeepLinkTarget.writingProject`, the same cross-module routing
+/// `NewSketchSheet` already uses) rather than a local `NavigationLink`, since this Project isn't
+/// resolvable through this board's own `sketchesOnBoard`-scoped navigation destination.
+private struct WritingSketchCard: View {
+    let project: ProjectService.Project
+    @Environment(\.modelContext) private var context
+    @Environment(AppNavigationController.self) private var navigator
+
+    var body: some View {
+        HStack {
+            Button {
+                navigator.navigate(to: .writingProject(project.persistentModelID))
+            } label: {
+                Text(project.title).font(.callout.bold()).foregroundStyle(RetroTheme.primaryText)
+            }
+            .buttonStyle(.plain)
+            Spacer()
+            Button("Mark Finished") {
+                ProjectService.setStatus(project, to: .finished, context: context)
+                try? context.save()
+            }
+            .buttonStyle(.retroCompact)
+        }
+        .padding(.horizontal, RetroTheme.controlSpacing + 4)
+        .padding(.vertical, RetroTheme.controlSpacing)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+        }
+        .archiveDeleteContextMenu(
+            onArchive: {
+                ProjectService.archive(project)
+                try? context.save()
+            },
+            onDelete: {
+                ProjectService.delete(project, context: context)
+                try? context.save()
+            }
+        )
     }
 }
 
