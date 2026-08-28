@@ -40,6 +40,18 @@ enum SketchProductionService {
         return productionProjectTypes.contains(type) && project.status == .finished
     }
 
+    /// The complement of `isProductionProject` — still a Sketch/Short Film, not archived, but
+    /// hasn't graduated to production yet (not finished, not a Reel). Kyle (2026-08-20): "it
+    /// should live in the sketches (not filmed yet - writing) section." Centralized here (moved
+    /// out of being inlined in `SketchBoardView`'s own `writingSketches`) so
+    /// This is a Sketches-board-specific view of the rule; `WorkItemService.
+    /// backfillProjectWritingWorkItems` covers every Project type, not just still-writing
+    /// Sketches — see that function's own doc comment.
+    static func isStillWriting(_ project: Project) -> Bool {
+        guard let type = project.projectType, productionProjectTypes.contains(type) else { return false }
+        return !project.isArchived && !isProductionProject(project)
+    }
+
     /// Read-only, never creates a `SketchProduction` row — merely viewing the board must not
     /// write anything. `nil` reads as the natural starting state, the same Optional-with-
     /// computed-fallback shape used throughout this codebase (e.g. `Chunk.displayOrderInHeadlineSet`).

@@ -44,20 +44,20 @@ struct NewSketchSheet: View {
     }
 
     private func create() {
+        // Kyle (2026-08-20): "when a new piece of sketch writing is created - shouldn't it go on
+        // the home board?" `ProjectService.createProject` now creates the right WorkItem
+        // automatically (`createsWritingTask`, its own default) — a Reel opts out here since its
+        // real work happens on the linked Clip instead, not a "Sketch Writing" task with nothing
+        // ever written toward it.
         let project = ProjectService.createProject(
             title: title.trimmingCharacters(in: .whitespaces),
             projectType: .sketch,
+            createsWritingTask: !isReel,
             in: context
         )
-        // Kyle (2026-08-20): "when a new piece of sketch writing is created - shouldn't it go on
-        // the home board?" A brand-new Project has no Document/Clip yet, so nothing would
-        // otherwise represent it on Home until one exists — create the right WorkItem immediately
-        // so there's something to schedule from the moment it exists, not just once work starts.
         if isReel {
             let clip = SketchProductionService.markAsReel(project, context: context)
             _ = try? WorkItemService.clipWorkItem(for: clip, context: context)
-        } else {
-            _ = try? WorkItemService.sketchWritingWorkItem(for: project, context: context)
         }
         try? context.save()
         dismiss()

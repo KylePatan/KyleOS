@@ -115,7 +115,9 @@ final class WorkItemPersistenceTests: XCTestCase {
     func testWritingWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
-        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, in: context)
+        // createsWritingTask: false — isolates this test to writingWorkItem's own idempotency;
+        // the placeholder-retirement interaction has its own dedicated test below.
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, createsWritingTask: false, in: context)
         let document = DocumentService.createDocument(title: "Chapter One", type: .prose, in: project, context: context)
 
         let first = try WorkItemService.writingWorkItem(for: document, context: context)
@@ -124,6 +126,27 @@ final class WorkItemPersistenceTests: XCTestCase {
 
         XCTAssertEqual(first.id, second.id)
         XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1, "A second call must not create a duplicate")
+    }
+
+    /// Kyle (2026-08-27): "why isn't hackers sketch showing up in my to do?" led to
+    /// `ProjectService.createProject` auto-creating a placeholder WorkItem for every Project —
+    /// which then risks sitting alongside a real Document-level WorkItem as a duplicate,
+    /// permanently-incomplete task the moment Kyle actually starts writing. This is the fix:
+    /// starting real work retires the placeholder instead of leaving it stranded.
+    func testWritingWorkItemRetiresThePlaceholderProjectLevelWorkItem() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, in: context)
+        let placeholder = try XCTUnwrap(try WorkItemService.workItems(for: project, in: context).first)
+        XCTAssertEqual(placeholder.workTypeName, "Short Story Writing")
+        let document = DocumentService.createDocument(title: "Chapter One", type: .prose, in: project, context: context)
+
+        let realWorkItem = try WorkItemService.writingWorkItem(for: document, context: context)
+        try context.save()
+
+        XCTAssertEqual(placeholder.status, .completed, "The placeholder must be retired once real work is tracked")
+        XCTAssertEqual(realWorkItem.status, .notStarted, "Only the placeholder is retired, not the new real WorkItem")
+        XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 2)
     }
 
     func testStandUpWorkItemForJokeCreatesOneLinkedToTheJokeOnFirstCall() throws {
@@ -336,14 +359,17 @@ final class WorkItemPersistenceTests: XCTestCase {
 
     /// Kyle (2026-08-20): "when a new piece of sketch writing is created - shouldn't it go on the
     /// home board?" — the pre-production counterpart to sketchEditingWorkItem, so a brand-new
-    /// (not-yet-finished) Sketch has something representing it on Home immediately.
-    func testSketchWritingWorkItemCreatesOneLinkedToTheProjectOnFirstCall() throws {
+    /// (not-yet-finished) Sketch has something representing it on Home immediately. Generalized
+    /// 2026-08-27 to every Project type — see `testCreateProjectCreatesAWritingWorkItemFor...`
+    /// below for `createProject`'s own now-automatic side effect; these two exercise
+    /// `projectWritingWorkItem` directly, independent of that.
+    func testProjectWritingWorkItemCreatesOneLinkedToTheProjectOnFirstCall() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
-        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, in: context)
+        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, createsWritingTask: false, in: context)
         try context.save()
 
-        let workItem = try WorkItemService.sketchWritingWorkItem(for: project, context: context)
+        let workItem = try WorkItemService.projectWritingWorkItem(for: project, context: context)
         try context.save()
 
         XCTAssertEqual(workItem.project?.id, project.id)
@@ -352,18 +378,134 @@ final class WorkItemPersistenceTests: XCTestCase {
         XCTAssertEqual(workItem.workTypeName, "Sketch Writing")
     }
 
-    func testSketchWritingWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
+    func testProjectWritingWorkItemDerivesWorkTypeNameFromTheProjectsOwnType() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
-        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, in: context)
+
+        let pilot = ProjectService.createProject(title: "Coastal Town", projectType: .tvPilot, createsWritingTask: false, in: context)
+        let untyped = ProjectService.createProject(title: "Untitled Idea", createsWritingTask: false, in: context)
         try context.save()
 
-        let first = try WorkItemService.sketchWritingWorkItem(for: project, context: context)
+        let pilotWorkItem = try WorkItemService.projectWritingWorkItem(for: pilot, context: context)
+        let untypedWorkItem = try WorkItemService.projectWritingWorkItem(for: untyped, context: context)
+
+        XCTAssertEqual(pilotWorkItem.workTypeName, "TV Pilot Writing")
+        XCTAssertEqual(untypedWorkItem.workTypeName, "Project Writing", "A type-less Quick Add project falls back to a generic name")
+    }
+
+    func testProjectWritingWorkItemReusesTheExistingOneOnSubsequentCalls() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, createsWritingTask: false, in: context)
         try context.save()
-        let second = try WorkItemService.sketchWritingWorkItem(for: project, context: context)
+
+        let first = try WorkItemService.projectWritingWorkItem(for: project, context: context)
+        try context.save()
+        let second = try WorkItemService.projectWritingWorkItem(for: project, context: context)
 
         XCTAssertEqual(first.id, second.id)
         XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1)
+    }
+
+    /// Kyle (2026-08-27, real use): "why isn't hackers sketch showing up in my to do? ... i feel
+    /// like every project in terms of priority should be in my to do... whatever project I create
+    /// can go into the To Do." `createProject` itself now creates this by default — no creation
+    /// flow can forget to wire it up.
+    func testCreateProjectCreatesAWritingWorkItemByDefault() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .screenplay, in: context)
+        try context.save()
+
+        let items = try WorkItemService.workItems(for: project, in: context)
+        XCTAssertEqual(items.count, 1)
+        XCTAssertEqual(items.first?.workTypeName, "Screenplay Writing")
+        XCTAssertEqual(items.first?.workspace, .writing)
+    }
+
+    /// `NewSketchSheet`'s Reel path: its real work happens on the linked Clip instead, so a
+    /// spurious, permanently-incomplete "Sketch Writing" task must not also be created.
+    func testCreateProjectSkipsTheWritingWorkItemWhenCreatesWritingTaskIsFalse() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Reel", projectType: .sketch, createsWritingTask: false, in: context)
+        try context.save()
+
+        XCTAssertTrue(try WorkItemService.workItems(for: project, in: context).isEmpty)
+    }
+
+    /// A project created already-finished has nothing left to write — matches
+    /// `backfillProjectWritingWorkItems`'s own finished-project exclusion.
+    func testCreateProjectSkipsTheWritingWorkItemForAnAlreadyFinishedProject() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+
+        let project = ProjectService.createProject(title: "Airport Sketch", projectType: .sketch, status: .finished, in: context)
+        try context.save()
+
+        XCTAssertTrue(try WorkItemService.workItems(for: project, in: context).isEmpty)
+    }
+
+    /// The actual "hackers sketch" bug: a Project that predates the automatic-WorkItem fix (or
+    /// was created some other way that never called `projectWritingWorkItem`) has zero WorkItems.
+    /// `backfillProjectWritingWorkItems` — run once at every launch, `KyleOSApp.init()` — catches
+    /// it retroactively.
+    func testBackfillProjectWritingWorkItemsCatchesAPreExistingProjectWithNoWorkItems() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, createsWritingTask: false, in: context)
+        try context.save()
+        XCTAssertTrue(try WorkItemService.workItems(for: project, in: context).isEmpty, "Sanity check: this reproduces the real bug's starting state")
+
+        try WorkItemService.backfillProjectWritingWorkItems(in: context)
+        try context.save()
+
+        let items = try WorkItemService.workItems(for: project, in: context)
+        XCTAssertEqual(items.count, 1)
+        XCTAssertEqual(items.first?.workTypeName, "Sketch Writing")
+    }
+
+    func testBackfillProjectWritingWorkItemsSkipsAProjectThatAlreadyHasOne() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Coastal Town", projectType: .shortStory, in: context)
+        try context.save()
+        XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1)
+
+        try WorkItemService.backfillProjectWritingWorkItems(in: context)
+        try context.save()
+
+        XCTAssertEqual(try WorkItemService.workItems(for: project, in: context).count, 1, "Must not create a duplicate task")
+    }
+
+    func testBackfillProjectWritingWorkItemsSkipsAReel() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Airport Reel", projectType: .sketch, createsWritingTask: false, in: context)
+        _ = SketchProductionService.markAsReel(project, context: context)
+        try context.save()
+
+        try WorkItemService.backfillProjectWritingWorkItems(in: context)
+        try context.save()
+
+        XCTAssertTrue(try WorkItemService.workItems(for: project, in: context).isEmpty, "A Reel's work happens on its linked Clip, not a Sketch Writing task")
+    }
+
+    func testBackfillProjectWritingWorkItemsSkipsFinishedAndArchivedProjects() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let finished = ProjectService.createProject(title: "Finished Bit", projectType: .other, status: .finished, in: context)
+        let archived = ProjectService.createProject(title: "Old Idea", projectType: .other, createsWritingTask: false, in: context)
+        ProjectService.archive(archived)
+        try context.save()
+
+        try WorkItemService.backfillProjectWritingWorkItems(in: context)
+        try context.save()
+
+        XCTAssertTrue(try WorkItemService.workItems(for: finished, in: context).isEmpty)
+        XCTAssertTrue(try WorkItemService.workItems(for: archived, in: context).isEmpty)
     }
 
     func testSketchEditingWorkItemCreatesOneLinkedToTheProjectOnFirstCall() throws {
@@ -545,7 +687,9 @@ final class WorkItemPersistenceTests: XCTestCase {
                 configurations: [ModelConfiguration(url: storeURL)]
             )
             let context = ModelContext(container)
-            let project = ProjectService.createProject(title: "Untitled Pilot", in: context)
+            // createsWritingTask: false — this test is about restart persistence of the
+            // explicitly-created WorkItem below, not `createProject`'s own auto-placeholder.
+            let project = ProjectService.createProject(title: "Untitled Pilot", createsWritingTask: false, in: context)
             let workItem = try WorkItemService.createWorkItem(
                 title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
             )

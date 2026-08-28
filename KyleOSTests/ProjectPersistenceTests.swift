@@ -75,6 +75,7 @@ final class ProjectPersistenceTests: XCTestCase {
         )
         let realProject = ProjectService.createProject(title: "THE TOUR", in: context)
         try context.save()
+        let junkProjectID = junkProject.id
 
         ProjectService.delete(junkProject, context: context)
         try context.save()
@@ -82,7 +83,12 @@ final class ProjectPersistenceTests: XCTestCase {
         let remainingProjects = try ProjectService.activeProjects(in: context)
         XCTAssertEqual(remainingProjects.map(\.id), [realProject.id], "Only the deleted project should be gone")
         XCTAssertTrue(try context.fetch(FetchDescriptor<DocumentService.Document>()).isEmpty, "The Project's Document must cascade-delete")
-        XCTAssertTrue(try context.fetch(FetchDescriptor<WorkItemService.WorkItem>()).isEmpty, "The Project's WorkItem must cascade-delete")
+        // Scoped to junkProject's own id, not "no WorkItem exists anywhere" — realProject now
+        // gets its own auto-created placeholder WorkItem too (`ProjectService.createProject`'s
+        // `createsWritingTask` default), which must survive untouched.
+        let remainingWorkItems = try context.fetch(FetchDescriptor<WorkItemService.WorkItem>())
+        XCTAssertTrue(remainingWorkItems.allSatisfy { $0.project?.id != junkProjectID }, "The Project's WorkItem must cascade-delete")
+        XCTAssertEqual(try WorkItemService.workItems(for: realProject, in: context).count, 1, "The unrelated project's own WorkItem must be untouched")
     }
 
     func testDataSurvivesReopeningTheStore() throws {
@@ -130,7 +136,10 @@ final class ProjectPersistenceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
 
-        let project = ProjectService.createProject(title: "Working Title", in: context)
+        // createsWritingTask: false — this test asserts the project's WorkItems are exactly the
+        // one it explicitly creates below; unrelated to `ProjectService.createProject`'s own
+        // auto-placeholder side effect (see `WorkItemPersistenceTests` for that behavior).
+        let project = ProjectService.createProject(title: "Working Title", createsWritingTask: false, in: context)
         let document = DocumentService.createDocument(title: "Outline", type: .actOutline, in: project, context: context)
         let workItem = try WorkItemService.createWorkItem(
             title: "Outline pass 1", workspace: .writing, workTypeName: "Outline", in: project, context: context
@@ -182,6 +191,22 @@ final class ProjectPersistenceTests: XCTestCase {
 
         XCTAssertEqual(project.status, .finished)
         XCTAssertEqual(project.displayStatus, .finished)
+    }
+
+    /// Kyle (2026-08-27): the flip side of `WorkItemPersistenceTests.
+    /// testWritingWorkItemRetiresThePlaceholderProjectLevelWorkItem` — a Sketch reaching
+    /// `.finished` (graduating into Sketches production) has nothing left for the pre-production
+    /// placeholder to represent either, even if a Document-level WorkItem was never created.
+    func testSetStatusToFinishedRetiresThePlaceholderWritingWorkItem() throws {
+        let container = PersistenceController.makeInMemoryContainer()
+        let context = ModelContext(container)
+        let project = ProjectService.createProject(title: "Hackers Sketch", projectType: .sketch, in: context)
+        let placeholder = try XCTUnwrap(try WorkItemService.workItems(for: project, in: context).first)
+
+        ProjectService.setStatus(project, to: .finished, context: context)
+        try context.save()
+
+        XCTAssertEqual(placeholder.status, .completed)
     }
 
     func testNewProjectHasNoLastOpenedDocument() throws {

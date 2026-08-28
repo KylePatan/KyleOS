@@ -147,7 +147,7 @@ enum WorkItemService {
             FetchDescriptor<WorkItem>(predicate: #Predicate { $0.document?.id == documentID })
         ).first
         if let existing { return existing }
-        return try createWorkItem(
+        let workItem = try createWorkItem(
             title: document.title,
             workspace: .writing,
             workTypeName: document.documentType.rawValue,
@@ -155,6 +155,29 @@ enum WorkItemService {
             document: document,
             context: context
         )
+        retirePlaceholderProjectWritingWorkItem(for: project, context: context)
+        return workItem
+    }
+
+    /// Kyle (2026-08-27): "whatever project I create can go into the To Do" made
+    /// `projectWritingWorkItem` an automatic side effect of `createProject` — but once real,
+    /// more specific work tracking begins for that same Project (a Document-level WorkItem via
+    /// `writingWorkItem`, or the Project reaching `.finished` — see `ProjectService.setStatus`),
+    /// that generic placeholder has served its purpose and would otherwise sit alongside the new
+    /// one as a duplicate, permanently-incomplete task on Home forever.
+    ///
+    /// Completed, not deleted — Home does expose a direct "Start Timer" on any WorkItem row
+    /// (`WeeklyBoardView`), so it's genuinely possible real WorkSession history already exists on
+    /// this exact placeholder before a Document was ever opened; deleting it would cascade-erase
+    /// that logged time, which this codebase never does to real session history. Matched by the
+    /// exact synthesized name, not structurally by "has no document" (a legitimate Sketch/Clip
+    /// per-stage WorkItem is also document-less), so this can never touch a WorkItem it didn't
+    /// create.
+    static func retirePlaceholderProjectWritingWorkItem(for project: Project, context: ModelContext) {
+        let placeholderName = "\(project.projectType?.rawValue ?? "Project") Writing"
+        guard let placeholder = project.workItems.first(where: { $0.workTypeName == placeholderName && $0.document == nil }),
+              placeholder.status != .completed else { return }
+        complete(placeholder, context: context)
     }
 
     /// PRD §7.11: "The user can start a timed session against a specific Joke... or a general
@@ -290,17 +313,23 @@ enum WorkItemService {
     }
 
     /// Kyle (2026-08-20, real use): "when a new piece of sketch writing is created - shouldn't it
-    /// go on the home board?... I feel like when you open up a sketch it should live in the
-    /// sketches (not filmed yet - writing) section as well as being a task on the home board to
-    /// schedule the work." A brand-new Sketch/Short Film Project has no Document yet (unlike a
-    /// generic Writing project, which only ever gets a WorkItem lazily once a Document is actually
-    /// opened) — without this, there was a real gap between "created" and "first document opened"
-    /// where nothing represented it on Home at all. `workspace: .writing` (not `.sketches` — this
-    /// is the pre-production writing phase, matching where the Project itself still lives until
-    /// it's finished/marked a Reel), matching `sketchEditingWorkItem`'s own "no Document needed,
-    /// the Project is the natural unit" reasoning.
-    static func sketchWritingWorkItem(for project: Project, context: ModelContext) throws -> WorkItem {
-        let workTypeName = "Sketch Writing"
+    /// go on the home board?" — then generalized 2026-08-27: "i feel like every project in terms
+    /// of priority should be in my to do... whatever project I create can go into the To Do and
+    /// it's your ranking system that shows where they go." Every kind of Project has no Document
+    /// yet the moment it's created (a generic Writing project only ever gets a WorkItem lazily
+    /// once a Document is actually opened) — without this, there's a real gap between "created"
+    /// and "first document opened" where nothing represents it on Home at all. `workTypeName` is
+    /// derived from the Project's own type ("Sketch Writing", "TV Pilot Writing", "Short Story
+    /// Writing", etc.; "Project Writing" for a type-less Quick Add project) so each type can carry
+    /// its own tunable estimate in Settings, same per-type granularity as Document's own
+    /// `workTypeName`s. `workspace: .writing` (not `.sketches` — this is always the pre-production
+    /// writing phase, matching where the Project itself still lives until it's finished/marked a
+    /// Reel), matching `sketchEditingWorkItem`'s own "no Document needed, the Project is the
+    /// natural unit" reasoning. Called automatically by `ProjectService.createProject` — see that
+    /// function's own `createsWritingTask` param — so no creation flow has to remember to call
+    /// this itself; exposed here too for `backfillProjectWritingWorkItems` to reuse directly.
+    static func projectWritingWorkItem(for project: Project, context: ModelContext) throws -> WorkItem {
+        let workTypeName = "\(project.projectType?.rawValue ?? "Project") Writing"
         if let existing = try workItems(for: project, in: context).first(where: { $0.workTypeName == workTypeName }) {
             return existing
         }
@@ -311,6 +340,33 @@ enum WorkItemService {
             in: project,
             context: context
         )
+    }
+
+    /// Kyle (2026-08-27, real use): "why isn't hackers sketch showing up in my to do?" —
+    /// `ProjectService.createProject` only started auto-creating a companion WorkItem once this
+    /// fix shipped; any Project created before that (or through any flow that predates it) has
+    /// zero WorkItems, so there's nothing to rank/schedule from even though it's sitting right
+    /// there on its own board. Called once at every launch — same "Foundation baseline data must
+    /// exist from first launch, not appear ad hoc" pattern as `WorkTypeDefaultService.
+    /// seedKnownDefaultsIfNeeded` in `KyleOSApp.init()` — and safe to call every time:
+    /// `projectWritingWorkItem` is find-or-create, so this is a no-op once every existing project
+    /// has caught up.
+    ///
+    /// Skips a project that already has ANY WorkItem (e.g. one lazily created by `writingWorkItem`
+    /// the first time its Document's timer was actually started) — that project already has
+    /// something tracking its writing work, so adding a second one would just be a duplicate task
+    /// on Home, not a fix. Also skips finished/archived projects (writing is done, nothing to
+    /// schedule) and Reels (their work happens on the linked Clip instead — see
+    /// `SketchProductionService.markAsReel`), mirroring exactly what `createProject`'s own
+    /// `createsWritingTask` gate would have decided had this project been created today.
+    static func backfillProjectWritingWorkItems(in context: ModelContext) throws {
+        let allProjects = try context.fetch(FetchDescriptor<Project>())
+        for project in allProjects {
+            guard !project.isArchived, project.displayStatus != .finished else { continue }
+            guard !SketchProductionService.isReel(project) else { continue }
+            guard try workItems(for: project, in: context).isEmpty else { continue }
+            _ = try projectWritingWorkItem(for: project, context: context)
+        }
     }
 
     /// Sketch-side counterpart to `clipPostingWorkItem`, same anchor-only purpose.

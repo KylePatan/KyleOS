@@ -30,6 +30,11 @@ struct KyleOSApp: App {
         do {
             try SettingsService.currentSettings(in: context)
             try WorkTypeDefaultService.seedKnownDefaultsIfNeeded(in: context)
+            // Kyle (2026-08-27): "why isn't hackers sketch showing up in my to do? ... whatever
+            // project I create can go into the To Do." `ProjectService.createProject` now creates
+            // this automatically going forward — this catches every Project that existed before
+            // that fix shipped. Idempotent, safe on every launch (see its own doc comment).
+            try WorkItemService.backfillProjectWritingWorkItems(in: context)
             try context.save()
         } catch {
             assertionFailure("Failed to seed Foundation defaults: \(error)")

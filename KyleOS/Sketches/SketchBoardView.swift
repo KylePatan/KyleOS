@@ -31,10 +31,7 @@ struct SketchBoardView: View {
     /// into production. Still visible in Writing's own list at the same time, same "additive
     /// presence, not a move" reasoning `isProductionProject` already documents.
     private var writingSketches: [ProjectService.Project] {
-        allProjects.filter {
-            guard let type = $0.projectType, SketchProductionService.productionProjectTypes.contains(type) else { return false }
-            return !$0.isArchived && !SketchProductionService.isProductionProject($0)
-        }
+        allProjects.filter(SketchProductionService.isStillWriting)
     }
 
     private func projects(inStatus status: SketchProductionService.SketchProductionStatus) -> [ProjectService.Project] {

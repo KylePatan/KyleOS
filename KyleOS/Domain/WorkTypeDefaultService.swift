@@ -39,6 +39,17 @@ enum WorkTypeDefaultService {
         ("Sketch Posting", 0.25),
         ("Submission", 0.5),
         ("Submission Reminder", 0.25),
+        // 2026-08-27: `ProjectService.createProject`'s new automatic "Sketch Writing"-style
+        // companion WorkItem generalized to every Project type (`WorkItemService.
+        // projectWritingWorkItem`'s workTypeName is `"\(projectType.rawValue) Writing"`) —
+        // "Sketch Writing" above already covers `.sketch`; these are the rest of
+        // `WritingProjectType` plus the type-less Quick Add project fallback.
+        ("TV Pilot Writing", 2.0),
+        ("Screenplay Writing", 3.0),
+        ("Short Film Writing", 2.0),
+        ("Short Story Writing", 2.0),
+        ("Other Writing", 1.0),
+        ("Project Writing", 1.0),
     ]
 
     /// Inserts the PRD's known defaults if they aren't already present. Idempotent — safe to

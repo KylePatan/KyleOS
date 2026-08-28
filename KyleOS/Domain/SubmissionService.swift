@@ -40,7 +40,7 @@ enum SubmissionService {
         return submission
     }
 
-    /// Lazily finds or creates, same pattern as `WorkItemService.clipWorkItem`/`sketchWritingWorkItem`.
+    /// Lazily finds or creates, same pattern as `WorkItemService.clipWorkItem`/`projectWritingWorkItem`.
     @discardableResult
     static func submissionTaskWorkItem(for submission: Submission, context: ModelContext) -> WorkItem {
         if let existing = submission.workItems.first(where: { $0.workTypeName == taskWorkTypeName }) {

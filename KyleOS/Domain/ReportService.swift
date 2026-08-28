@@ -562,11 +562,21 @@ enum ReportService {
                 let workItems = project.workItems
                 let totalSeconds = workItems.reduce(0) { $0 + $1.workSessions.reduce(0) { $0 + $1.activeDurationSeconds } }
                 guard totalSeconds > 0 else { return nil }
-                let mostRecent = workItems.max { lhs, rhs in
-                    let lhsActivity = lhs.workSessions.map(\.startAt).max() ?? lhs.createdAt
-                    let rhsActivity = rhs.workSessions.map(\.startAt).max() ?? rhs.createdAt
-                    return lhsActivity < rhsActivity
-                }
+                // 2026-08-27: a WorkItem with zero logged WorkSessions must never win this
+                // comparison — falling back to `createdAt` treated "just created, never touched"
+                // as if it were the most recently ACTIVE item, which surfaced for real once
+                // `ProjectService.createProject` started auto-creating a placeholder WorkItem for
+                // every Project (see `WorkItemService.projectWritingWorkItem`): a brand-new
+                // placeholder's `createdAt` is `.now`, beating even a WorkItem genuinely worked on
+                // minutes ago. `totalSeconds > 0` above already guarantees at least one WorkItem
+                // here has a real logged session, so filtering to those first is always safe.
+                let mostRecent = workItems
+                    .filter { !$0.workSessions.isEmpty }
+                    .max { lhs, rhs in
+                        let lhsActivity = lhs.workSessions.map(\.startAt).max() ?? .distantPast
+                        let rhsActivity = rhs.workSessions.map(\.startAt).max() ?? .distantPast
+                        return lhsActivity < rhsActivity
+                    }
                 return ProjectProgressEntry(
                     projectID: project.persistentModelID,
                     title: project.title,
