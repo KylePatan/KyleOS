@@ -66,28 +66,33 @@ struct PostItView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-            RetroPanel {
-                VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
-                    summaryBar
-                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
-                    cadenceSection
+        // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll to
+        // see everything." This list had no scrolling of its own — with enough ready-to-post
+        // items it just overflowed the window with no way to reach the rest.
+        ScrollView {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                RetroPanel {
+                    VStack(alignment: .leading, spacing: RetroTheme.controlSpacing) {
+                        summaryBar
+                        Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
+                        cadenceSection
+                    }
                 }
-            }
-            if rows.isEmpty {
-                Text("Nothing ready to post yet. Finish editing a Clip or Sketch to see it here.")
-                    .foregroundStyle(RetroTheme.secondaryText)
-            } else {
-                RetroPanel("Ready to Post") {
-                    VStack(spacing: 0) {
-                        ForEach(rows) { row in
-                            rowView(row)
+                if rows.isEmpty {
+                    Text("Nothing ready to post yet. Finish editing a Clip or Sketch to see it here.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    RetroPanel("Ready to Post") {
+                        VStack(spacing: 0) {
+                            ForEach(rows) { row in
+                                rowView(row)
+                            }
                         }
                     }
                 }
             }
+            .padding(RetroTheme.sectionPadding)
         }
-        .padding(RetroTheme.sectionPadding)
         .sheet(item: $editingRow) { row in
             PostItRowSheet(row: row)
         }

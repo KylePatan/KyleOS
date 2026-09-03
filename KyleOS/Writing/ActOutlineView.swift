@@ -32,62 +32,68 @@ struct ActOutlineView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-            HStack {
-                Spacer()
-                DeadlineControl(
-                    dueAt: workItem?.deadline?.dueAt,
-                    isHard: workItem?.deadline?.isHard ?? true,
-                    onSet: { dueAt, isHard in
-                        guard let resolvedWorkItem = try? WorkItemService.writingWorkItem(for: document, context: context) else { return }
-                        DeadlineService.setDeadline(for: resolvedWorkItem, label: document.title, dueAt: dueAt, isHard: isHard, context: context)
-                        try? context.save()
-                    },
-                    onRemove: {
-                        guard let workItem else { return }
-                        DeadlineService.removeDeadline(for: workItem, context: context)
-                        try? context.save()
-                    }
-                )
-            }
-            if acts.isEmpty {
-                Text("No acts yet. Kyle OS doesn't force exactly three — add as many as the story needs.")
-                    .foregroundStyle(RetroTheme.secondaryText)
-            } else {
-                RetroPanel("Acts", accentCategory: .writing) {
-                    List {
-                        ForEach(acts) { act in
-                            ActRow(act: act) {
-                                ActService.delete(act, from: document, context: context)
-                                try? context.save()
-                            }
-                            .listRowBackground(RetroTheme.panelBackground)
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
-                        }
-                        .onMove { source, destination in
-                            ActService.reorder(document, movingFromOffsets: source, toOffset: destination)
+        // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll to
+        // see everything." The Acts List already caps its own height and scrolls internally
+        // (RetroTheme.maxListHeight), but this whole page had no scrolling of its own — a project
+        // with many acts, or just enough acts to hit that cap, could still push "Add Act" off the
+        // bottom of the window with no way to reach it.
+        ScrollView {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                HStack {
+                    Spacer()
+                    DeadlineControl(
+                        dueAt: workItem?.deadline?.dueAt,
+                        isHard: workItem?.deadline?.isHard ?? true,
+                        onSet: { dueAt, isHard in
+                            guard let resolvedWorkItem = try? WorkItemService.writingWorkItem(for: document, context: context) else { return }
+                            DeadlineService.setDeadline(for: resolvedWorkItem, label: document.title, dueAt: dueAt, isHard: isHard, context: context)
+                            try? context.save()
+                        },
+                        onRemove: {
+                            guard let workItem else { return }
+                            DeadlineService.removeDeadline(for: workItem, context: context)
                             try? context.save()
                         }
+                    )
+                }
+                if acts.isEmpty {
+                    Text("No acts yet. Kyle OS doesn't force exactly three — add as many as the story needs.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    RetroPanel("Acts", accentCategory: .writing) {
+                        List {
+                            ForEach(acts) { act in
+                                ActRow(act: act) {
+                                    ActService.delete(act, from: document, context: context)
+                                    try? context.save()
+                                }
+                                .listRowBackground(RetroTheme.panelBackground)
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                            }
+                            .onMove { source, destination in
+                                ActService.reorder(document, movingFromOffsets: source, toOffset: destination)
+                                try? context.save()
+                            }
+                        }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
+                        .frame(height: min(max(100, CGFloat(acts.count) * 90 + 20), RetroTheme.maxListHeight))
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .frame(height: max(100, CGFloat(acts.count) * 90 + 20))
+                }
+                RetroPanel {
+                    HStack {
+                        TextField("New act title", text: $newActTitle)
+                            .retroInputStyle()
+                            .onSubmit(addAct)
+                        Button("Add Act", action: addAct)
+                            .buttonStyle(.retroProminent)
+                            .disabled(newActTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
             }
-            RetroPanel {
-                HStack {
-                    TextField("New act title", text: $newActTitle)
-                        .retroInputStyle()
-                        .onSubmit(addAct)
-                    Button("Add Act", action: addAct)
-                        .buttonStyle(.retroProminent)
-                        .disabled(newActTitle.trimmingCharacters(in: .whitespaces).isEmpty)
-                }
-            }
-            Spacer(minLength: 0)
+            .padding(RetroTheme.sectionPadding)
         }
-        .padding(RetroTheme.sectionPadding)
         .background(RetroTheme.background)
         .navigationTitle(document.title)
         .onAppear {

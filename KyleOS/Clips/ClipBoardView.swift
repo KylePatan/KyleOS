@@ -89,20 +89,27 @@ private struct ClipBoardColumn: View {
 
     var body: some View {
         RetroPanel(lane.rawValue, accentCategory: .clips) {
-            VStack(alignment: .leading, spacing: 0) {
+            // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll
+            // to see everything." A lane with many clips used to just keep growing this column
+            // past the window's bottom edge with no way to reach the rest.
+            Group {
                 if clips.isEmpty {
                     Text("Drag a clip here.")
                         .font(.caption)
                         .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    ForEach(clips) { clip in
-                        ClipCard(clip: clip, editingWorkItem: editingWorkItem(clip), subtitlingWorkItem: subtitlingWorkItem(clip))
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(clips) { clip in
+                                ClipCard(clip: clip, editingWorkItem: editingWorkItem(clip), subtitlingWorkItem: subtitlingWorkItem(clip))
+                            }
+                        }
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
-        .frame(minWidth: 280, maxWidth: .infinity, minHeight: 160, alignment: .top)
+        .frame(minWidth: 280, maxWidth: .infinity, minHeight: 160, maxHeight: .infinity, alignment: .top)
         .background(isTargeted ? RetroTheme.accent.opacity(0.12) : .clear)
         .overlay(
             Rectangle().strokeBorder(isTargeted ? RetroTheme.accent : .clear, lineWidth: 3)

@@ -68,21 +68,29 @@ struct SubmissionsBoardView: View {
         navigator.pendingTarget = nil
     }
 
+    // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll to see
+    // everything." A column with many submissions used to just keep growing past the window's
+    // bottom edge with no way to reach the rest.
     private func column(_ title: String, items: [SubmissionService.Submission]) -> some View {
         RetroPanel(title, accentCategory: .submissions) {
-            if items.isEmpty {
-                Text("No submissions here.")
-                    .font(.caption)
-                    .foregroundStyle(RetroTheme.secondaryText)
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(items) { submission in
-                        SubmissionCard(submission: submission)
+            Group {
+                if items.isEmpty {
+                    Text("No submissions here.")
+                        .font(.caption)
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(items) { submission in
+                                SubmissionCard(submission: submission)
+                            }
+                        }
                     }
                 }
             }
+            .frame(maxHeight: .infinity)
         }
-        .frame(minWidth: 260, maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 260, maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 }
 

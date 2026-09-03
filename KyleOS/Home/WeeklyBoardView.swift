@@ -125,20 +125,29 @@ private struct BoardColumn: View {
             // something here." text), and a plain `.frame()` on the OUTSIDE of RetroPanel reserves
             // layout space but does not, by itself, extend the actual view/hit-test region to
             // fill it — most of an empty column would silently not accept a drop at all.
-            VStack(alignment: .leading, spacing: 0) {
+            //
+            // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll
+            // to see everything." A day with many scheduled items used to just keep growing this
+            // column past the window's bottom edge with no way to reach the rest — wrapped in its
+            // own ScrollView so a tall column scrolls independently, same as every other column.
+            Group {
                 if items.isEmpty {
                     Text(emptyMessage)
                         .font(.caption)
                         .foregroundStyle(RetroTheme.secondaryText)
                 } else {
-                    ForEach(items) { item in
-                        WeeklyItemCard(workItem: item)
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(items) { item in
+                                WeeklyItemCard(workItem: item)
+                            }
+                        }
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
-        .frame(minWidth: 240, maxWidth: .infinity, minHeight: 160, alignment: .top)
+        .frame(minWidth: 240, maxWidth: .infinity, minHeight: 160, maxHeight: .infinity, alignment: .top)
         .background(isTargeted ? RetroTheme.accent.opacity(0.12) : .clear)
         .overlay(
             Rectangle().strokeBorder(isTargeted ? RetroTheme.accent : .clear, lineWidth: 3)

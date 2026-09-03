@@ -3,6 +3,20 @@ import SwiftData
 @testable import KyleOS
 
 final class CreativeCapacityServiceTests: XCTestCase {
+    /// 2026-09-02, real failure: several tests here construct event spans up to 8 hours from
+    /// `now` (`now.addingTimeInterval(3600 * N)`). Using the live wall-clock `Date()` directly
+    /// meant a test run late enough in the evening had that span cross midnight, silently
+    /// truncating how much of it counts toward "today" — `CreativeCapacityService.
+    /// personalEventReductionHours` correctly clips each event to `[startOfDay, endOfDay)`, so a
+    /// 2-hour personal event starting at 10:29 PM only reduced the baseline by ~1.5 hours, not 2 —
+    /// a real, reproducible failure (confirmed via an immediate rerun, not a flake) this exact
+    /// bug caused, not a bug in the production code being tested. Keeps the real calendar date
+    /// (weekday/weekend-sensitive tests still exercise whatever day the suite actually runs on)
+    /// but pins the time-of-day to a safe mid-morning hour, removing the midnight-crossing risk
+    /// for every span used in this file.
+    private static var now: Date {
+        Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: Date()) ?? Date()
+    }
 
     func testBaselineWithNoGigOrScheduledSessionsMatchesSettings() throws {
         let container = PersistenceController.makeInMemoryContainer()
@@ -20,7 +34,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
 
         let gigEvent = CalendarEventService.createEvent(
             type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context
@@ -35,7 +49,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
         let tomorrow = Date(timeIntervalSinceNow: 86400)
 
         let gigEvent = CalendarEventService.createEvent(
@@ -52,7 +66,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
         SettingsService.updateCreativeCapacity(settings, weekdayHours: 0.5, weekendHours: 0.5, standUpNightBonusHours: 1.0)
-        let now = Date()
+        let now = Self.now
 
         let gigEvent = CalendarEventService.createEvent(
             type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context
@@ -71,7 +85,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let workItem = try WorkItemService.createWorkItem(
             title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
         )
-        let now = Date()
+        let now = Self.now
 
         let session = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 45, context: context)
 
@@ -89,7 +103,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let workItem = try WorkItemService.createWorkItem(
             title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
         )
-        let now = Date()
+        let now = Self.now
 
         let missed = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 45, context: context)
         PlannedSessionService.markMissed(missed)
@@ -112,7 +126,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let workItem = try WorkItemService.createWorkItem(
             title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
         )
-        let now = Date()
+        let now = Self.now
         let tomorrow = Date(timeIntervalSinceNow: 86400)
 
         let session = PlannedSessionService.schedule(for: workItem, at: tomorrow, durationMinutes: 45, context: context)
@@ -126,7 +140,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
 
         let gigEvent = CalendarEventService.createEvent(
             type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context
@@ -146,7 +160,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
         let tomorrow = Date(timeIntervalSinceNow: 86400)
 
         let override = try CreativeCapacityService.setOverride(for: tomorrow, hours: 6, context: context)
@@ -163,7 +177,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
     func testSetOverrideTwiceUpdatesRatherThanDuplicates() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
-        let now = Date()
+        let now = Self.now
 
         let first = try CreativeCapacityService.setOverride(for: now, hours: 4, context: context)
         try context.save()
@@ -180,7 +194,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
     func testSetOverrideClampsNegativeHoursToZero() throws {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
-        let now = Date()
+        let now = Self.now
 
         let override = try CreativeCapacityService.setOverride(for: now, hours: -3, context: context)
         try context.save()
@@ -192,7 +206,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
 
         try CreativeCapacityService.setOverride(for: now, hours: 10, context: context)
         try context.save()
@@ -257,7 +271,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
 
         let personalEvent = CalendarEventService.createEvent(
             type: .personal, startAt: now, endAt: now.addingTimeInterval(3600 * 2), context: context
@@ -273,7 +287,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
         let calendar = Calendar.current
-        let now = Date()
+        let now = Self.now
         let startOfDay = calendar.startOfDay(for: now)
         let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
 
@@ -290,7 +304,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
 
         let looseReminder = CalendarEventService.createEvent(
             type: .personal, startAt: now, endAt: now.addingTimeInterval(3600 * 2), availability: .available, context: context
@@ -305,7 +319,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
         let tomorrow = Date(timeIntervalSinceNow: 86400)
 
         let personalEvent = CalendarEventService.createEvent(
@@ -321,7 +335,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
 
         let dayJob = CalendarEventService.createEvent(type: .dayJob, startAt: now, endAt: now.addingTimeInterval(3600 * 8), context: context)
         let workSession = CalendarEventService.createEvent(type: .creativeWorkSession, startAt: now, endAt: now.addingTimeInterval(3600), context: context)
@@ -335,7 +349,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let container = PersistenceController.makeInMemoryContainer()
         let context = ModelContext(container)
         let settings = try SettingsService.currentSettings(in: context)
-        let now = Date()
+        let now = Self.now
 
         let gigEvent = CalendarEventService.createEvent(type: .standUpGig, startAt: now, endAt: now.addingTimeInterval(3600), context: context)
         let personalEvent = CalendarEventService.createEvent(
@@ -367,7 +381,7 @@ final class CreativeCapacityServiceTests: XCTestCase {
         let workItem = try WorkItemService.createWorkItem(
             title: "Outline", workspace: .writing, workTypeName: "Outline", in: project, context: context
         )
-        let now = Date()
+        let now = Self.now
 
         let overbooked = PlannedSessionService.schedule(for: workItem, at: now, durationMinutes: 600, context: context)
 

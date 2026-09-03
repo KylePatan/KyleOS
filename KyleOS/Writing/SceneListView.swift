@@ -41,51 +41,56 @@ struct SceneListView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-            if scenes.isEmpty {
-                Text("No scenes in this act yet.")
-                    .foregroundStyle(RetroTheme.secondaryText)
-            } else {
-                RetroPanel("Scenes", accentCategory: .writing) {
-                    List {
-                        ForEach(scenes) { scene in
-                            SceneRow(
-                                scene: scene,
-                                sceneNumber: sceneNumbers[scene.persistentModelID] ?? 0,
-                                otherActs: otherActs,
-                                onDelete: {
-                                    SceneService.delete(scene, from: act, context: context)
-                                    try? context.save()
-                                },
-                                onMove: { newAct in
-                                    SceneService.move(scene, to: newAct, context: context)
-                                    try? context.save()
-                                }
-                            )
-                            .listRowBackground(RetroTheme.panelBackground)
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+        // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll to
+        // see everything." Scene rows are tall (190pt each) — even a handful of scenes could push
+        // "Add Scene" off the bottom of the window with no way to reach it, on top of the List's
+        // own height cap (RetroTheme.maxListHeight) once a single act has many scenes.
+        ScrollView {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                if scenes.isEmpty {
+                    Text("No scenes in this act yet.")
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    RetroPanel("Scenes", accentCategory: .writing) {
+                        List {
+                            ForEach(scenes) { scene in
+                                SceneRow(
+                                    scene: scene,
+                                    sceneNumber: sceneNumbers[scene.persistentModelID] ?? 0,
+                                    otherActs: otherActs,
+                                    onDelete: {
+                                        SceneService.delete(scene, from: act, context: context)
+                                        try? context.save()
+                                    },
+                                    onMove: { newAct in
+                                        SceneService.move(scene, to: newAct, context: context)
+                                        try? context.save()
+                                    }
+                                )
+                                .listRowBackground(RetroTheme.panelBackground)
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparatorTint(RetroTheme.border.opacity(0.5))
+                            }
+                            .onMove { source, destination in
+                                SceneService.reorder(within: act, movingFromOffsets: source, toOffset: destination)
+                                try? context.save()
+                            }
                         }
-                        .onMove { source, destination in
-                            SceneService.reorder(within: act, movingFromOffsets: source, toOffset: destination)
-                            try? context.save()
-                        }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
+                        .frame(height: min(max(160, CGFloat(scenes.count) * 190 + 20), RetroTheme.maxListHeight))
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .frame(height: max(160, CGFloat(scenes.count) * 190 + 20))
                 }
+                Button {
+                    SceneService.createScene(in: act, context: context)
+                    try? context.save()
+                } label: {
+                    Label("Add Scene", systemImage: "plus")
+                }
+                .buttonStyle(.retroProminent)
             }
-            Button {
-                SceneService.createScene(in: act, context: context)
-                try? context.save()
-            } label: {
-                Label("Add Scene", systemImage: "plus")
-            }
-            .buttonStyle(.retroProminent)
-            Spacer(minLength: 0)
+            .padding(RetroTheme.sectionPadding)
         }
-        .padding(RetroTheme.sectionPadding)
         .background(RetroTheme.background)
         .navigationTitle(act.title)
     }

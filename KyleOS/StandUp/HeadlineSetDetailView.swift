@@ -33,13 +33,17 @@ struct HeadlineSetDetailView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-            header
-            runtimeSummary
-            chunksSection
-            Spacer(minLength: 0)
+        // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll to
+        // see everything." chunksSection's own List caps its height (RetroTheme.maxListHeight) and
+        // scrolls internally, but this page had no scrolling of its own around it.
+        ScrollView {
+            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                header
+                runtimeSummary
+                chunksSection
+            }
+            .padding(RetroTheme.sectionPadding)
         }
-        .padding(RetroTheme.sectionPadding)
         .background(RetroTheme.background)
         .navigationTitle(headlineSet.title)
         .onAppear {
@@ -134,7 +138,7 @@ struct HeadlineSetDetailView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .frame(height: max(120, CGFloat(memberChunks.count) * 50 + 20))
+                    .frame(height: min(max(120, CGFloat(memberChunks.count) * 50 + 20), RetroTheme.maxListHeight))
                 }
             }
         }

@@ -211,31 +211,35 @@ private struct ArchivedWritingProjectsSheet: View {
             if projects.isEmpty {
                 Text("Nothing archived.").foregroundStyle(RetroTheme.secondaryText).padding(RetroTheme.sectionPadding)
             } else {
-                VStack(spacing: 0) {
-                    ForEach(projects) { project in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(project.title).foregroundStyle(RetroTheme.primaryText)
-                                if let projectType = project.projectType {
-                                    Text(projectType.rawValue).font(.caption).foregroundStyle(RetroTheme.secondaryText)
+                // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to
+                // scroll to see everything" — this modal had no scrolling of its own either.
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(projects) { project in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(project.title).foregroundStyle(RetroTheme.primaryText)
+                                    if let projectType = project.projectType {
+                                        Text(projectType.rawValue).font(.caption).foregroundStyle(RetroTheme.secondaryText)
+                                    }
                                 }
+                                Spacer()
+                                Button("Restore") {
+                                    ProjectService.restore(project)
+                                    try? context.save()
+                                }
+                                .buttonStyle(.retro)
                             }
-                            Spacer()
-                            Button("Restore") {
-                                ProjectService.restore(project)
-                                try? context.save()
+                            .padding(.horizontal, RetroTheme.sectionPadding)
+                            .padding(.vertical, RetroTheme.controlSpacing)
+                            .overlay(alignment: .bottom) {
+                                Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                             }
-                            .buttonStyle(.retro)
-                        }
-                        .padding(.horizontal, RetroTheme.sectionPadding)
-                        .padding(.vertical, RetroTheme.controlSpacing)
-                        .overlay(alignment: .bottom) {
-                            Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                         }
                     }
                 }
+                .frame(maxHeight: RetroTheme.maxListHeight)
             }
-            Spacer(minLength: 0)
         }
         .frame(minWidth: 380, minHeight: 300)
         .background(RetroTheme.panelBackground)

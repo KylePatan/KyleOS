@@ -21,6 +21,16 @@ enum RetroTheme {
     static let controlSpacing: CGFloat = 8
     static let sectionSpacing: CGFloat = 20
 
+    /// Kyle (2026-08-27): "When there are many items anywhere, it has to be able to scroll to see
+    /// everything." A `List` embedded in a `RetroPanel` needs an explicit frame height to behave
+    /// correctly in this codebase's flexible layouts — an `idealHeight` hint alone made it
+    /// greedily expand to fill all available space even with just 2 rows (see AllTasksView's own
+    /// 2026-08-16 fix note) — so every such List sizes to its content height UP TO this cap, and
+    /// relies on `List`'s own built-in scrolling past that, instead of growing without bound and
+    /// clipping off-screen with no way to reach the rest. One shared constant so every list in the
+    /// app scrolls at a consistent, easy-to-retune point.
+    static let maxListHeight: CGFloat = 560
+
     // MARK: - Motion (Kyle, 2026-08-16: "smoother and more natural." §0 (2026-08-20): "soft
     // transitions, smooth hover states... subtle easing" — same 100-200ms range both specs ask for.)
 

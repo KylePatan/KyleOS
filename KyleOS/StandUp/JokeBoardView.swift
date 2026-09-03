@@ -83,7 +83,7 @@ struct JokeBoardView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .frame(height: max(160, CGFloat(items.count) * 70 + 20))
+                .frame(height: min(max(160, CGFloat(items.count) * 70 + 20), RetroTheme.maxListHeight))
             }
         }
         .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)

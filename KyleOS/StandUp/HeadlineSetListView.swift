@@ -13,62 +13,66 @@ struct HeadlineSetListView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-                RetroPanel {
-                    HStack {
-                        TextField("New headline set title", text: $newSetTitle)
-                            .retroInputStyle()
-                            .onSubmit(createSet)
-                        Button("Add Set", action: createSet)
-                            .buttonStyle(.retroProminent)
-                            .disabled(newSetTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll
+            // to see everything." This list had no scrolling of its own — with enough Headline
+            // Sets it just overflowed the window with no way to reach the rest.
+            ScrollView {
+                VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                    RetroPanel {
+                        HStack {
+                            TextField("New headline set title", text: $newSetTitle)
+                                .retroInputStyle()
+                                .onSubmit(createSet)
+                            Button("Add Set", action: createSet)
+                                .buttonStyle(.retroProminent)
+                                .disabled(newSetTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
-                }
-                if sets.isEmpty {
-                    Text("No headline sets yet. Build one from your Chunks once a set starts taking shape.")
-                        .foregroundStyle(RetroTheme.secondaryText)
-                } else {
-                    RetroPanel("Headline Sets", accentCategory: .standUp) {
-                        VStack(spacing: 0) {
-                            ForEach(sets) { set in
-                                HStack {
-                                    NavigationLink(value: set.persistentModelID) {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(set.title).foregroundStyle(RetroTheme.primaryText)
-                                            Text(runtimeSummary(for: set))
-                                                .font(.caption)
-                                                .foregroundStyle(RetroTheme.secondaryText)
+                    if sets.isEmpty {
+                        Text("No headline sets yet. Build one from your Chunks once a set starts taking shape.")
+                            .foregroundStyle(RetroTheme.secondaryText)
+                    } else {
+                        RetroPanel("Headline Sets", accentCategory: .standUp) {
+                            VStack(spacing: 0) {
+                                ForEach(sets) { set in
+                                    HStack {
+                                        NavigationLink(value: set.persistentModelID) {
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(set.title).foregroundStyle(RetroTheme.primaryText)
+                                                Text(runtimeSummary(for: set))
+                                                    .font(.caption)
+                                                    .foregroundStyle(RetroTheme.secondaryText)
+                                            }
                                         }
+                                        .buttonStyle(.plain)
+                                        Spacer()
+                                        Button {
+                                            openWindow(value: DetachedWindowTarget.headlineSetDetail(set.persistentModelID))
+                                        } label: {
+                                            Image(systemName: "arrow.up.forward.square")
+                                        }
+                                        .buttonStyle(.retro)
+                                        .help("Open in a new window")
+                                        Button(role: .destructive) {
+                                            HeadlineSetService.delete(set, context: context)
+                                            try? context.save()
+                                        } label: {
+                                            Image(systemName: "trash")
+                                        }
+                                        .buttonStyle(.retro)
                                     }
-                                    .buttonStyle(.plain)
-                                    Spacer()
-                                    Button {
-                                        openWindow(value: DetachedWindowTarget.headlineSetDetail(set.persistentModelID))
-                                    } label: {
-                                        Image(systemName: "arrow.up.forward.square")
+                                    .padding(.horizontal, RetroTheme.controlSpacing + 4)
+                                    .padding(.vertical, RetroTheme.controlSpacing)
+                                    .overlay(alignment: .bottom) {
+                                        Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                     }
-                                    .buttonStyle(.retro)
-                                    .help("Open in a new window")
-                                    Button(role: .destructive) {
-                                        HeadlineSetService.delete(set, context: context)
-                                        try? context.save()
-                                    } label: {
-                                        Image(systemName: "trash")
-                                    }
-                                    .buttonStyle(.retro)
-                                }
-                                .padding(.horizontal, RetroTheme.controlSpacing + 4)
-                                .padding(.vertical, RetroTheme.controlSpacing)
-                                .overlay(alignment: .bottom) {
-                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                 }
                             }
                         }
                     }
                 }
-                Spacer(minLength: 0)
+                .padding(RetroTheme.sectionPadding)
             }
-            .padding(RetroTheme.sectionPadding)
             .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 if let set = sets.first(where: { $0.persistentModelID == id }) {

@@ -89,39 +89,52 @@ struct SketchBoardView: View {
     /// Distinct accent (`.writing`, not `.sketches`) — a deliberate visual cue that this column is
     /// still writing-phase work, not production, the same colour language Home already uses for
     /// this exact WorkItem's own `workspace`.
+    // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll to see
+    // everything." A column with many sketches used to just keep growing past the window's
+    // bottom edge with no way to reach the rest — both columns below now scroll independently.
     private var writingColumn: some View {
         RetroPanel("Writing", accentCategory: .writing) {
-            if writingSketches.isEmpty {
-                Text("No sketches here.")
-                    .font(.caption)
-                    .foregroundStyle(RetroTheme.secondaryText)
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(writingSketches) { project in
-                        WritingSketchCard(project: project)
+            Group {
+                if writingSketches.isEmpty {
+                    Text("No sketches here.")
+                        .font(.caption)
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(writingSketches) { project in
+                                WritingSketchCard(project: project)
+                            }
+                        }
                     }
                 }
             }
+            .frame(maxHeight: .infinity)
         }
-        .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 220, maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 
     private func column(for status: SketchProductionService.SketchProductionStatus) -> some View {
         let items = projects(inStatus: status)
         return RetroPanel(status.rawValue, accentCategory: .sketches) {
-            if items.isEmpty {
-                Text("No sketches here.")
-                    .font(.caption)
-                    .foregroundStyle(RetroTheme.secondaryText)
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(items) { project in
-                        SketchCard(project: project, otherStatuses: SketchProductionService.SketchProductionStatus.allCases.filter { $0 != status })
+            Group {
+                if items.isEmpty {
+                    Text("No sketches here.")
+                        .font(.caption)
+                        .foregroundStyle(RetroTheme.secondaryText)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(items) { project in
+                                SketchCard(project: project, otherStatuses: SketchProductionService.SketchProductionStatus.allCases.filter { $0 != status })
+                            }
+                        }
                     }
                 }
             }
+            .frame(maxHeight: .infinity)
         }
-        .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 220, maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 }
 

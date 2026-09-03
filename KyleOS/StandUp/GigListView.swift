@@ -15,69 +15,73 @@ struct GigListView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-                RetroPanel {
-                    HStack {
-                        TextField("Venue", text: $newVenue)
-                            .retroInputStyle()
-                        DatePicker("", selection: $newStartAt)
-                            .labelsHidden()
-                        Button("Add Gig", action: createGig)
-                            .buttonStyle(.retroProminent)
-                            .disabled(newVenue.trimmingCharacters(in: .whitespaces).isEmpty)
+            // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll
+            // to see everything." This list had no scrolling of its own — with enough Gigs it
+            // just overflowed the window with no way to reach the rest.
+            ScrollView {
+                VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                    RetroPanel {
+                        HStack {
+                            TextField("Venue", text: $newVenue)
+                                .retroInputStyle()
+                            DatePicker("", selection: $newStartAt)
+                                .labelsHidden()
+                            Button("Add Gig", action: createGig)
+                                .buttonStyle(.retroProminent)
+                                .disabled(newVenue.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
-                }
-                if gigs.isEmpty {
-                    Text("No gigs yet. Add one to see it appear on the Calendar automatically.")
-                        .foregroundStyle(RetroTheme.secondaryText)
-                } else {
-                    RetroPanel("Gigs", accentCategory: .standUp) {
-                        VStack(spacing: 0) {
-                            ForEach(gigs) { gig in
-                                HStack {
-                                    NavigationLink(value: gig.persistentModelID) {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(gig.venue).foregroundStyle(RetroTheme.primaryText)
-                                            HStack(spacing: 6) {
-                                                Text(summary(for: gig))
-                                                if GigService.needsAfterGigNotes(gig) {
-                                                    Text("· Needs notes")
-                                                        .foregroundStyle(RetroTheme.warning)
+                    if gigs.isEmpty {
+                        Text("No gigs yet. Add one to see it appear on the Calendar automatically.")
+                            .foregroundStyle(RetroTheme.secondaryText)
+                    } else {
+                        RetroPanel("Gigs", accentCategory: .standUp) {
+                            VStack(spacing: 0) {
+                                ForEach(gigs) { gig in
+                                    HStack {
+                                        NavigationLink(value: gig.persistentModelID) {
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(gig.venue).foregroundStyle(RetroTheme.primaryText)
+                                                HStack(spacing: 6) {
+                                                    Text(summary(for: gig))
+                                                    if GigService.needsAfterGigNotes(gig) {
+                                                        Text("· Needs notes")
+                                                            .foregroundStyle(RetroTheme.warning)
+                                                    }
                                                 }
+                                                .font(.caption)
+                                                .foregroundStyle(RetroTheme.secondaryText)
                                             }
-                                            .font(.caption)
-                                            .foregroundStyle(RetroTheme.secondaryText)
                                         }
+                                        .buttonStyle(.plain)
+                                        Spacer()
+                                        Button {
+                                            openWindow(value: DetachedWindowTarget.gigDetail(gig.persistentModelID))
+                                        } label: {
+                                            Image(systemName: "arrow.up.forward.square")
+                                        }
+                                        .buttonStyle(.retro)
+                                        .help("Open in a new window")
+                                        Button(role: .destructive) {
+                                            GigService.delete(gig, context: context)
+                                            try? context.save()
+                                        } label: {
+                                            Image(systemName: "trash")
+                                        }
+                                        .buttonStyle(.retro)
                                     }
-                                    .buttonStyle(.plain)
-                                    Spacer()
-                                    Button {
-                                        openWindow(value: DetachedWindowTarget.gigDetail(gig.persistentModelID))
-                                    } label: {
-                                        Image(systemName: "arrow.up.forward.square")
+                                    .padding(.horizontal, RetroTheme.controlSpacing + 4)
+                                    .padding(.vertical, RetroTheme.controlSpacing)
+                                    .overlay(alignment: .bottom) {
+                                        Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                     }
-                                    .buttonStyle(.retro)
-                                    .help("Open in a new window")
-                                    Button(role: .destructive) {
-                                        GigService.delete(gig, context: context)
-                                        try? context.save()
-                                    } label: {
-                                        Image(systemName: "trash")
-                                    }
-                                    .buttonStyle(.retro)
-                                }
-                                .padding(.horizontal, RetroTheme.controlSpacing + 4)
-                                .padding(.vertical, RetroTheme.controlSpacing)
-                                .overlay(alignment: .bottom) {
-                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                 }
                             }
                         }
                     }
                 }
-                Spacer(minLength: 0)
+                .padding(RetroTheme.sectionPadding)
             }
-            .padding(RetroTheme.sectionPadding)
             .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 if let gig = gigs.first(where: { $0.persistentModelID == id }) {

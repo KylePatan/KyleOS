@@ -160,7 +160,7 @@ struct SourceDetailView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .frame(height: max(120, CGFloat(clips.count) * 50 + 20))
+                    .frame(height: min(max(120, CGFloat(clips.count) * 50 + 20), RetroTheme.maxListHeight))
                 }
             }
         }

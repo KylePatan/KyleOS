@@ -191,7 +191,7 @@ struct GigDetailView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .frame(height: max(100, CGFloat(setListItems.count) * 60 + 20))
+                    .frame(height: min(max(100, CGFloat(setListItems.count) * 60 + 20), RetroTheme.maxListHeight))
                 }
             }
         }

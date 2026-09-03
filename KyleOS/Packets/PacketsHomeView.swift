@@ -15,33 +15,37 @@ struct PacketsHomeView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-                RetroPanel {
-                    HStack {
-                        TextField("Packet name", text: $newTitle)
-                            .retroInputStyle()
-                        TextField("Show or production company", text: $newTargetName)
-                            .retroInputStyle()
-                        Button("Create Packet", action: createPacket)
-                            .buttonStyle(.retroProminent)
-                            .disabled(newTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll
+            // to see everything." This list had no scrolling of its own — with enough Packets it
+            // just overflowed the window with no way to reach the rest.
+            ScrollView {
+                VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                    RetroPanel {
+                        HStack {
+                            TextField("Packet name", text: $newTitle)
+                                .retroInputStyle()
+                            TextField("Show or production company", text: $newTargetName)
+                                .retroInputStyle()
+                            Button("Create Packet", action: createPacket)
+                                .buttonStyle(.retroProminent)
+                                .disabled(newTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
-                }
-                if packets.isEmpty {
-                    Text("No packets yet. Create one to start building a submission.")
-                        .foregroundStyle(RetroTheme.secondaryText)
-                } else {
-                    RetroPanel("Packets", accentCategory: .completed) {
-                        VStack(spacing: 0) {
-                            ForEach(packets) { packet in
-                                packetRow(packet)
+                    if packets.isEmpty {
+                        Text("No packets yet. Create one to start building a submission.")
+                            .foregroundStyle(RetroTheme.secondaryText)
+                    } else {
+                        RetroPanel("Packets", accentCategory: .completed) {
+                            VStack(spacing: 0) {
+                                ForEach(packets) { packet in
+                                    packetRow(packet)
+                                }
                             }
                         }
                     }
                 }
-                Spacer(minLength: 0)
+                .padding(RetroTheme.sectionPadding)
             }
-            .padding(RetroTheme.sectionPadding)
             .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 if let packet = packets.first(where: { $0.persistentModelID == id }) {

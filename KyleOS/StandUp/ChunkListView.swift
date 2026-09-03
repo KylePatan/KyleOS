@@ -14,62 +14,66 @@ struct ChunkListView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
-                RetroPanel {
-                    HStack {
-                        TextField("New chunk title", text: $newChunkTitle)
-                            .retroInputStyle()
-                            .onSubmit(createChunk)
-                        Button("Add Chunk", action: createChunk)
-                            .buttonStyle(.retroProminent)
-                            .disabled(newChunkTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to scroll
+            // to see everything." This list had no scrolling of its own — with enough Chunks it
+            // just overflowed the window with no way to reach the rest.
+            ScrollView {
+                VStack(alignment: .leading, spacing: RetroTheme.sectionSpacing) {
+                    RetroPanel {
+                        HStack {
+                            TextField("New chunk title", text: $newChunkTitle)
+                                .retroInputStyle()
+                                .onSubmit(createChunk)
+                            Button("Add Chunk", action: createChunk)
+                                .buttonStyle(.retroProminent)
+                                .disabled(newChunkTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
                     }
-                }
-                if chunks.isEmpty {
-                    Text("No chunks yet. Group related jokes into a Chunk once a theme emerges.")
-                        .foregroundStyle(RetroTheme.secondaryText)
-                } else {
-                    RetroPanel("Chunks", accentCategory: .standUp) {
-                        VStack(spacing: 0) {
-                            ForEach(chunks) { chunk in
-                                HStack {
-                                    NavigationLink(value: chunk.persistentModelID) {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(chunk.title).foregroundStyle(RetroTheme.primaryText)
-                                            Text("\(ChunkService.jokes(in: chunk).count) joke\(ChunkService.jokes(in: chunk).count == 1 ? "" : "s") · \(chunk.status.rawValue)")
-                                                .font(.caption)
-                                                .foregroundStyle(RetroTheme.secondaryText)
+                    if chunks.isEmpty {
+                        Text("No chunks yet. Group related jokes into a Chunk once a theme emerges.")
+                            .foregroundStyle(RetroTheme.secondaryText)
+                    } else {
+                        RetroPanel("Chunks", accentCategory: .standUp) {
+                            VStack(spacing: 0) {
+                                ForEach(chunks) { chunk in
+                                    HStack {
+                                        NavigationLink(value: chunk.persistentModelID) {
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(chunk.title).foregroundStyle(RetroTheme.primaryText)
+                                                Text("\(ChunkService.jokes(in: chunk).count) joke\(ChunkService.jokes(in: chunk).count == 1 ? "" : "s") · \(chunk.status.rawValue)")
+                                                    .font(.caption)
+                                                    .foregroundStyle(RetroTheme.secondaryText)
+                                            }
                                         }
+                                        .buttonStyle(.plain)
+                                        Spacer()
+                                        Button {
+                                            openWindow(value: DetachedWindowTarget.chunkDetail(chunk.persistentModelID))
+                                        } label: {
+                                            Image(systemName: "arrow.up.forward.square")
+                                        }
+                                        .buttonStyle(.retro)
+                                        .help("Open in a new window")
+                                        Button(role: .destructive) {
+                                            ChunkService.delete(chunk, context: context)
+                                            try? context.save()
+                                        } label: {
+                                            Image(systemName: "trash")
+                                        }
+                                        .buttonStyle(.retro)
                                     }
-                                    .buttonStyle(.plain)
-                                    Spacer()
-                                    Button {
-                                        openWindow(value: DetachedWindowTarget.chunkDetail(chunk.persistentModelID))
-                                    } label: {
-                                        Image(systemName: "arrow.up.forward.square")
+                                    .padding(.horizontal, RetroTheme.controlSpacing + 4)
+                                    .padding(.vertical, RetroTheme.controlSpacing)
+                                    .overlay(alignment: .bottom) {
+                                        Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                     }
-                                    .buttonStyle(.retro)
-                                    .help("Open in a new window")
-                                    Button(role: .destructive) {
-                                        ChunkService.delete(chunk, context: context)
-                                        try? context.save()
-                                    } label: {
-                                        Image(systemName: "trash")
-                                    }
-                                    .buttonStyle(.retro)
-                                }
-                                .padding(.horizontal, RetroTheme.controlSpacing + 4)
-                                .padding(.vertical, RetroTheme.controlSpacing)
-                                .overlay(alignment: .bottom) {
-                                    Rectangle().fill(RetroTheme.border.opacity(0.5)).frame(height: RetroTheme.borderWidth)
                                 }
                             }
                         }
                     }
                 }
-                Spacer(minLength: 0)
+                .padding(RetroTheme.sectionPadding)
             }
-            .padding(RetroTheme.sectionPadding)
             .background(RetroTheme.background)
             .navigationDestination(for: PersistentIdentifier.self) { id in
                 if let chunk = chunks.first(where: { $0.persistentModelID == id }) {

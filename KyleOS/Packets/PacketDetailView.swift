@@ -17,8 +17,8 @@ struct PacketDetailView: View {
 
     private var packetID: PersistentIdentifier { packet.persistentModelID }
 
-    @Query(sort: \KyleOSSchemaV35.Project.title) private var allProjects: [KyleOSSchemaV35.Project]
-    @Query(sort: \KyleOSSchemaV35.Document.title) private var allDocuments: [KyleOSSchemaV35.Document]
+    @Query(sort: \KyleOSSchemaV36.Project.title) private var allProjects: [KyleOSSchemaV36.Project]
+    @Query(sort: \KyleOSSchemaV36.Document.title) private var allDocuments: [KyleOSSchemaV36.Document]
 
     /// Live @Query, not `packet.items` held off the parent — a plain relationship array here would
     /// go stale after adding/removing items without a full view reload (the exact bug this
@@ -29,19 +29,19 @@ struct PacketDetailView: View {
         allItems.filter { $0.packet?.persistentModelID == packetID }.sorted { $0.order < $1.order }
     }
 
-    private var availableProjects: [KyleOSSchemaV35.Project] {
+    private var availableProjects: [KyleOSSchemaV36.Project] {
         let usedIDs = Set(items.compactMap { $0.project?.id })
         return allProjects.filter { !$0.isArchived && !usedIDs.contains($0.id) }
     }
 
-    private var availableDocuments: [KyleOSSchemaV35.Document] {
+    private var availableDocuments: [KyleOSSchemaV36.Document] {
         let usedIDs = Set(items.compactMap { $0.document?.id })
         return allDocuments.filter {
             ($0.documentType == .script || $0.documentType == .prose) && !usedIDs.contains($0.id)
         }
     }
 
-    private var documentsByDraftLabel: [(label: String, documents: [KyleOSSchemaV35.Document])] {
+    private var documentsByDraftLabel: [(label: String, documents: [KyleOSSchemaV36.Document])] {
         Dictionary(grouping: availableDocuments, by: \.displayDraftLabel)
             .sorted { $0.key < $1.key }
             .map { (label: $0.key, documents: $0.value) }
@@ -85,10 +85,14 @@ struct PacketDetailView: View {
                     .foregroundStyle(RetroTheme.secondaryText)
                     .padding(RetroTheme.sectionPadding)
             } else {
-                RetroPanel {
-                    VStack(spacing: 0) {
-                        ForEach(items) { item in
-                            itemRow(item)
+                // Kyle (2026-08-27): "when there are many items anywhere, it has to be able to
+                // scroll to see everything" — this pane had no scrolling of its own either.
+                ScrollView {
+                    RetroPanel {
+                        VStack(spacing: 0) {
+                            ForEach(items) { item in
+                                itemRow(item)
+                            }
                         }
                     }
                 }
