@@ -9,6 +9,10 @@ struct ClipsHomeView: View {
         case sources = "Sources"
         case board = "Board"
         case readyQueue = "Ready Queue"
+        /// Kyle (2026-09-02): "I should be able to put things in folders so I know what things
+        /// are what." A separate lens from the Board's own production-status lanes — folders are
+        /// purely organizational, orthogonal to status.
+        case folders = "Folders"
         var id: String { rawValue }
     }
 
@@ -25,6 +29,7 @@ struct ClipsHomeView: View {
             case .sources: SourceListView()
             case .board: ClipBoardView()
             case .readyQueue: ClipReadyQueueView()
+            case .folders: ClipFolderListView()
             }
         }
         .background(RetroTheme.background)

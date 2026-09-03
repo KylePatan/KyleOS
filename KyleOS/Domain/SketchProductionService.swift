@@ -7,12 +7,12 @@ import SwiftData
 /// `finishedSketchProjects` just filters the existing `Project` fields that already carry this
 /// (`WritingProjectType.sketch`, `ProjectStatus.finished`, both since V8).
 enum SketchProductionService {
-    typealias Project = KyleOSSchemaV35.Project
-    typealias SketchProduction = KyleOSSchemaV35.SketchProduction
-    typealias SketchProductionStatus = KyleOSSchemaV35.SketchProductionStatus
-    typealias FilmShoot = KyleOSSchemaV35.FilmShoot
-    typealias CallSheet = KyleOSSchemaV35.CallSheet
-    typealias WritingProjectType = KyleOSSchemaV35.WritingProjectType
+    typealias Project = KyleOSSchemaV36.Project
+    typealias SketchProduction = KyleOSSchemaV36.SketchProduction
+    typealias SketchProductionStatus = KyleOSSchemaV36.SketchProductionStatus
+    typealias FilmShoot = KyleOSSchemaV36.FilmShoot
+    typealias CallSheet = KyleOSSchemaV36.CallSheet
+    typealias WritingProjectType = KyleOSSchemaV36.WritingProjectType
 
     /// Kyle (2026-08-20, real use): "short films and sketches that are finished scripts should be
     /// sent to the sketches module - because they require the same sort of process of filming and

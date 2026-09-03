@@ -4,10 +4,10 @@ import SwiftData
 /// Reusable domain actions for Projects — Create/Rename/Archive/Restore — kept out of views
 /// per CLAUDE.md §4 so later modules (Writing, Sketches, ...) call the same logic UI ever does.
 enum ProjectService {
-    typealias Project = KyleOSSchemaV35.Project
-    typealias WritingProjectType = KyleOSSchemaV35.WritingProjectType
-    typealias ProjectStatus = KyleOSSchemaV35.ProjectStatus
-    typealias Document = KyleOSSchemaV35.Document
+    typealias Project = KyleOSSchemaV36.Project
+    typealias WritingProjectType = KyleOSSchemaV36.WritingProjectType
+    typealias ProjectStatus = KyleOSSchemaV36.ProjectStatus
+    typealias Document = KyleOSSchemaV36.Document
 
     /// Kyle (2026-08-27, real use): "why isn't hackers sketch showing up in my to do? ... i feel
     /// like every project in terms of priority should be in my to do - and I can choose what to

@@ -14,10 +14,10 @@ import SwiftData
 /// CalendarEvent relationships (CalendarEvent survives as a historical record by default in this
 /// codebase unless it's a Gig/FilmShoot-style single owned commitment).
 enum DeadlineService {
-    typealias Deadline = KyleOSSchemaV35.Deadline
-    typealias Project = KyleOSSchemaV35.Project
-    typealias WorkItem = KyleOSSchemaV35.WorkItem
-    typealias CalendarEventType = KyleOSSchemaV35.CalendarEventType
+    typealias Deadline = KyleOSSchemaV36.Deadline
+    typealias Project = KyleOSSchemaV36.Project
+    typealias WorkItem = KyleOSSchemaV36.WorkItem
+    typealias CalendarEventType = KyleOSSchemaV36.CalendarEventType
 
     /// Editable, not just settable once — a UI "Set/Edit Deadline" control calling this on every
     /// save must not silently orphan the previous Deadline (and its CalendarEvent) each time.

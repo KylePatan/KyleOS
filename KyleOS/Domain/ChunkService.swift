@@ -3,9 +3,9 @@ import SwiftData
 
 /// Reusable domain actions for Chunks (PRD §7.5-§7.6), kept out of views per CLAUDE.md §4.
 enum ChunkService {
-    typealias Chunk = KyleOSSchemaV35.Chunk
-    typealias Joke = KyleOSSchemaV35.Joke
-    typealias JokeStatus = KyleOSSchemaV35.JokeStatus
+    typealias Chunk = KyleOSSchemaV36.Chunk
+    typealias Joke = KyleOSSchemaV36.Joke
+    typealias JokeStatus = KyleOSSchemaV36.JokeStatus
 
     @discardableResult
     static func createChunk(title: String, context: ModelContext) -> Chunk {

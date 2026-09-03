@@ -17,9 +17,9 @@ import SwiftData
 /// a "Submission Reminder" task (created only once a due date is known, scheduled a month before
 /// the same date next year — see `scheduleReopeningReminder`).
 enum SubmissionService {
-    typealias Submission = KyleOSSchemaV35.Submission
-    typealias SubmissionStatus = KyleOSSchemaV35.SubmissionStatus
-    typealias WorkItem = KyleOSSchemaV35.WorkItem
+    typealias Submission = KyleOSSchemaV36.Submission
+    typealias SubmissionStatus = KyleOSSchemaV36.SubmissionStatus
+    typealias WorkItem = KyleOSSchemaV36.WorkItem
 
     private static let taskWorkTypeName = "Submission"
     private static let reminderWorkTypeName = "Submission Reminder"
